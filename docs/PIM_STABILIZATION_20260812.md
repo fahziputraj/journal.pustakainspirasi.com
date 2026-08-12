@@ -23,28 +23,11 @@ The root `pim-layout.css`, root `indexSite.tpl`, and `docs/Deploy_Update_1` copi
 
 ## Production SMTP configuration
 
-Edit only the production, gitignored `config.inc.php`. Do not put credentials in tracked files. Under `[email]`, use the hosting provider's real values in place of these placeholders:
-
-```ini
-[email]
-default = smtp
-smtp = On
-smtp_server = "<SMTP_HOST>"
-smtp_port = <SMTP_PORT>
-smtp_auth = <ssl-or-tls>
-smtp_username = "<SMTP_USERNAME>"
-smtp_password = "<SMTP_PASSWORD>"
-```
-
-Use the provider-documented matching combination, commonly port 465 with `ssl` or port 587 with `tls`; do not guess. Leave `smtp_suppress_cert_check` off/false unless the provider has diagnosed a certificate-chain problem. After editing configuration, clear OJS caches through Administration or remove only the generated cache contents using the normal deployment procedure.
-
-With `default = smtp`, OJS creates its SMTP transport from `smtp_server`, `smtp_port`, `smtp_auth`, `smtp_username`, and `smtp_password`. It does not use Symfony's sendmail `ProcessStream`, so the invite path no longer depends on `proc_open()`.
+The mail runtime and production procedure were audited in more detail after this stabilization note was merged. Follow `docs/PIM_SMTP_REMEDIATION_20260813.md` as the authoritative SMTP runbook. In particular, the installed OJS/Laravel/Symfony path requires `default = smtp` but does not require the legacy `smtp = On` flag, and its TLS behavior must not be inferred from the older PHPMailer-oriented template comment.
 
 ## Invitation consistency risk
 
-In OJS 3.5, `Invitation::invite()` sends the email before changing the invitation status to `PENDING` and saving it. A transport exception therefore prevents that final pending-state save. The method is not wrapped in an explicit database transaction, however, and an initialized invitation or a user from an earlier workflow attempt may already exist.
-
-After SMTP is fixed, verify the target email in Users & Roles before retrying. Confirm there is only one intended user, the expected role assignment, one usable pending invitation, and one delivered invitation email. Do not repeatedly submit while an error response is unresolved.
+See `docs/PIM_SMTP_REMEDIATION_20260813.md` for the source-traced invitation lifecycle, partial-state risks, pre-retry inspection, QA, and rollback procedure.
 
 ## Editorial masthead data contract
 
