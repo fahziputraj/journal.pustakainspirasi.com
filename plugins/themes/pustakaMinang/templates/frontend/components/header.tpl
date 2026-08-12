@@ -122,7 +122,7 @@
         <div class="pim-journal-tools-group">
           <h2>Guidelines</h2>
           <a href="{url page="about" op="submissions"}"><i class="fas fa-pen-to-square"></i> Author Guidelines</a>
-          <a href="{url page="about" op="editorialTeam"}"><i class="fas fa-users"></i> Editorial Team</a>
+          <a href="{url page="about" op="editorialMasthead"}"><i class="fas fa-users"></i> Editorial Team</a>
         </div>
 
         <div class="pim-journal-tools-group">

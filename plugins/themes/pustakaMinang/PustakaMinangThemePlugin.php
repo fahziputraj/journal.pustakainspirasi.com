@@ -14,7 +14,6 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
      */
     public function init()
     {
-        error_log("pustakaMinang Theme init called!");
         // Inherit all styles, scripts, and behaviors from the default theme
         $this->setParent('defaultthemeplugin');
 
