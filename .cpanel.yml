@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/pusf3964/public_html/journal.pustakainspirasi.com/
+    - /bin/cp plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php $DEPLOYPATH/plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php
+    - /bin/cp plugins/themes/pustakaMinang/styles/pim-layout.css $DEPLOYPATH/plugins/themes/pustakaMinang/styles/pim-layout.css
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/header.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl
