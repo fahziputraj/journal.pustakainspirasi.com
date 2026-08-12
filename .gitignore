@@ -1,0 +1,33 @@
+# Environment-specific config & secrets (DB credentials, app_key)
+/config.inc.php
+config.inc.php.bak*
+
+# Runtime cache, logs, and generated data (rebuilt automatically by OJS)
+/cache/
+/usageStats/
+/lucene/
+error_log
+*.log
+
+# User-uploaded content (journal covers, site images) - environment data, not source
+/public/journals/
+/public/site/
+
+# Accidental local artifacts
+/C_/
+.ftpquota
+
+# Redundant backup copy of the OJS 3.5.0 release already deployed in this repo
+/docs/ojs-3.5.0-4 (1)/
+/docs/ojs-3.5.0-4 (1).tar.gz
+
+# JS tooling output (vite/cypress configs exist at root; not installed yet)
+/node_modules/
+**/node_modules/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

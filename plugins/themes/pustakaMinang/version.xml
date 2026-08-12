@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE version SYSTEM "../../../lib/pkp/dtd/pluginVersion.dtd">
+
+<!--
+  * plugins/themes/pustakaMinang/version.xml
+  * Custom theme for Pustaka Inspirasi Minang
+  -->
+<version>
+	<application>pustakaMinang</application>
+	<type>plugins.themes</type>
+	<release>1.0.0.0</release>
+	<date>2026-06-07</date>
+	<lazy-load>1</lazy-load>
+	<class>APP\plugins\themes\pustakaMinang\PustakaMinangThemePlugin</class>
+</version>
