@@ -31,3 +31,79 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+# =========================================================
+# PIM — SECURITY / ENVIRONMENT
+# =========================================================
+
+# Production configuration & secrets
+/config.inc.php
+/config.inc.php.bak*
+.env
+.env.*
+!.env.example
+
+# Database dumps
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Credential/config artifacts
+auth.json
+credentials.json
+secrets.json
+
+# =========================================================
+# OJS RUNTIME
+# =========================================================
+
+/cache/
+/usageStats/
+/lucene/
+
+error_log
+*.log
+
+# User-uploaded/environment-specific public files
+/public/journals/
+/public/site/
+
+# =========================================================
+# DEPLOYMENT / BACKUP ARTIFACTS
+# =========================================================
+
+Deploy_*.zip
+*.tar.gz
+*.tgz
+
+# cPanel
+.ftpquota
+
+# Accidental local paths
+/C_/
+/C:/
+
+# =========================================================
+# TOOLING
+# =========================================================
+
+/node_modules/
+**/node_modules/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Redundant local OJS package
+/docs/ojs-3.5.0-4 (1)/
