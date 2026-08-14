@@ -19,6 +19,7 @@
 {include file="frontend/components/header.tpl" pageTitleTranslated=$currentJournal->getLocalizedName()}
 
 <div class="page_index_journal">
+	<h1 class="pkp_screen_reader">{$currentJournal->getLocalizedName()|escape}</h1>
 
 	{call_hook name="Templates::Index::journal"}
 

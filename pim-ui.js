@@ -1,9 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('i.fas, i.far, i.fab, i.fa').forEach(function(icon) {
+    icon.setAttribute('aria-hidden', 'true');
+  });
+
   var navToggle = document.getElementById('navToggle');
   var mainNav = document.getElementById('mainNav');
   if (navToggle && mainNav) {
     navToggle.addEventListener('click', function() {
-      mainNav.classList.toggle('open');
+      var isOpen = mainNav.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && mainNav.classList.contains('open')) {
+        mainNav.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.focus();
+      }
     });
   }
 
@@ -70,7 +82,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var mobileToolsToggle = document.getElementById('pimMobileToolsToggle');
   var mobileToolsTabs = document.querySelectorAll('[data-pim-tools-tab]');
   var mobileToolsClosers = document.querySelectorAll('[data-pim-tools-close]');
-  var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 767.98px)') : null;
+  var mobileToolsBackdrop = document.querySelector('.pim-mobile-tools-backdrop');
+  var mobileMenuPanel = document.getElementById('pimJournalMenuPanel');
+  var mobileLinksPanel = document.getElementById('pimJournalLinksPanel');
+  var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 768px)') : null;
+  var mobileToolsReturnFocus = null;
+
+  if (!mobileLinksPanel) {
+    mobileToolsTabs.forEach(function(button) {
+      if (button.getAttribute('data-pim-tools-tab') === 'links') button.hidden = true;
+    });
+  }
 
   function isMobileToolsViewport() {
     return mobileToolsQuery ? mobileToolsQuery.matches : window.innerWidth <= 768;
@@ -84,19 +106,55 @@ document.addEventListener('DOMContentLoaded', function() {
       var active = button.getAttribute('data-pim-tools-tab') === selected;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-selected', active ? 'true' : 'false');
+      button.setAttribute('tabindex', active ? '0' : '-1');
     });
+    if (isMobileToolsViewport()) {
+      if (mobileMenuPanel) {
+        mobileMenuPanel.setAttribute('aria-hidden', selected === 'menu' ? 'false' : 'true');
+        if (selected === 'menu') mobileMenuPanel.removeAttribute('inert');
+        else mobileMenuPanel.setAttribute('inert', '');
+      }
+      if (mobileLinksPanel) {
+        mobileLinksPanel.setAttribute('aria-hidden', selected === 'links' ? 'false' : 'true');
+        if (selected === 'links') mobileLinksPanel.removeAttribute('inert');
+        else mobileLinksPanel.setAttribute('inert', '');
+      }
+    }
+  }
+
+  function getSelectedMobilePanel() {
+    return document.body.classList.contains('pim-tools-tab-links') ? mobileLinksPanel : mobileMenuPanel;
   }
 
   function openMobileTools(tab) {
     if (!mobileToolsToggle || !isMobileToolsViewport()) return;
     setMobileToolsTab(tab || (document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu'));
+    mobileToolsReturnFocus = document.activeElement;
     document.body.classList.add('pim-tools-open');
     mobileToolsToggle.setAttribute('aria-expanded', 'true');
+    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
+    var panel = getSelectedMobilePanel();
+    var firstControl = panel ? panel.querySelector('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
+    if (firstControl) window.requestAnimationFrame(function() { firstControl.focus(); });
   }
 
-  function closeMobileTools() {
+  function closeMobileTools(options) {
     document.body.classList.remove('pim-tools-open');
     if (mobileToolsToggle) mobileToolsToggle.setAttribute('aria-expanded', 'false');
+    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'true');
+    if (isMobileToolsViewport()) {
+      if (mobileMenuPanel) {
+        mobileMenuPanel.setAttribute('aria-hidden', 'true');
+        mobileMenuPanel.setAttribute('inert', '');
+      }
+      if (mobileLinksPanel) {
+        mobileLinksPanel.setAttribute('aria-hidden', 'true');
+        mobileLinksPanel.setAttribute('inert', '');
+      }
+    }
+    if ((!options || options.restoreFocus !== false) && mobileToolsReturnFocus && mobileToolsReturnFocus.focus) {
+      mobileToolsReturnFocus.focus();
+    }
   }
 
   if (mobileToolsToggle) {
@@ -115,6 +173,9 @@ document.addEventListener('DOMContentLoaded', function() {
       var tab = button.getAttribute('data-pim-tools-tab') || 'menu';
       if (document.body.classList.contains('pim-tools-open')) {
         setMobileToolsTab(tab);
+        var panel = getSelectedMobilePanel();
+        var firstControl = panel ? panel.querySelector('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
+        if (firstControl) firstControl.focus();
       } else {
         openMobileTools(tab);
       }
@@ -126,12 +187,44 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeMobileTools();
+    if (e.key === 'Escape' && document.body.classList.contains('pim-tools-open')) closeMobileTools();
+    if (e.key !== 'Tab' || !document.body.classList.contains('pim-tools-open')) return;
+    var panel = getSelectedMobilePanel();
+    var bar = document.querySelector('.pim-mobile-tools-bar');
+    var focusable = [];
+    [panel, bar].forEach(function(container) {
+      if (!container) return;
+      focusable = focusable.concat(Array.prototype.slice.call(container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')));
+    });
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 
   window.addEventListener('resize', function() {
-    if (!isMobileToolsViewport()) closeMobileTools();
+    if (!isMobileToolsViewport()) {
+      closeMobileTools({ restoreFocus: false });
+      if (mobileMenuPanel) {
+        mobileMenuPanel.removeAttribute('aria-hidden');
+        mobileMenuPanel.removeAttribute('inert');
+      }
+      if (mobileLinksPanel) {
+        mobileLinksPanel.removeAttribute('aria-hidden');
+        mobileLinksPanel.removeAttribute('inert');
+      }
+    } else if (!document.body.classList.contains('pim-tools-open')) {
+      closeMobileTools({ restoreFocus: false });
+    }
   });
+
+  if (isMobileToolsViewport()) closeMobileTools({ restoreFocus: false });
 
   var publicJournalHome = document.querySelector('body.pim_public_journal .page_index_journal');
   var publicJournalSidebar = document.querySelector('body.pim_public_journal .pkp_structure_sidebar');

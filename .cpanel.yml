@@ -5,6 +5,15 @@ deployment:
     - /bin/cp plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php $DEPLOYPATH/plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php
     - /bin/cp plugins/themes/pustakaMinang/styles/pim-layout.css $DEPLOYPATH/plugins/themes/pustakaMinang/styles/pim-layout.css
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/header.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/headerHead.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/headerHead.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexSite.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexSite.tpl
+    - /bin/cp pim-ui.js $DEPLOYPATH/pim-ui.js
+    - /bin/cp lib/pkp/templates/layouts/backend.tpl $DEPLOYPATH/lib/pkp/templates/layouts/backend.tpl
+    - /bin/cp lib/pkp/classes/template/PKPTemplateManager.php $DEPLOYPATH/lib/pkp/classes/template/PKPTemplateManager.php
+    - /bin/cp lib/pkp/locale/en/common.po $DEPLOYPATH/lib/pkp/locale/en/common.po
+    - /bin/cp lib/pkp/locale/en/userAccess.po $DEPLOYPATH/lib/pkp/locale/en/userAccess.po
+    - /bin/cp lib/pkp/locale/id/common.po $DEPLOYPATH/lib/pkp/locale/id/common.po
+    - /bin/cp lib/pkp/locale/id/user.po $DEPLOYPATH/lib/pkp/locale/id/user.po
     - /bin/cp plugins/generic/pflPlugin/pfl/js/pfl.js $DEPLOYPATH/plugins/generic/pflPlugin/pfl/js/pfl.js

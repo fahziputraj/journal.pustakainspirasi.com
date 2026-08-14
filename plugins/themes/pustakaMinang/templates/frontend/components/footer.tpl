@@ -20,7 +20,7 @@
 		{capture assign="sidebarCode"}{call_hook name="Templates::Common::Sidebar"}{/capture}
 		{capture assign="pimFilteredSidebarCode"}{$sidebarCode|pim_remove_duplicate_editorial_team}{/capture}
 		{if $pimFilteredSidebarCode|trim}
-			<div class="pkp_structure_sidebar left pim-journal-sidebar" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
+			<div class="pkp_structure_sidebar left pim-journal-sidebar" id="pimJournalLinksPanel" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
 				{$pimFilteredSidebarCode}
 			</div><!-- pim-journal-sidebar -->
 		{/if}
@@ -76,7 +76,15 @@
     </div>
     <div class="footer-bottom">
       <span>&copy; 2026 <a href="https://journal.pustakainspirasi.com">Pustaka Inspirasi Minang</a>. All rights reserved.</span>
-      <span>All articles are published open access under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</span>
+      {assign var="pimLicenseUrl" value=""}
+      {if $currentContext}
+        {assign var="pimLicenseUrl" value=$currentContext->getData('licenseUrl')}
+      {/if}
+      {if $pimLicenseUrl && $pimLicenseUrl != 'on'}
+        <span>Open access license: <a href="{$pimLicenseUrl|escape}" target="_blank" rel="noopener">view license terms</a>.</span>
+      {else}
+        <span>License information is provided with each published work.</span>
+      {/if}
     </div>
   </div>
 </footer>

@@ -944,3 +944,6 @@ msgstr ""
 
 msgid "orcid.field.authorEmailModal.message.noAuthor"
 msgstr "Email akan otomatis terkirim setelah penulis ditambahkan."
+
+msgid "userAccess.management.options"
+msgstr "Opsi akses pengguna"
