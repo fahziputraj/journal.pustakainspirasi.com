@@ -23,14 +23,31 @@
 		[v-cloak] { display: none; }
 		.pim-admin-nav-toggle { display: none; }
 		@media (max-width: 56rem) {
-			html, body, .app, .app__body, .app__main { min-width: 0; max-width: 100%; }
-			body { overflow-x: hidden; }
-			.app__header { min-width: 0; }
-			.app__contextTitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			html, body { width: 100% !important; min-width: 0 !important; max-width: 100% !important; overflow-x: hidden !important; overflow-x: clip !important; }
+			.app, .app__body, .app__main { width: 100% !important; min-width: 0 !important; max-width: 100% !important; }
+			.app { overflow-x: hidden !important; overflow-x: clip !important; }
+			.app__header {
+				width: 100% !important;
+				min-width: 0 !important;
+				max-width: 100% !important;
+				overflow: hidden !important;
+				box-sizing: border-box;
+			}
+			.app__header > * { min-width: 0; }
+			.app__contextTitle {
+				flex: 1 1 0;
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.app__header > .ms-auto { flex: 0 0 auto; min-width: 0; }
 			.pim-admin-nav-toggle {
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
+				flex: 0 0 3rem;
+				width: 3rem;
 				min-width: 3rem;
 				height: 3rem;
 				padding: 0 .75rem;
@@ -57,9 +74,19 @@
 			body.pim-admin-nav-open #app-nav { display: flex !important; }
 			#app-nav > * { width: 100% !important; max-width: none !important; }
 			#app-nav a { min-height: 44px; }
-			.app__main { display: block; width: 100%; overflow-x: clip; }
-			.app__page { width: 100%; max-width: 100%; box-sizing: border-box; }
-			.app__page table { max-width: 100%; }
+			.app__main { display: block; width: 100% !important; max-width: 100% !important; overflow-x: hidden; overflow-x: clip; }
+			.app__page { width: 100%; min-width: 0; max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
+			.app__page > * { min-width: 0; max-width: 100%; }
+			.app__page table {
+				display: block;
+				width: 100%;
+				max-width: 100%;
+				overflow-x: auto;
+				-webkit-overflow-scrolling: touch;
+			}
+			.app__page .pkpSearch { min-width: 0; max-width: 100%; }
+			.app__page .pkpSearch__input { width: 100%; max-width: 100%; box-sizing: border-box; }
+			.app__page .flex.justify-between { flex-wrap: wrap; gap: .75rem; }
 		}
 	</style>
 </head>
@@ -82,7 +109,10 @@
 		<header class="app__header" role="banner">
 			<pkp-skip-link></pkp-skip-link>
 			<button type="button" class="pim-admin-nav-toggle" id="pimAdminNavToggle" aria-controls="app-nav" aria-expanded="false">
-				{translate key="common.navigation.site"}
+				<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+					<path d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+				<span class="-screenReader">{translate key="common.navigation.site"}</span>
 			</button>
 			{if $availableContexts}
 				<dropdown class="app__headerAction app__contexts">

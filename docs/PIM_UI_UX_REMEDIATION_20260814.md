@@ -19,6 +19,15 @@ This remediation addresses shared public-theme and backend-shell defects found d
 - Backend date components receive PHP's already-resolved timezone when legacy production configuration omits `general.time_zone`.
 - The cPanel manifest now deploys every runtime file changed by this remediation.
 
+## Post-deployment smoke-test follow-up
+
+- The public mobile hamburger now opens a responsive menu, moves focus to the first link, closes on link selection/outside click/Escape, restores focus, and keeps the closed menu inert.
+- The public CSS and JavaScript URLs now use an explicit remediation version so cPanel deployments do not continue serving the previous assets from browser or proxy caches.
+- The backend mobile header is constrained to the viewport, its navigation trigger is icon-sized, and wide editorial tables scroll inside their own container instead of widening the document.
+- Legacy Custom Block Manager identifiers ending in `rye` are normalized to useful accessible labels and kept visually hidden when the block already contains its own section headings.
+- Known placeholder editorial emails such as `editor@mcj.com` are presented with the canonical PIM support address, and empty sidebar sections such as an E-ISSN heading without a value are removed from the rendered page.
+- These display fallbacks do not manufacture journal records. Publishing a current issue and selecting a legal license remain journal-manager decisions in OJS.
+
 ## Required journal-admin data remediation
 
 These items live in OJS data/configuration and must be corrected by an authorized journal manager. They must not be hardcoded in the theme.

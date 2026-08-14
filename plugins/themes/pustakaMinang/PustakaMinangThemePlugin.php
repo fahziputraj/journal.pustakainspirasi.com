@@ -18,7 +18,7 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $this->setParent('defaultthemeplugin');
 
         // Add our custom CSS overrides for MDPI-style UI/UX and Marawa branding
-        $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css');
+        $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css?v=20260814-2');
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
 
         // Hook into TemplateManager to register custom Smarty modifiers for views/downloads stats

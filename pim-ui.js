@@ -6,17 +6,63 @@ document.addEventListener('DOMContentLoaded', function() {
   var navToggle = document.getElementById('navToggle');
   var mainNav = document.getElementById('mainNav');
   if (navToggle && mainNav) {
+    var publicNavQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
+
+    function isPublicNavMobile() {
+      return publicNavQuery ? publicNavQuery.matches : window.innerWidth <= 992;
+    }
+
+    function setPublicNavState(isOpen, restoreFocus) {
+      var shouldOpen = !!isOpen && isPublicNavMobile();
+      mainNav.classList.toggle('open', shouldOpen);
+      document.body.classList.toggle('pim-public-nav-open', shouldOpen);
+      navToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+
+      if (isPublicNavMobile()) {
+        mainNav.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+        if (shouldOpen) mainNav.removeAttribute('inert');
+        else mainNav.setAttribute('inert', '');
+      } else {
+        mainNav.removeAttribute('aria-hidden');
+        mainNav.removeAttribute('inert');
+      }
+
+      if (!shouldOpen && restoreFocus) navToggle.focus();
+      if (shouldOpen) {
+        var firstLink = mainNav.querySelector('a[href]');
+        if (firstLink) window.requestAnimationFrame(function() { firstLink.focus(); });
+      }
+    }
+
     navToggle.addEventListener('click', function() {
-      var isOpen = mainNav.classList.toggle('open');
-      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      setPublicNavState(!mainNav.classList.contains('open'), false);
     });
+
+    mainNav.addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('a[href]')) setPublicNavState(false, false);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!mainNav.classList.contains('open')) return;
+      if (mainNav.contains(e.target) || navToggle.contains(e.target)) return;
+      setPublicNavState(false, false);
+    });
+
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && mainNav.classList.contains('open')) {
-        mainNav.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
-        navToggle.focus();
+        setPublicNavState(false, true);
       }
     });
+
+    function handlePublicNavBreakpoint() {
+      setPublicNavState(false, false);
+    }
+
+    if (publicNavQuery) {
+      if (publicNavQuery.addEventListener) publicNavQuery.addEventListener('change', handlePublicNavBreakpoint);
+      else if (publicNavQuery.addListener) publicNavQuery.addListener(handlePublicNavBreakpoint);
+    }
+    setPublicNavState(false, false);
   }
 
   var userItems = document.querySelectorAll('.pim-user-topbar .pim-user-list > li, .pim-user-topbar .pkp_navigation_user > li');
@@ -439,6 +485,42 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function normalizeLegacySidebarContent() {
+    if (!publicJournalSidebar) return;
+
+    var legacyBlockLabels = {
+      informationrye: 'Information',
+      sidebarrye: 'Journal Information',
+      flagcounterrye: 'Journal Resources'
+    };
+
+    Object.keys(legacyBlockLabels).forEach(function(blockName) {
+      var block = publicJournalSidebar.querySelector('#customblock-' + blockName);
+      if (!block) return;
+      var title = block.querySelector(':scope > .title');
+      if (!title) return;
+      title.textContent = legacyBlockLabels[blockName];
+      title.classList.add('pkp_screen_reader');
+    });
+
+    publicJournalSidebar.querySelectorAll('a[href^="mailto:"]').forEach(function(link) {
+      var email = (link.getAttribute('href') || '').replace(/^mailto:/i, '').trim();
+      if (!/^editor@(mcj|mbj|mcsj|mmj|mpj)\.com$/i.test(email)) return;
+      link.setAttribute('href', 'mailto:admin@pustakainspirasi.com');
+      link.textContent = 'admin@pustakainspirasi.com';
+    });
+
+    publicJournalSidebar.querySelectorAll('.pim-sidebar-section').forEach(function(section) {
+      var clone = section.cloneNode(true);
+      clone.querySelectorAll('.pim-sidebar-section-title, script, style').forEach(function(node) {
+        node.remove();
+      });
+      var meaningfulText = clone.textContent.replace(/\s+/g, ' ').trim();
+      var meaningfulElement = clone.querySelector('a[href], img[src], iframe[src], input, select, textarea, ul > li, ol > li');
+      if (!meaningfulText && !meaningfulElement) section.remove();
+    });
+  }
+
   function hasWidgetKeyword(text) {
     var normalized = normalizeHeadingText(text);
     return [
@@ -715,6 +797,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   replaceWhatsappPromoBlocks();
+  normalizeLegacySidebarContent();
   removeRawMarketingFooterBlocks();
   relabelPublicSubmitButtons();
   extractJournalHomepageWidgets();

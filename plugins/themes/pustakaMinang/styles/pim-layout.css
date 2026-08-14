@@ -1411,6 +1411,18 @@ html, body {
   display: block !important;
   text-align: center !important;
 }
+.pim-journal-sidebar .block_custom[id$="rye"] > .title {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
 .pim-journal-sidebar .pkp_block ul {
   list-style: none !important;
   padding: 0 !important;
@@ -2191,6 +2203,36 @@ form.pkp_form button[type="submit"]:hover {
   }
   .pim-nav {
     display: none !important; /* Managed by mobile drawer */
+  }
+  .pim-header .pim-container {
+    position: relative !important;
+  }
+  .pim-header .pim-nav.open {
+    display: flex !important;
+    position: absolute !important;
+    top: calc(100% + 16px) !important;
+    left: var(--pim-gutter) !important;
+    right: var(--pim-gutter) !important;
+    z-index: 1010 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    background: var(--pim-bg-main) !important;
+    border: 1px solid var(--pim-border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18) !important;
+  }
+  .pim-header .pim-nav.open a {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+    white-space: normal !important;
+  }
+  .pim-header .pim-nav.open a::after {
+    display: none !important;
   }
 
   /* Mobile tools styling inside 992px breakpoint */
