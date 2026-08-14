@@ -5,3 +5,6 @@ deployment:
     - /bin/cp plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php $DEPLOYPATH/plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php
     - /bin/cp plugins/themes/pustakaMinang/styles/pim-layout.css $DEPLOYPATH/plugins/themes/pustakaMinang/styles/pim-layout.css
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/header.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl
+    - /bin/cp plugins/generic/pflPlugin/pfl/js/pfl.js $DEPLOYPATH/plugins/generic/pflPlugin/pfl/js/pfl.js

@@ -18,9 +18,10 @@
 	{* Sidebars - always keep the right rail on public journal pages. *}
 	{if $currentContext && $pimFooterPublicJournalLayout}
 		{capture assign="sidebarCode"}{call_hook name="Templates::Common::Sidebar"}{/capture}
-		{if $sidebarCode|trim}
+		{capture assign="pimFilteredSidebarCode"}{$sidebarCode|pim_remove_duplicate_editorial_team}{/capture}
+		{if $pimFilteredSidebarCode|trim}
 			<div class="pkp_structure_sidebar left pim-journal-sidebar" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
-				{$sidebarCode}
+				{$pimFilteredSidebarCode}
 			</div><!-- pim-journal-sidebar -->
 		{/if}
 	{/if}

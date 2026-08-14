@@ -26,6 +26,8 @@
   /* Layout Constraints */
   --pim-max-width: 1200px;    /* Prevents stretching on 2K/4K monitors */
   --pim-gutter: 24px;         /* Standard responsive padding */
+  --pim-sidebar-width: 260px; /* Shared journal tools/sidebar rail */
+  --pim-layout-gap: 32px;     /* Main-to-sidebar separation */
   
   /* Typography */
   --pim-font-sans: 'Inter', -apple-system, sans-serif;
@@ -1230,17 +1232,29 @@ html, body {
    ========================================================================== */
 /* Main page container for public journal homepage */
 .pim-layout-journal-public {
-  display: flex !important;
-  gap: 32px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--pim-sidebar-width) !important;
+  grid-template-areas:
+    "main tools"
+    "main sidebar" !important;
+  column-gap: var(--pim-layout-gap) !important;
+  row-gap: var(--pim-gutter) !important;
   align-items: start !important;
 }
 
-/* Left journal navigation tools sidebar */
+.pim-layout-journal-public > .pkp_structure_main {
+  grid-area: main !important;
+}
+
+/* Shared journal rail: navigation tools followed by native OJS blocks. */
 .pim-journal-tools {
-  width: 260px !important;
+  grid-area: tools !important;
+  width: 100% !important;
+  min-width: 0 !important;
   flex-shrink: 0 !important;
   position: sticky !important;
   top: 90px !important;
+  box-sizing: border-box !important;
 }
 .pim-journal-tools-panel {
   background: var(--pim-bg-main) !important;
@@ -1338,11 +1352,15 @@ html, body {
 
 /* Journal Right Widget sidebar */
 .pim-journal-sidebar {
-  width: 260px !important;
+  grid-area: sidebar !important;
+  width: 100% !important;
+  min-width: 0 !important;
   flex-shrink: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 24px !important;
+  float: none !important;
+  box-sizing: border-box !important;
 }
 .pim-journal-sidebar .pkp_block {
   background: var(--pim-bg-main) !important;
@@ -2120,8 +2138,12 @@ form.pkp_form button[type="submit"]:hover {
     flex: 1 1 100% !important;
   }
   .pim-layout-journal-public {
-    flex-direction: column !important;
-    gap: 32px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "main"
+      "tools"
+      "sidebar" !important;
+    gap: var(--pim-layout-gap) !important;
   }
   .pim-portal-sidebar,
   .pim-journal-tools,
@@ -2217,11 +2239,21 @@ form.pkp_form button[type="submit"]:hover {
     color: var(--pim-crimson) !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
   }
+
+  /* The canonical mobile contract is a natural stack after main content. */
+  .pim-mobile-tools-backdrop,
+  .pim-mobile-tools-bar {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {
   .pim-header {
     padding: 10px 0 !important;
+  }
+  .pim-header .pim-container {
+    flex-wrap: wrap !important;
+    row-gap: 12px !important;
   }
   .pim-brand img {
     height: 56px !important;

@@ -102,7 +102,9 @@
 					</article>
 				{/if}
 			{/foreach}
-			</div><!-- .more -->
+			{if !empty($smarty.foreach.announcements.iteration)}
+				</div><!-- .more -->
+			{/if}
 		</section>
 	{/if}
 
