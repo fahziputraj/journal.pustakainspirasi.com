@@ -47,8 +47,8 @@ class PFL extends HTMLElement {
           },
         ],
 
-        // Editorial team URL
-        editorialTeamUrl: "/about/editorialTeam",
+        // Supplied by OJS so the URL always includes the active context.
+        editorialTeamUrl: null,
 
         // Academic society
         pflAcademicSociety: "Example Academic Society",

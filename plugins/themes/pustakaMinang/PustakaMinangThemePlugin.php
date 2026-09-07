@@ -18,7 +18,7 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $this->setParent('defaultthemeplugin');
 
         // Add our custom CSS overrides for MDPI-style UI/UX and Marawa branding
-        $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css');
+        $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css?v=20260814-2');
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
 
         // Hook into TemplateManager to register custom Smarty modifiers for views/downloads stats
@@ -33,7 +33,51 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $templateMgr = $args[0];
         $templateMgr->registerPlugin('modifier', 'pim_article_views', [$this, 'getArticleViews']);
         $templateMgr->registerPlugin('modifier', 'pim_article_downloads', [$this, 'getArticleDownloads']);
+        $templateMgr->registerPlugin('modifier', 'pim_remove_duplicate_editorial_team', [$this, 'removeDuplicateEditorialTeamLinks']);
         return false;
+    }
+
+    /**
+     * Remove legacy custom-block entries that duplicate the theme's native,
+     * context-aware Editorial Team link.
+     *
+     * Editorial History entries are deliberately preserved. The match is
+     * based on the rendered link label, not a journal path or deprecated URL.
+     */
+    public function removeDuplicateEditorialTeamLinks($sidebarCode)
+    {
+        $sidebarCode = (string) $sidebarCode;
+        $isEditorialTeamLink = static function ($linkHtml) {
+            $label = html_entity_decode(strip_tags($linkHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $label = preg_replace('/\s+/u', ' ', trim($label));
+            return strcasecmp((string) $label, 'Editorial Team') === 0;
+        };
+
+        $filtered = preg_replace_callback(
+            '~<li\b[^>]*>.*?</li>~isu',
+            static function ($matches) use ($isEditorialTeamLink) {
+                if (preg_match('~<a\b[^>]*>(.*?)</a>~isu', $matches[0], $linkMatch)
+                    && $isEditorialTeamLink($linkMatch[1])) {
+                    return '';
+                }
+                return $matches[0];
+            },
+            $sidebarCode
+        );
+
+        if ($filtered === null) {
+            return $sidebarCode;
+        }
+
+        $filteredWithoutStandaloneLinks = preg_replace_callback(
+            '~<a\b[^>]*>(.*?)</a>~isu',
+            static function ($matches) use ($isEditorialTeamLink) {
+                return $isEditorialTeamLink($matches[1]) ? '' : $matches[0];
+            },
+            $filtered
+        );
+
+        return $filteredWithoutStandaloneLinks === null ? $filtered : $filteredWithoutStandaloneLinks;
     }
 
     /**

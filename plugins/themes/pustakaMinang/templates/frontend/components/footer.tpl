@@ -18,9 +18,10 @@
 	{* Sidebars - always keep the right rail on public journal pages. *}
 	{if $currentContext && $pimFooterPublicJournalLayout}
 		{capture assign="sidebarCode"}{call_hook name="Templates::Common::Sidebar"}{/capture}
-		{if $sidebarCode|trim}
-			<div class="pkp_structure_sidebar left pim-journal-sidebar" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
-				{$sidebarCode}
+		{capture assign="pimFilteredSidebarCode"}{$sidebarCode|pim_remove_duplicate_editorial_team}{/capture}
+		{if $pimFilteredSidebarCode|trim}
+			<div class="pkp_structure_sidebar left pim-journal-sidebar" id="pimJournalLinksPanel" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
+				{$pimFilteredSidebarCode}
 			</div><!-- pim-journal-sidebar -->
 		{/if}
 	{/if}
@@ -75,14 +76,22 @@
     </div>
     <div class="footer-bottom">
       <span>&copy; 2026 <a href="https://journal.pustakainspirasi.com">Pustaka Inspirasi Minang</a>. All rights reserved.</span>
-      <span>All articles are published open access under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</span>
+      {assign var="pimLicenseUrl" value=""}
+      {if $currentContext}
+        {assign var="pimLicenseUrl" value=$currentContext->getData('licenseUrl')}
+      {/if}
+      {if $pimLicenseUrl && $pimLicenseUrl != 'on'}
+        <span>Open access license: <a href="{$pimLicenseUrl|escape}" target="_blank" rel="noopener">view license terms</a>.</span>
+      {else}
+        <span>License information is provided with each published work.</span>
+      {/if}
     </div>
   </div>
 </footer>
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20260814-2"></script>
 
 {load_script context="frontend"}
 
