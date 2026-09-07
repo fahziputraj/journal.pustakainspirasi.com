@@ -7,6 +7,7 @@ deployment:
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/header.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/headerHead.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/headerHead.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl
+    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/editorialMasthead.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/editorialMasthead.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl
     - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexSite.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexSite.tpl
     - /bin/cp pim-ui.js $DEPLOYPATH/pim-ui.js
