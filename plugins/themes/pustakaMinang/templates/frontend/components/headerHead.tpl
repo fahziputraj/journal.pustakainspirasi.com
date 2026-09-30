@@ -10,13 +10,15 @@
 <head>
 	<meta charset="{$defaultCharset|escape}">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>
-		{$pageTitleTranslated|strip_tags}
-		{* Add the journal name to the end of page titles *}
-		{if $requestedPage|escape|default:"index" != 'index' && $currentContext && $currentContext->getLocalizedName()}
-			| {$currentContext->getLocalizedName()}
+	{capture assign="pimDocumentTitle"}{$pageTitleTranslated|strip_tags|trim}{/capture}
+	{if !$pimDocumentTitle}
+		{if $currentContext && $currentContext->getLocalizedName()}
+			{assign var="pimDocumentTitle" value=$currentContext->getLocalizedName()}
+		{else}
+			{assign var="pimDocumentTitle" value=$siteTitle|default:"PIM Journal Portal"}
 		{/if}
-	</title>
+	{/if}
+	<title>{$pimDocumentTitle|escape}{if $requestedPage|escape|default:"index" != 'index' && $currentContext && $currentContext->getLocalizedName()} | {$currentContext->getLocalizedName()|escape}{/if}</title>
 
 	{* Add favicon from the site root *}
 	<link rel="icon" href="{$baseUrl}/favicon.png" type="image/png">

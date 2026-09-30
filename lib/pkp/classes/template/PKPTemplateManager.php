@@ -1397,7 +1397,10 @@ class PKPTemplateManager extends Smarty
                 null,
             ),
             'helpUrl' => Application::get()->getHelpUrl(),
-            'timeZone' => Config::getVar('general', 'time_zone')
+            // Application startup already resolves a safe PHP timezone. Expose
+            // the resolved value when older installations omit time_zone so
+            // backend date components do not fail at runtime.
+            'timeZone' => Config::getVar('general', 'time_zone') ?: date_default_timezone_get()
         ];
 
         if ($context) {

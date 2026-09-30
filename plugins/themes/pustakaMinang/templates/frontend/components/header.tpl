@@ -22,7 +22,7 @@
 	{/if}
 {/strip}
 <!DOCTYPE html>
-<html lang="{$currentLocale|replace:"_":"-"}" xml:lang="{$currentLocale|replace:"_":"-"}">
+<html lang="{$currentLocale|replace:"_":"-"}" xml:lang="{$currentLocale|replace:"_":"-"}" dir="{$currentLocaleLangDir|escape|default:"ltr"}">
 {if !$pageTitleTranslated}{capture assign="pageTitleTranslated"}{translate key=$pageTitle}{/capture}{/if}
 {include file="frontend/components/headerHead.tpl"}
 
@@ -30,6 +30,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <body class="pkp_page_{$requestedPage|escape|default:"index"} pkp_op_{$requestedOp|escape|default:"index"}{if $gpPublicJournalLayout} pim_public_journal{elseif $gpAccountLayout} pim_account_page{/if}">
+
+<a class="pim-skip-link" href="#pim-main-content">{translate key="navigation.skip.main"}</a>
 
 <div class="pkp_structure_page">
 
@@ -74,7 +76,7 @@
         <a href="{url router=$smarty.const.ROUTE_PAGE page="user" op="register"}" class="btn-publish"><i class="fas fa-paper-plane"></i> Submit Manuscript</a>
       {/if}
       {if !$currentContext}
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-controls="mainNav" aria-expanded="false">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
       {/if}
@@ -85,12 +87,12 @@
 {if $gpPublicJournalLayout}
   <div class="pim-mobile-tools-backdrop" data-pim-tools-close aria-hidden="true"></div>
   <div class="pim-mobile-tools-bar" aria-label="Mobile journal tools">
-    <button type="button" class="pim-mobile-tools-toggle" id="pimMobileToolsToggle" aria-expanded="false">
+    <button type="button" class="pim-mobile-tools-toggle" id="pimMobileToolsToggle" aria-expanded="false" aria-controls="pimJournalMenuPanel pimJournalLinksPanel">
       <i class="fas fa-sliders"></i> Journal Tools
     </button>
     <div class="pim-mobile-tools-tabs" role="tablist" aria-label="Journal mobile panels">
-      <button type="button" class="is-active" data-pim-tools-tab="menu">Menu</button>
-      <button type="button" data-pim-tools-tab="links">Links</button>
+      <button type="button" role="tab" class="is-active" data-pim-tools-tab="menu" aria-controls="pimJournalMenuPanel" aria-selected="true">Menu</button>
+      <button type="button" role="tab" data-pim-tools-tab="links" aria-controls="pimJournalLinksPanel" aria-selected="false">Links</button>
     </div>
   </div>
 {/if}
@@ -98,7 +100,7 @@
 {if $currentContext || $gpAccountLayout}
   <div class="pkp_structure_content{if $gpPublicJournalLayout} pkp_has_sidebar pim-layout-journal-public{elseif $gpAccountLayout} pim-account-layout{/if}">
   {if $gpPublicJournalLayout}
-    <aside class="pim-journal-tools" aria-label="Journal tools">
+    <aside class="pim-journal-tools" id="pimJournalMenuPanel" aria-label="Journal menu">
       <div class="pim-journal-tools-panel">
         <div class="pim-journal-tools-head">
           <span>Journal Menu</span>
@@ -138,4 +140,4 @@
 {else}
   <div class="pkp_structure_content">
 {/if}
-    <div class="pkp_structure_main" role="main">
+    <div class="pkp_structure_main" id="pim-main-content" role="main" tabindex="-1">

@@ -16,7 +16,7 @@
     
     <!-- Left Column: Search Journal list & Filters -->
     <div class="pim-sidebar-drawer-bg" data-jl-tools-close></div>
-    <aside class="pim-portal-left-col" id="sidebarDrawer" aria-label="Journal directory and filter tools">
+    <aside class="pim-portal-left-col" id="sidebarDrawer" aria-label="Journal directory and filter tools" aria-hidden="false">
       <div class="pim-sidebar-drawer-header">
         <h3>Filter & Tools</h3>
         <button type="button" class="pim-sidebar-drawer-close" data-jl-tools-close aria-label="Close filters">
@@ -38,7 +38,7 @@
             <a href="{url journal=$journal->getPath()}" class="pim-sidebar-journal-link" data-sidebar-journal-id="{$journal->getId()}" style="display:flex; align-items:center; gap:8px; padding:6px; border-radius:4px; text-decoration:none; color:#334155; font-size:11.5px; font-weight:600; transition:all 0.15s ease;">
               <span style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; background:transparent;">
                 {if $thumb}
-                  <img src="{$journalFilesPath}{$journal->getId()}/{$thumb.uploadName|escape:"url"}" alt="{$journalName|escape}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                  <img src="{$journalFilesPath}{$journal->getId()}/{$thumb.uploadName|escape:"url"}" alt="" aria-hidden="true" style="max-width:100%; max-height:100%; object-fit:contain;">
                 {else}
                   <i class="fas fa-book-open" style="font-size:10px; color:#94A3B8;"></i>
                 {/if}
@@ -60,18 +60,6 @@
         </div>
       </div>
 
-      <!-- Browse by Indexing -->
-      <div class="pim-sidebar-card" style="margin-top:14px;">
-        <h3>Accreditation &amp; Indexing</h3>
-        <div class="pim-sidebar-list" id="indexingFilters">
-          <button type="button" class="pim-sidebar-btn" data-indexing="sinta">SINTA Accredited <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-indexing="doaj">DOAJ Indexed <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-indexing="google scholar">Google Scholar <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-indexing="garuda">Garuda <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-indexing="crossref">Crossref Member <span class="count">0</span></button>
-        </div>
-      </div>
-
       <!-- Reset and Active Filters -->
       <div class="pim-sidebar-card" style="margin-top:14px;">
         <h3>Active Filters</h3>
@@ -83,17 +71,17 @@
     </aside>
 
     <!-- Center Column: Main Portal Area -->
-    <main class="pim-portal-mid-col" style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+    <div class="pim-portal-mid-col" style="display:flex; flex-direction:column; gap:16px; min-width:0;">
       
       <!-- Main Toolbar (Results count and sort) -->
       <div class="pim-main-toolbar" id="directoryResultsHeader">
         <div class="pim-main-toolbar-left">
-          <h2 class="pim-toolbar-title">Journal Directory</h2>
+          <h1 class="pim-toolbar-title">Journal Directory</h1>
           <span class="pim-toolbar-summary" id="resultSummary">{if !empty($journals)}{$journals|@count}{else}0{/if} journals found</span>
         </div>
         <div class="pim-main-toolbar-right">
           <!-- Mobile Toggle Buttons -->
-          <button type="button" class="pim-mobile-filter-toggle" id="jlMobileToolsToggle">
+          <button type="button" class="pim-mobile-filter-toggle" id="jlMobileToolsToggle" aria-controls="sidebarDrawer" aria-expanded="false">
             <i class="fas fa-sliders-h"></i> Filters
           </button>
           <span class="pim-sort-label">Sort:</span>
@@ -120,6 +108,12 @@
               {capture assign="journalSearchData"}{$journalDescription} {$journalAbout} {$journalHome}{/capture}
               {assign var="onlineIssn" value=$journal->getData('onlineIssn')}
               {assign var="printIssn" value=$journal->getData('printIssn')}
+              {if $onlineIssn == '0000-0000' || $onlineIssn == 'xxxx-xxxx' || $onlineIssn == 'XXXX-XXXX'}
+                {assign var="onlineIssn" value=""}
+              {/if}
+              {if $printIssn == '0000-0000' || $printIssn == 'xxxx-xxxx' || $printIssn == 'XXXX-XXXX'}
+                {assign var="printIssn" value=""}
+              {/if}
               
               <!-- Individual Journal Card -->
               <div class="pim-journal-card jl-item" data-journal-id="{$journal->getId()|escape}" data-name="{$journalName|escape}" data-desc="{$journalSearchData|escape}" data-short-desc="{$journalDescription|escape}">
@@ -128,7 +122,7 @@
                   <!-- Thumbnail/Logo -->
                   <div class="pim-card-thumb">
                     {if $thumb}
-                      <img src="{$journalFilesPath}{$journal->getId()}/{$thumb.uploadName|escape:"url"}" alt="{$journalName|escape}" loading="lazy" decoding="async">
+                      <img src="{$journalFilesPath}{$journal->getId()}/{$thumb.uploadName|escape:"url"}" alt="" aria-hidden="true" loading="lazy" decoding="async">
                     {else}
                       <div class="pim-card-thumb-placeholder"><i class="fas fa-book-open"></i></div>
                     {/if}
@@ -184,7 +178,7 @@
         </div>
       </section>
 
-    </main>
+    </div>
 
     <!-- Right Column: Latest Issues & News -->
     <aside class="pim-portal-right-col" aria-label="Latest issues and announcements" style="display:flex; flex-direction:column; gap:16px; width:320px; flex-shrink:0;">
@@ -296,34 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }).filter((record) => record.url);
 
-  function renderFallbackRecords() {
-    const fallback = baseRecords.slice(0, 4);
-    if (!fallback.length) return;
-    featured.innerHTML = fallback.slice(0, 3).map((record) => `
-      <a class="jl-dynamic-article is-fallback" href="${record.url}">
-        ${record.cover ? `<img src="${record.cover}" alt="${record.title} cover" loading="lazy" decoding="async">` : ''}
-        <span>
-          <strong>${record.title}</strong>
-          <em>Open journal overview and publications</em>
-        </span>
-      </a>
-    `).join('');
-    issues.innerHTML = fallback.map((record) => `
-      <a class="jl-dynamic-issue is-fallback" href="${record.url}/issue/archive">
-        ${record.cover ? `<img src="${record.cover}" alt="${record.title} cover" loading="lazy" decoding="async">` : ''}
-        <span>${record.title}</span>
-      </a>
-    `).join('');
-    if (sidebarIssues) {
-      sidebarIssues.innerHTML = fallback.map((record) => `
-        <a class="jl-tool-btn jl-tool-btn-compact" href="${record.url}/issue/archive">
-          <span>${record.title}</span>
-          <i class="fas fa-arrow-right"></i>
-        </a>
-      `).join('');
-    }
-  }
-
   function cleanText(text) {
     return (text || '').replace(/\s+/g, ' ').trim();
   }
@@ -414,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderPublished(records) {
     const usable = records.filter(Boolean);
     if (!usable.length) {
-      renderFallbackRecords();
+      renderEmpty();
       return;
     }
 
@@ -449,8 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  renderFallbackRecords();
-
   Promise.allSettled(baseRecords.map(loadIssue)).then((results) => {
     renderPublished(results.map((result) => result.status === 'fulfilled' ? result.value : null));
   }).catch(function() {
@@ -480,6 +444,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const drawerLetterTools = document.getElementById('drawerLetterTools');
   const mobileToolsToggle = document.getElementById('jlMobileToolsToggle');
   const mobileToolClosers = Array.from(document.querySelectorAll('[data-jl-tools-close]'));
+  const sidebarDrawer = document.getElementById('sidebarDrawer');
+  let directoryToolsReturnFocus = null;
 
   if (!directory || !list) return;
 
@@ -717,11 +683,27 @@ document.addEventListener('DOMContentLoaded', function() {
   function openDirectoryTools() {
     directory.classList.add('is-tools-open');
     document.body.style.overflow = 'hidden';
+    directoryToolsReturnFocus = document.activeElement;
+    if (mobileToolsToggle) mobileToolsToggle.setAttribute('aria-expanded', 'true');
+    if (sidebarDrawer) {
+      sidebarDrawer.setAttribute('aria-hidden', 'false');
+      sidebarDrawer.removeAttribute('inert');
+      const firstControl = sidebarDrawer.querySelector('button, input, a[href], select, textarea');
+      if (firstControl) window.requestAnimationFrame(() => firstControl.focus());
+    }
   }
 
-  function closeDirectoryTools() {
+  function closeDirectoryTools(options) {
     directory.classList.remove('is-tools-open');
     document.body.style.overflow = '';
+    if (mobileToolsToggle) mobileToolsToggle.setAttribute('aria-expanded', 'false');
+    if (sidebarDrawer && window.innerWidth < 992) {
+      sidebarDrawer.setAttribute('aria-hidden', 'true');
+      sidebarDrawer.setAttribute('inert', '');
+    }
+    if (!options || options.restoreFocus !== false) {
+      if (directoryToolsReturnFocus && directoryToolsReturnFocus.focus) directoryToolsReturnFocus.focus();
+    }
   }
 
   function showResultsAfterApply() {
@@ -817,12 +799,42 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Handle drawer background click
-  const drawerBg = document.querySelector('.jl-sidebar-drawer-bg');
+  const drawerBg = document.querySelector('.pim-sidebar-drawer-bg');
   if (drawerBg) {
     drawerBg.addEventListener('click', function() {
       closeDirectoryTools();
     });
   }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && directory.classList.contains('is-tools-open')) {
+      closeDirectoryTools();
+    }
+    if (e.key !== 'Tab' || !directory.classList.contains('is-tools-open') || !sidebarDrawer) return;
+    const focusable = Array.from(sidebarDrawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.addEventListener('resize', function() {
+    if (!sidebarDrawer) return;
+    if (window.innerWidth >= 992) {
+      sidebarDrawer.removeAttribute('inert');
+      sidebarDrawer.setAttribute('aria-hidden', 'false');
+      closeDirectoryTools({ restoreFocus: false });
+    } else if (!directory.classList.contains('is-tools-open')) {
+      sidebarDrawer.setAttribute('inert', '');
+      sidebarDrawer.setAttribute('aria-hidden', 'true');
+    }
+  });
 
   // Handle quick links (all, search, letters)
   document.querySelectorAll('[data-jl-action]').forEach((el) => {
@@ -878,6 +890,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  if (sidebarDrawer && window.innerWidth < 992) {
+    sidebarDrawer.setAttribute('inert', '');
+    sidebarDrawer.setAttribute('aria-hidden', 'true');
+  }
   render();
 })();
 </script>

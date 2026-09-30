@@ -2447,3 +2447,6 @@ msgstr "Dimuat"
 
 msgid "common.changeLanguage"
 msgstr "Ubah Bahasa"
+
+msgid "common.help"
+msgstr "Bantuan"
