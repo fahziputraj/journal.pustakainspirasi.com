@@ -196,3 +196,22 @@ passed. An additional independent reviewer started checking the changes but coul
 not complete its review due to the agent usage limit; that review is not claimed
 as passed. Source review and focused runtime proof were performed by the primary
 agent. Full authenticated editorial workflows and physical devices remain untested.
+
+Follow-up production readback:
+- Runtime commit: 12e9ad2674ab6d78e263bee7b0b016732435da4d.
+- Installed only the three changed runtime files: pim-ui.js, header.tpl, footer.tpl.
+  The five-file .cpanel.yml remains the complete bounded theme release manifest.
+- Archive PIM-review-fix-20261013.zip SHA256:
+  3767858eafa2c03ad4161f51cfad644fc25dc6b715c954dab75b95db0bdf8f9d.
+- Header copied to /home/pusf3964/pim-sidebar-backup-20261013/header.tpl before
+  replacement; the previous release archive preserves the other active files.
+- cPanel extraction listed exactly those three paths and the runtime commit.
+- All five home pages returned200;139unique internal links returned200 with no
+  failures. MMJ/MPJ omit disabled Announcements; enabled journals retain it.
+- Hosted pim-ui.js matches the source after line-ending normalization. Live
+  desktop-to900px focus transfers to pimMobileToolsToggle; Tab wraps within Links
+  and Escape closes the drawer. Temporary viewport override was reset.
+- MPJ sidebar Author Guidelines was clicked live and opened /mpj/about/submissions.
+- Evidence: review-fix/live-final-audit.json, live-mpj-after.jpg, original HTML
+  backups, and per-journal layout-results.json. Existing cPanel Git pull limitation
+  remains; no repository access/security settings were changed.
