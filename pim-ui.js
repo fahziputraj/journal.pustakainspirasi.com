@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var mobileToolsBackdrop = document.querySelector('.pim-mobile-tools-backdrop');
   var mobileMenuPanel = document.getElementById('pimJournalMenuPanel');
   var mobileLinksPanel = document.getElementById('pimJournalLinksPanel');
-  var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 768px)') : null;
+  var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
   var mobileToolsReturnFocus = null;
 
   if (!mobileLinksPanel) {
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function isMobileToolsViewport() {
-    return mobileToolsQuery ? mobileToolsQuery.matches : window.innerWidth <= 768;
+    return mobileToolsQuery ? mobileToolsQuery.matches : window.innerWidth <= 992;
   }
 
   function setMobileToolsTab(tab) {
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return document.body.classList.contains('pim-tools-tab-links') ? mobileLinksPanel : mobileMenuPanel;
   }
 
-  function openMobileTools(tab) {
+  function openMobileTools(tab, options) {
     if (!mobileToolsToggle || !isMobileToolsViewport()) return;
     setMobileToolsTab(tab || (document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu'));
     mobileToolsReturnFocus = document.activeElement;
@@ -181,7 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
     var panel = getSelectedMobilePanel();
     var firstControl = panel ? panel.querySelector('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
-    if (firstControl) window.requestAnimationFrame(function() { firstControl.focus(); });
+    if (firstControl && (!options || options.focusPanel !== false)) {
+      window.requestAnimationFrame(function() { firstControl.focus(); });
+    }
   }
 
   function closeMobileTools(options) {
@@ -226,6 +228,22 @@ document.addEventListener('DOMContentLoaded', function() {
         openMobileTools(tab);
       }
     });
+    button.addEventListener('keydown', function(e) {
+      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+      var tabs = Array.prototype.slice.call(mobileToolsTabs).filter(function(tab) { return !tab.hidden; });
+      var index = tabs.indexOf(button);
+      if (e.key === 'Home') index = 0;
+      else if (e.key === 'End') index = tabs.length - 1;
+      else index = (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      e.preventDefault();
+      var nextTab = tabs[index];
+      if (document.body.classList.contains('pim-tools-open')) {
+        setMobileToolsTab(nextTab.getAttribute('data-pim-tools-tab'));
+      } else {
+        openMobileTools(nextTab.getAttribute('data-pim-tools-tab'), { focusPanel: false });
+      }
+      nextTab.focus();
+    });
   });
 
   mobileToolsClosers.forEach(function(closer) {
@@ -242,16 +260,16 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!container) return;
       focusable = focusable.concat(Array.prototype.slice.call(container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')));
     });
+    focusable = focusable.filter(function(control) {
+      return control.getClientRects().length && control.getAttribute('tabindex') !== '-1' && !control.closest('[inert]');
+    });
     if (!focusable.length) return;
-    var first = focusable[0];
-    var last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
+    // Panel links follow the toolbar in the DOM. Explicitly cycle the logical
+    // drawer order so Tab cannot escape from the last link into page content.
+    var currentIndex = focusable.indexOf(document.activeElement);
+    var nextIndex = currentIndex === -1 ? 0 : (currentIndex + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+    e.preventDefault();
+    focusable[nextIndex].focus();
   });
 
   window.addEventListener('resize', function() {
