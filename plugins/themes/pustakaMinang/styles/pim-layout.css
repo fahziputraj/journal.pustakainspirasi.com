@@ -1259,38 +1259,42 @@ html, body {
 /* ==========================================================================
    6. Journal Homepage (IndexJournal) & Sidebars
    ========================================================================== */
-/* Main page container for public journal homepage */
+/* Navigation, readable journal content, and configured information blocks. */
 .pim-layout-journal-public {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) var(--pim-sidebar-width) !important;
-  grid-template-areas:
-    "main tools"
-    "main sidebar" !important;
-  column-gap: var(--pim-layout-gap) !important;
+  max-width: 1440px !important;
+  grid-template-columns: 224px minmax(0, 1fr) 248px !important;
+  grid-template-areas: "tools main sidebar" !important;
+  column-gap: 24px !important;
   row-gap: var(--pim-gutter) !important;
   align-items: start !important;
 }
 
 .pim-layout-journal-public > .pkp_structure_main {
   grid-area: main !important;
+  min-width: 0 !important;
 }
 
-/* Shared journal rail: navigation tools followed by native OJS blocks. */
+/* Keep every navigation action reachable on shorter desktop screens. */
 .pim-journal-tools {
   grid-area: tools !important;
   width: 100% !important;
   min-width: 0 !important;
   flex-shrink: 0 !important;
   position: sticky !important;
-  top: 90px !important;
+  top: 128px !important;
+  max-height: calc(100dvh - 144px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   box-sizing: border-box !important;
 }
 .pim-journal-tools-panel {
   background: var(--pim-bg-main) !important;
   border: 1px solid var(--pim-border) !important;
-  border-radius: 6px !important;
-  padding: 20px !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
+  border-radius: 12px !important;
+  padding: 18px !important;
+  box-shadow: 0 8px 28px rgba(30, 32, 34, 0.035) !important;
 }
 .pim-journal-tools-head {
   border-bottom: 2px solid var(--pim-bg-neutral) !important;
@@ -1304,7 +1308,7 @@ html, body {
   font-size: 11px !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
-  color: var(--pim-gold) !important;
+  color: var(--pim-crimson) !important;
   letter-spacing: 0.5px !important;
 }
 .pim-journal-tools-head strong {
@@ -1335,13 +1339,19 @@ html, body {
   font-size: 13px !important;
   font-weight: 600 !important;
   text-decoration: none !important;
-  transition: all 0.2s ease !important;
+  transition: color 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
   margin-bottom: 2px !important;
 }
 .pim-journal-tools-group a:hover,
 .pim-journal-tools-group a.is-active {
   background: var(--pim-bg-neutral) !important;
   color: var(--pim-crimson) !important;
+}
+.pim-journal-tools a:focus-visible,
+.pim-journal-sidebar a:focus-visible,
+.pim-mobile-tools-bar button:focus-visible {
+  outline: 2px solid var(--pim-crimson) !important;
+  outline-offset: 3px !important;
 }
 .pim-journal-tools-group a i {
   font-size: 13px !important;
@@ -1371,7 +1381,7 @@ html, body {
   letter-spacing: 0.5px !important;
   text-decoration: none !important;
   gap: 8px !important;
-  transition: all 0.2s ease !important;
+  transition: background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
   box-shadow: 0 4px 12px rgba(169, 29, 34, 0.15) !important;
 }
 .pim-journal-submit:hover {
@@ -1389,12 +1399,14 @@ html, body {
   flex-direction: column !important;
   gap: 24px !important;
   float: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
 }
 .pim-journal-sidebar .pkp_block {
   background: var(--pim-bg-main) !important;
   border: 1px solid var(--pim-border) !important;
-  border-radius: 6px !important;
+  border-radius: 12px !important;
   padding: 20px !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
   margin-bottom: 0 !important;
@@ -1447,7 +1459,7 @@ html, body {
   font-size: 13px !important;
   font-weight: 600 !important;
   text-decoration: none !important;
-  transition: all 0.2s ease !important;
+  transition: color 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
   box-sizing: border-box !important;
 }
 .pim-journal-sidebar .pkp_block ul li a:hover {
@@ -1855,7 +1867,7 @@ html, body {
   font-size: 14px !important;
   line-height: 1.7 !important;
   color: var(--pim-text) !important;
-  text-align: justify !important;
+  text-align: left !important;
 }
 
 /* OJS Core Tables Overrides */
@@ -2159,6 +2171,22 @@ form.pkp_form button[type="submit"]:hover {
   }
 }
 
+/* Compact laptops retain left navigation without squeezing journal prose. */
+@media (min-width: 993px) and (max-width: 1199px) {
+  .pim-layout-journal-public {
+    grid-template-columns: 216px minmax(0, 1fr) !important;
+    grid-template-rows: max-content 1fr !important;
+    grid-template-areas:
+      "tools main"
+      "sidebar main" !important;
+  }
+  .pim-journal-tools {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
 @media (max-width: 992px) {
   /* Collapse grids and flex containers to single columns */
   .pim-portal-layout {
@@ -2247,7 +2275,7 @@ form.pkp_form button[type="submit"]:hover {
     z-index: 1040 !important;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.25s ease !important;
+    transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.25s !important;
   }
   .pim-mobile-tools-backdrop.is-active {
     opacity: 1 !important;
@@ -2262,12 +2290,14 @@ form.pkp_form button[type="submit"]:hover {
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: 54px !important;
+    height: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
     background: var(--pim-bg-main) !important;
     border-top: 1px solid var(--pim-border) !important;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.08) !important;
     z-index: 1045 !important;
     padding: 0 16px !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    box-sizing: border-box !important;
   }
   
   .pim-mobile-tools-toggle {
@@ -2302,7 +2332,7 @@ form.pkp_form button[type="submit"]:hover {
     padding: 6px 12px !important;
     border-radius: 4px !important;
     cursor: pointer !important;
-    transition: all 0.15s ease !important;
+    transition: color 0.15s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
   
   .pim-mobile-tools-tabs button.is-active {
@@ -2311,16 +2341,16 @@ form.pkp_form button[type="submit"]:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
   }
 
-  /* Journal tools become an interactive drawer only at phone widths. */
+  /* The drawer rules below apply to both tablet and phone widths. */
   .pim-mobile-tools-backdrop,
   .pim-mobile-tools-bar {
     display: none !important;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   body.pim_public_journal {
-    padding-bottom: 62px !important;
+    padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   body.pim_public_journal .pim-mobile-tools-bar {
@@ -2345,13 +2375,14 @@ form.pkp_form button[type="submit"]:hover {
   body.pim_public_journal.pim-tools-open.pim-tools-tab-links .pim-journal-sidebar {
     display: block !important;
     position: fixed !important;
-    inset: auto 12px 64px 12px !important;
+    inset: auto 12px calc(64px + env(safe-area-inset-bottom, 0px)) 12px !important;
     z-index: 1046 !important;
     width: auto !important;
-    max-height: calc(100dvh - 88px) !important;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px)) !important;
     margin: 0 !important;
     padding: 16px !important;
     overflow-y: auto !important;
+    overscroll-behavior: contain;
     border: 1px solid var(--pim-border) !important;
     border-radius: 10px !important;
     background: var(--pim-bg-main) !important;
@@ -2371,7 +2402,18 @@ form.pkp_form button[type="submit"]:hover {
   .pim-card-actions a {
     min-height: 44px !important;
   }
+}
 
+@media (prefers-reduced-motion: reduce) {
+  .pim-journal-tools a,
+  .pim-journal-sidebar a,
+  .pim-mobile-tools-tabs button,
+  .pim-mobile-tools-backdrop {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 768px) {
   .pim-header {
     padding: 10px 0 !important;
   }

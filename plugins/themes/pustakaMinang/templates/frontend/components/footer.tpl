@@ -15,13 +15,12 @@
 {/strip}
 	</div><!-- pkp_structure_main -->
 
-	{* Sidebars - always keep the right rail on public journal pages. *}
+	{* Render configured OJS blocks intact in the journal information rail. *}
 	{if $currentContext && $pimFooterPublicJournalLayout}
 		{capture assign="sidebarCode"}{call_hook name="Templates::Common::Sidebar"}{/capture}
-		{capture assign="pimFilteredSidebarCode"}{$sidebarCode|pim_remove_duplicate_editorial_team}{/capture}
-		{if $pimFilteredSidebarCode|trim}
+		{if $sidebarCode|trim}
 			<div class="pkp_structure_sidebar left pim-journal-sidebar" id="pimJournalLinksPanel" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
-				{$pimFilteredSidebarCode}
+				{$sidebarCode}
 			</div><!-- pim-journal-sidebar -->
 		{/if}
 	{/if}
@@ -91,7 +90,7 @@
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js?v=20260814-2"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20261013-1"></script>
 
 {load_script context="frontend"}
 
