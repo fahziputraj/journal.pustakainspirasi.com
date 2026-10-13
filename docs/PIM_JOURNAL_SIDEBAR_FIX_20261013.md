@@ -1,6 +1,9 @@
 # PIM public journal navigation and sidebar repair
 
-Status: locally verified, reviewed, prepared for deployment; not deployed.
+Status: deployed to production through cPanel File Manager with recoverable
+backups; source committed and pushed to the repair branch. Live validation is
+recorded below. cPanel Git pull remains unavailable because it cannot contact
+the private remote.
 
 Repository: `journal.pustakainspirasi.com` in the existing owner checkout.
 Branch: `codex/fix-journal-navigation-sidebar`.
@@ -35,12 +38,13 @@ endings. No deployment drift caused these particular defects.
   Links is hidden and Menu remains usable.
 - Configured sidebar HTML passes through the real Smarty footer without link
   deletion. Editorial Team and Editorial History are no longer removed. Only
-  links labelled Editorial Team targeting the current journal's obsolete
-  `/editorialTeam` or `/about/editorialTeam` routes are corrected to the active
-  `/about/editorialMasthead` route. External, other-journal, and custom routes are
-  preserved. This fixes the 404 found on the restored MBJ link after deployment.
-  The native
-  menu also retains its current-journal Editorial Masthead link.
+  links labelled Editorial Team targeting obsolete local `/editorialTeam`,
+  `/about/editorialTeam`, or `/editorialMasthead` routes are corrected to the
+  current journal's active `/about/editorialMasthead` route. This includes stale
+  copied references to another journal. Valid cross-journal, external, history,
+  and custom routes remain intact. This fixes the 404 addresses found in MBJ,
+  MCJ, and MMJ after restoration. The native menu also retains its current-journal
+  Editorial Masthead link.
 - Navigation has explicit keyboard focus styles; drawer scroll stays contained;
   bottom controls respect device safe areas; changed navigation motion honors
   reduced-motion preferences. Article abstract paragraphs are left-aligned for easier
@@ -98,15 +102,16 @@ It contains public HTML snapshots, screenshots, per-journal JSON results, and
 public link HTTP results. The archived public HTML already has the old sidebar
 filter applied, so browser screenshots do not themselves prove restoration of
 the stored Custom Block Editorial Team link. That behavior is verified by the
-actual Smarty regression test and requires a post-deployment live readback.
+actual Smarty regression test and post-deployment live readback. The
+`live-desktop.jpg` and `live-mobile-*.jpg` files show the actual hosted result.
 
 No local OJS configuration or database was available. Authenticated editorial
-workflows, submission/publishing flows, backend settings, production deployment,
+workflows, submission/publishing flows, backend settings,
 physical mobile devices, and a complete site-wide accessibility audit are not
 claimed as passing. Existing placeholder ISSN and editorial content completeness
 remain journal-data matters, outside this theme fix.
 
-## Deployment after explicit owner approval
+## Deployment and recovery procedure
 
 1. Use the supplied cPanel account and confirm that the journal document root is
    `/home/pusf3964/public_html/journal.pustakainspirasi.com/`.
@@ -116,7 +121,7 @@ remain journal-data matters, outside this theme fix.
    repository-relative paths. Verify PHP syntax if the host exposes a suitable
    shell, and verify asset versions and delivered content after replacement.
 4. Verify Journal Menu on the left, sidebar at the expected top position,
-   configured Editorial Team under People and its original target, Editorial
+   configured Editorial Team under People and its repaired target, Editorial
    Masthead content, and tablet/phone Menu and Links interactions in the live site.
 5. If a required live check fails, restore the four backed-up files and read back
    the restored site. Cache maintenance, if required, must be scoped to the
@@ -124,5 +129,34 @@ remain journal-data matters, outside this theme fix.
 
 This payload contains no configuration, credentials, database export, migration,
 uploaded journal content, vendor files, or backend modifications. No database,
-users, roles, submissions, issues, or journal settings were changed. No staging,
-commit, push, PR, merge, or deployment was performed during local preparation.
+users, roles, submissions, issues, or journal settings were changed. The owner
+subsequently authorized continuation and Git use. Source commits were pushed to
+`codex/fix-journal-navigation-sidebar`; no PR or merge was performed.
+
+## Production deployment record
+
+- Document root verified in File Manager:
+  `/home/pusf3964/public_html/journal.pustakainspirasi.com/`.
+- Four original files copied outside the public root to
+  `/home/pusf3964/pim-sidebar-backup-20261013/`. File Manager showed all four
+  files, and `original-files.zip` compression listed exactly those files.
+- Runtime release archives contain exactly the four reviewed files and match
+  local source hashes. The archives remain in the private backup directory.
+- cPanel Git repository `/home/pusf3964/repositories/pim-jurnal` remained on
+  `fix/editorial-team-sidebar-operational-v1` at `c6ebeece`. The interface could
+  not contact the HTTPS private GitHub remote and disabled Update from Remote.
+  Existing repository/remote/access settings were preserved. Deploy HEAD was
+  not run against the outdated checkout.
+- Production installation used cPanel File Manager extraction into the verified
+  document root. The extraction result listed only the four payload files.
+- Live readback confirmed `20261013-1` asset versions, source-identical CSS and
+  JavaScript after line-ending normalization, the left menu and top-aligned
+  right sidebar, and restored Editorial Team. MBJ's restored link opened the
+  configured Journal Manager and Editor in chief content with HTTP 200.
+- Live Chrome at 1440px and 390px confirmed layout, drawer switching,
+  Tab containment, Escape, arrow-key focus, and no theme console errors. Temporary
+  viewport overrides are reset after verification.
+- The repair branch is the source of the production files; cPanel's Last
+  Deployed SHA remains historical because File Manager does not update it.
+- No GitHub credential, deploy key, repository visibility, shell access, or
+  security setting was created or changed to work around the remote failure.

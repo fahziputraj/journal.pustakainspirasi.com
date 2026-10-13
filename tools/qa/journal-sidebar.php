@@ -36,6 +36,8 @@ namespace {
         . '<li><a href="/mbj/about/editorialHistory">Editorial History</a></li>'
         . '<li><a href="https://external.example/editorialTeam">Editorial Team</a></li>'
         . '<li><a href="/mcj/editorialTeam">Editorial Team</a></li>'
+        . '<li><a href="/mcj/editorialMasthead">Editorial Team</a></li>'
+        . '<li><a href="/mcj/about/editorialMasthead">Editorial Team</a></li>'
         . '<li><a href="/mbj/people">Editorial Team</a></li>'
         . '<li><a data-href="/mbj/editorialTeam" href="/mbj/people">Editorial Team</a></li>'
         . '<li><a data-href="/mbj/people" href="/mbj/editorialTeam">Editorial Team</a></li>'
@@ -44,10 +46,14 @@ namespace {
         '<a href="/mbj/editorialTeam"><span>',
         ' href="https://journal.example.test/mbj/about/editorialTeam"',
         ' data-href="/mbj/people" href="/mbj/editorialTeam"',
+        'href="/mcj/editorialTeam"',
+        'href="/mcj/editorialMasthead"',
     ], [
         '<a href="' . $mastheadUrl . '"><span>',
         ' href="' . $mastheadUrl . '"',
         ' data-href="/mbj/people" href="' . $mastheadUrl . '"',
+        'href="' . $mastheadUrl . '"',
+        'href="' . $mastheadUrl . '"',
     ], $sidebar);
     $smarty->registerPlugin('function', 'call_hook', static fn($params) => $params['name'] === 'Templates::Common::Sidebar' ? $sidebar : '');
     $smarty->assign([
@@ -60,12 +66,12 @@ namespace {
     ]);
     $html = $smarty->fetch($root . '/plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl');
     if (!str_contains($html, $expectedSidebar)) {
-        fwrite(STDERR, "FAIL: Preserve configured sidebar markup and valid targets; repair only the current journal's obsolete Editorial Team routes.\n");
+        fwrite(STDERR, "FAIL: Preserve configured sidebar markup and valid targets; repair obsolete local Editorial Team routes to the current journal.\n");
         exit(1);
     }
     if (substr_count($html, 'id="pimJournalLinksPanel"') !== 1) {
         fwrite(STDERR, "FAIL: Sidebar navigation must render once.\n");
         exit(1);
     }
-    echo "PASS: Actual Smarty footer preserves configured sidebar markup, repairs obsolete journal routes, keeps external/other-journal/custom targets, and renders one links panel.\n";
+    echo "PASS: Actual Smarty footer repairs obsolete local editorial routes, preserves valid external/other-journal/custom targets and attribute text, and renders one links panel.\n";
 }

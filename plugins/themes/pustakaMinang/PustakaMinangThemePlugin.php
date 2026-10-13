@@ -47,12 +47,16 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
             return $sidebarCode;
         }
         $journalPath = substr($mastheadPath, 0, -strlen('/about/editorialMasthead'));
+        $journalBasePath = substr($journalPath, 0, strrpos($journalPath, '/'));
+        $obsoleteRoutePattern = '~^' . preg_quote($journalBasePath, '~')
+            . '/[^/]+/(?:about/)?editorialTeam$|^' . preg_quote($journalBasePath, '~')
+            . '/[^/]+/editorialMasthead$~i';
         $host = strtolower((string) parse_url($mastheadUrl, PHP_URL_HOST));
         $filtered = preg_replace_callback(
             // Consume quoted attribute values as whole tokens so data-href
             // and text such as title='Route href="..."' are never rewritten.
             '~(<a\b(?:"[^"]*"|\'[^\']*\'|[^\'">])*?\s+href\s*=\s*)([\'"])(.*?)\2((?:"[^"]*"|\'[^\']*\'|[^\'">])*?>)(.*?)(</a>)~isu',
-            static function ($matches) use ($journalPath, $host, $mastheadUrl) {
+            static function ($matches) use ($obsoleteRoutePattern, $host, $mastheadUrl) {
                 $label = html_entity_decode(strip_tags($matches[5]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 if (strcasecmp(trim((string) preg_replace('/\s+/u', ' ', $label)), 'Editorial Team') !== 0) {
                     return $matches[0];
@@ -64,8 +68,9 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
                     return $matches[0];
                 }
                 $path = rtrim($link['path'] ?? '', '/');
-                if (strcasecmp($path, $journalPath . '/editorialTeam') !== 0
-                    && strcasecmp($path, $journalPath . '/about/editorialTeam') !== 0) {
+                // Old copied blocks can point to a different journal's removed
+                // operation. Repair only known obsolete routes within this site.
+                if (!preg_match($obsoleteRoutePattern, $path)) {
                     return $matches[0];
                 }
                 return $matches[1] . $matches[2] . htmlspecialchars($mastheadUrl, ENT_QUOTES, 'UTF-8')
