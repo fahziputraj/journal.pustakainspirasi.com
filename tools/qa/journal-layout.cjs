@@ -135,6 +135,45 @@ const html = fs.readFileSync(snapshot, 'utf8')
         await page.screenshot({ path: path.join(output, `journal-${width}.png`) });
       }
     }
+    const focusRegressions = [];
+    async function focusCheck(name, action) {
+      try { await action(); console.log(`PASS ${name}`); }
+      catch (error) { focusRegressions.push(`${name}: ${error.message}`); console.log(`FAIL ${name}: ${error.message}`); }
+    }
+    await focusCheck('Tab skips disabled and hidden widget controls', async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.locator('#pimJournalLinksPanel').evaluate(e => {
+        const widget = document.createElement('div');
+        widget.innerHTML = '<a id="qa-widget-first" href="/first">First</a>'
+          + '<button disabled tabindex="0">Unavailable</button>'
+          + '<fieldset disabled><input tabindex="0" aria-label="Unavailable input"></fieldset>'
+          + '<button style="visibility:hidden" tabindex="0">Hidden</button>'
+          + '<a id="qa-widget-last" href="/last">Last</a>';
+        e.prepend(widget);
+      });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.getByRole('tab', { name: 'Links', exact: true }).click();
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+      await page.locator('#qa-widget-first').focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'qa-widget-last');
+      await page.keyboard.press('Shift+Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'qa-widget-first');
+      await page.keyboard.press('Escape');
+    });
+    await focusCheck('Focused desktop navigation transfers to tablet tools on resize', async () => {
+      await page.setViewportSize({ width: 1280, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.locator('#pimJournalMenuPanel a').first().focus();
+      await page.setViewportSize({ width: 900, height: 844 });
+      await page.waitForFunction(() => document.getElementById('pimJournalMenuPanel').hasAttribute('inert'));
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'pimMobileToolsToggle');
+    });
+    assert.equal(focusRegressions.length, 0, focusRegressions.join('; '));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     await page.addScriptTag({ content: script });

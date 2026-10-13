@@ -160,3 +160,39 @@ subsequently authorized continuation and Git use. Source commits were pushed to
   Deployed SHA remains historical because File Manager does not update it.
 - No GitHub credential, deploy key, repository visibility, shell access, or
   security setting was created or changed to work around the remote failure.
+
+## Follow-up after the second review
+
+Starting HEAD for the follow-up: 32592ddbd698b9bc68543bac7d08bef99e582a9f.
+The two keyboard regressions were reproduced before correction: disabled widget
+controls trapped Tab, and focused desktop menu links lost focus at the tablet
+breakpoint. Navigation now excludes disabled (including fieldset descendants),
+negative-tabindex, inert, and visibility-hidden controls. When a focused rail is
+hidden on resize, focus transfers to the visible Journal Tools control.
+The browser QA includes both behaviors; the new assertions failed before fixing.
+
+The Journal Menu now displays Announcements only when enableAnnouncements is
+active. The real Smarty menu test failed for disabled announcements before the
+condition and passed for enabled/disabled settings afterward. The deployment
+payload now includes header.tpl as a fifth runtime file. The JavaScript URL uses
+20261013-2; CSS remains 20261013-1 because it was not changed in this follow-up.
+
+The following stored OJS content was corrected through the authenticated editor,
+with original HTML saved outside the repository before each edit:
+- MPJ sidebarrye: Author Guidelines -> /mpj/about/submissions.
+- MMJ sidebarrye: Contact -> /mmj/about/contact.
+- MMJ and MCSJ additionalHomeContent: OAI href -> each current journal's /oai.
+- MMJ and MCSJ flagcounterrye: replace malformed BBCode href with
+  https://info.flagcounter.com/z45a, retaining the image and other block content.
+
+These are stored content changes, distinct from the five-file source payload.
+Original HTML and browser results are in the evidence directory review-fix/.
+No user, role, submission, issue, publishing workflow, or announcement feature
+setting was changed. Disabled Announcements remains disabled.
+
+All five journal replay runs passed eleven widths and the new keyboard checks.
+PHP/JavaScript syntax, real Smarty sidebar and announcement tests, and diff checks
+passed. An additional independent reviewer started checking the changes but could
+not complete its review due to the agent usage limit; that review is not claimed
+as passed. Source review and focused runtime proof were performed by the primary
+agent. Full authenticated editorial workflows and physical devices remain untested.
