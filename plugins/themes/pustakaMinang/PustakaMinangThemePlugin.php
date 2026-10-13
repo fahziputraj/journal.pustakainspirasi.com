@@ -33,7 +33,47 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $templateMgr = $args[0];
         $templateMgr->registerPlugin('modifier', 'pim_article_views', [$this, 'getArticleViews']);
         $templateMgr->registerPlugin('modifier', 'pim_article_downloads', [$this, 'getArticleDownloads']);
+        $templateMgr->registerPlugin('modifier', 'pim_normalize_editorial_team_urls', [$this, 'normalizeEditorialTeamUrls']);
         return false;
+    }
+
+    /** Keep configured links visible and repair only obsolete local OJS routes. */
+    public function normalizeEditorialTeamUrls($sidebarCode, $mastheadUrl)
+    {
+        $sidebarCode = (string) $sidebarCode;
+        $mastheadUrl = (string) $mastheadUrl;
+        $mastheadPath = parse_url($mastheadUrl, PHP_URL_PATH);
+        if (!$mastheadPath || !str_ends_with($mastheadPath, '/about/editorialMasthead')) {
+            return $sidebarCode;
+        }
+        $journalPath = substr($mastheadPath, 0, -strlen('/about/editorialMasthead'));
+        $host = strtolower((string) parse_url($mastheadUrl, PHP_URL_HOST));
+        $filtered = preg_replace_callback(
+            // Consume quoted attribute values as whole tokens so data-href
+            // and text such as title='Route href="..."' are never rewritten.
+            '~(<a\b(?:"[^"]*"|\'[^\']*\'|[^\'">])*?\s+href\s*=\s*)([\'"])(.*?)\2((?:"[^"]*"|\'[^\']*\'|[^\'">])*?>)(.*?)(</a>)~isu',
+            static function ($matches) use ($journalPath, $host, $mastheadUrl) {
+                $label = html_entity_decode(strip_tags($matches[5]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                if (strcasecmp(trim((string) preg_replace('/\s+/u', ' ', $label)), 'Editorial Team') !== 0) {
+                    return $matches[0];
+                }
+                $href = html_entity_decode($matches[3], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $link = parse_url($href);
+                if ($link === false || (isset($link['host']) && strtolower($link['host']) !== $host)
+                    || (isset($link['scheme']) && !in_array(strtolower($link['scheme']), ['http', 'https'], true))) {
+                    return $matches[0];
+                }
+                $path = rtrim($link['path'] ?? '', '/');
+                if (strcasecmp($path, $journalPath . '/editorialTeam') !== 0
+                    && strcasecmp($path, $journalPath . '/about/editorialTeam') !== 0) {
+                    return $matches[0];
+                }
+                return $matches[1] . $matches[2] . htmlspecialchars($mastheadUrl, ENT_QUOTES, 'UTF-8')
+                    . $matches[2] . $matches[4] . $matches[5] . $matches[6];
+            },
+            $sidebarCode
+        );
+        return $filtered ?? $sidebarCode;
     }
 
     /**

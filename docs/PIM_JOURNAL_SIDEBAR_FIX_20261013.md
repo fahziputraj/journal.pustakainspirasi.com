@@ -33,8 +33,13 @@ endings. No deployment drift caused these particular defects.
   ArrowLeft/ArrowRight/Home/End selection, and viewport changes work together.
   The inactive tab is excluded from the Tab cycle. When no OJS sidebar exists,
   Links is hidden and Menu remains usable.
-- Configured sidebar HTML and link targets pass through the real Smarty footer
-  intact. Editorial Team and Editorial History are no longer removed. The native
+- Configured sidebar HTML passes through the real Smarty footer without link
+  deletion. Editorial Team and Editorial History are no longer removed. Only
+  links labelled Editorial Team targeting the current journal's obsolete
+  `/editorialTeam` or `/about/editorialTeam` routes are corrected to the active
+  `/about/editorialMasthead` route. External, other-journal, and custom routes are
+  preserved. This fixes the 404 found on the restored MBJ link after deployment.
+  The native
   menu also retains its current-journal Editorial Masthead link.
 - Navigation has explicit keyboard focus styles; drawer scroll stays contained;
   bottom controls respect device safe areas; changed navigation motion honors

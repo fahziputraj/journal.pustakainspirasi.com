@@ -18,6 +18,8 @@
 	{* Render configured OJS blocks intact in the journal information rail. *}
 	{if $currentContext && $pimFooterPublicJournalLayout}
 		{capture assign="sidebarCode"}{call_hook name="Templates::Common::Sidebar"}{/capture}
+		{capture assign="pimEditorialMastheadUrl"}{url page="about" op="editorialMasthead"}{/capture}
+		{assign var="sidebarCode" value=$sidebarCode|pim_normalize_editorial_team_urls:$pimEditorialMastheadUrl}
 		{if $sidebarCode|trim}
 			<div class="pkp_structure_sidebar left pim-journal-sidebar" id="pimJournalLinksPanel" role="complementary" aria-label="{translate|escape key="common.navigation.sidebar"}">
 				{$sidebarCode}
