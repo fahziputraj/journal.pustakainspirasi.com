@@ -279,3 +279,27 @@ remain the implementation context. Independent rendered review confirmed the
 old711/743px overflow and corrected743/743px dimensions at1280x855, reachable
 last action on600px-high desktop screens, and functioning mobile drawers at
 992,900,and390px. No important findings remained in this scrollbar correction.
+
+Production installation and readback completed on2026-10-14:
+- Runtime commit05ad354a8992bb2d94f69a07e02d1afa63d8c5c0, pushed on the existing
+  codex/fix-journal-navigation-sidebar branch. Extraction results listed exactly
+  the PHP theme plugin and styles/pim-layout.css at the verified document root.
+- PIM-scrollbar-fix-20261014.zip SHA256:
+  e79cb55978e47ed29d2d567c00c5acd17aa83952caebc241a686af8cc4484ca4.
+  Previous release archives remain in the private recovery directory.
+- All5journal home pages return200 and reference CSS version20261014-2.
+  Hosted CSS and unchanged JavaScript match source after line-ending normalization.
+- Live1280x855: rail743px/client743px, static position, no max-height, visible
+  overflow and scrollTop0. No horizontal overflow; main/right-sidebar tops align.
+- Live1280x600: the final Make a Submission link is focused and inside the
+  viewport through page scrolling; the menu's scrollTop remains0.
+- Live375x812 and812x375: fixed mobile drawer keeps overflow:auto and contains
+  the last focused action. Escape closes it; neither viewport overflows sideways.
+  Reduced-motion mode gives0s menu/toggle transitions. Console error readback is
+  empty. Temporary viewport/media overrides were cleared after verification.
+- Evidence: verification-20261014/scrollbar/live-readback.json,
+  live-browser-results.json, live-desktop-scrollbar-fixed.jpg, and five journal
+  layout-results.json files. UI review covers this navigation change; it does
+  not certify every unrelated theme component or authenticated editorial flow.
+- Starting checkout was clean. Existing source/history and backup archives were
+  preserved; no worktree, clone, stash, reset, clean, PR, merge, or main change.
