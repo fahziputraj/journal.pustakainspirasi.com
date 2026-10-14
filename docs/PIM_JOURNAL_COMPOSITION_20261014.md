@@ -68,3 +68,19 @@ Evidence is under the existing ojs/composition-20261014 directory.
 
 No worktree, clone, stash, reset, clean, PR, merge or main-branch modification.
 Production readback and final Git synchronization are recorded after installation.
+
+The initial five-file runtime release is commit d4be8bb405824a911205e6f674e5f6a97a5781f0.
+PIM-composition-fix-20261014.zip SHA256:
+e2246aef9e376f138930927515922ba77a939b7c1f4284bc13434a0d60bc9280.
+cPanel extraction listed exactly those five paths and the source commit. All five
+live home pages returned 200, delivered one visible journal title and referenced
+CSS/JavaScript20261014-3. Delivered CSS and JavaScript matched local source after
+line-ending normalization. Live Chrome confirmed loaded Geist400-800,89px desktop
+header,706px menu client/scroll heights, and aligned header/content containers.
+
+A final CSS-only pass arranges indexing/tool logos into shared rows instead of
+stacking large images down the information rail. It is restricted to the three
+known indexing-in-progress, indexed-by and recommended-tools widget classes;
+captions, image alternative text and links remain. CSS version becomes20261014-4;
+JavaScript remains20261014-3. The previous five-file archive preserves the preceding
+CSS/plugin versions for recovery.

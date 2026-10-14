@@ -3509,6 +3509,50 @@ body.pim_public_journal #customblock-flagcounterrye td {
 body.pim_public_journal .pim-journal-sidebar .block_make_submission {
   padding: 0 !important;
 }
+/* Indexing and tool logos share rows instead of stretching the information rail. */
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p > strong {
+  flex-basis: 100%;
+  margin-bottom: 4px;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p > br {
+  display: none;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p > a,
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p > img {
+  flex: 1 1 80px;
+  width: 80px !important;
+  min-width: 0;
+  margin: 0 !important;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content p > a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 6px !important;
+  box-sizing: border-box;
+  font-size: 11px !important;
+  text-align: center;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content img {
+  height: 56px !important;
+  object-fit: contain;
+  padding: 6px !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+body.pim_public_journal :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content a img {
+  width: 100% !important;
+  border: none !important;
+  padding: 0 !important;
+}
 body.pim_public_journal .pim-header-actions a,
 body.pim_public_journal .pim-journal-sidebar .block_make_submission a {
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
