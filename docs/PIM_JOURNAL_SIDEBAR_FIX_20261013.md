@@ -232,3 +232,23 @@ footer.tpl only; the source test is tools/qa/journal-layout.cjs. Fresh Smarty,
 syntax, layout, keyboard, and live public link checks were run. Before deployment,
 all139internal public links returned200 and hosted CSS/JavaScript matched their
 then-current source. Evidence is under verification-20261014/.
+
+Final production verification for the 2026-10-14 refinement:
+- Runtime commit43f8a685148f5492e2bd25905e2de03ba4349f15 installed via cPanel
+  File Manager. Extraction listed exactly pim-ui.js and footer.tpl.
+- Archive PIM-focus-final-20261014.zip SHA256:
+  468bd4dd8c83603809743745971e0c345f99d4da758810e957bcf1851b32d348.
+- Prior PIM-review-fix-20261013.zip remains in the private recovery directory;
+  it preserves the previous JavaScript/footer runtime versions.
+- All55journal/width combinations and the three focus regressions passed.
+  Smarty sidebar/announcements, PHP/JavaScript syntax and diff checks passed.
+- All5home pages deliver JavaScript version20261014-1;139internal links return200.
+  Delivered JavaScript matches local source after line-ending normalization.
+- Live1280-to900 viewport checks confirm intentional outside pointer blur stays
+  on BODY while active rail focus moves to pimMobileToolsToggle. Links Tab wraps
+  to the toggle, Escape closes, and desktop layout remains left-menu/top-sidebar.
+  Temporary viewport overrides were cleared. Browser console had no errors.
+- Fresh evidence: verification-20261014/live-post-deployment.json and
+  live-desktop-final.jpg, plus five journal layout-results.json files.
+- Independent follow-up review completed and the sole P3 finding was corrected
+  and re-reviewed; no remaining important findings were reported within scope.
