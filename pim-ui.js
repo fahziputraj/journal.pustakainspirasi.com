@@ -227,6 +227,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('focusin', function(e) {
       mobileToolsLastPanelFocus = isMobileToolsPanelControl(e.target) ? e.target : null;
     });
+    document.addEventListener('pointerdown', function(e) {
+      if (!isMobileToolsPanelControl(e.target)) mobileToolsLastPanelFocus = null;
+    });
     setMobileToolsTab('menu');
     mobileToolsToggle.addEventListener('click', function() {
       if (document.body.classList.contains('pim-tools-open')) {

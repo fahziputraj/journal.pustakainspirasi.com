@@ -173,6 +173,18 @@ const html = fs.readFileSync(snapshot, 'utf8')
       await page.waitForFunction(() => document.getElementById('pimJournalMenuPanel').hasAttribute('inert'));
       assert.equal(await page.evaluate(() => document.activeElement.id), 'pimMobileToolsToggle');
     });
+    await focusCheck('Pointer blur outside the rail does not transfer stale focus on resize', async () => {
+      await page.setViewportSize({ width: 1280, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.locator('#pimJournalMenuPanel a').first().focus();
+      await page.locator('.pim-topbar').click({ position: { x: 2, y: 2 } });
+      assert(await page.evaluate(() => document.activeElement === document.body));
+      await page.setViewportSize({ width: 900, height: 844 });
+      await page.waitForFunction(() => document.getElementById('pimJournalMenuPanel').hasAttribute('inert'));
+      assert(await page.evaluate(() => document.activeElement === document.body), 'Intentional background blur must stay outside the drawer');
+    });
     assert.equal(focusRegressions.length, 0, focusRegressions.join('; '));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setContent(html, { waitUntil: 'domcontentloaded' });

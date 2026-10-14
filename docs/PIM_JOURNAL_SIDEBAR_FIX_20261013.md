@@ -215,3 +215,20 @@ Follow-up production readback:
 - Evidence: review-fix/live-final-audit.json, live-mpj-after.jpg, original HTML
   backups, and per-journal layout-results.json. Existing cPanel Git pull limitation
   remains; no repository access/security settings were changed.
+
+## Independent review completed on 2026-10-14
+
+Starting HEAD: 3fd1433621dc6f3317f0abb063539e9d83dd1af3; existing checkout and
+repair branch preserved. The previously interrupted independent review completed
+without blocking findings. It identified one P3 focus continuity refinement:
+a pointer click outside a rail could leave remembered rail focus stale before a
+resize. A new browser assertion reproduced the failure. An outside pointerdown
+now clears only that memory; direct focused left/right rails still transfer to
+the tools toggle and focus elsewhere remains intact. The independent reviewer
+retested the correction and reported no remaining important findings in scope.
+
+The JavaScript cache version is 20261014-1. This refinement changes pim-ui.js and
+footer.tpl only; the source test is tools/qa/journal-layout.cjs. Fresh Smarty,
+syntax, layout, keyboard, and live public link checks were run. Before deployment,
+all139internal public links returned200 and hosted CSS/JavaScript matched their
+then-current source. Evidence is under verification-20261014/.
