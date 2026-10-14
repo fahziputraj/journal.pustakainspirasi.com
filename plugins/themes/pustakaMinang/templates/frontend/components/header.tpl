@@ -112,7 +112,9 @@
           <a href="{$baseUrl}/index.php/index"><i class="fas fa-layer-group"></i> All Journals</a>
           <a href="{url page="index"}" class="{if $requestedPage == 'index'}is-active{/if}"><i class="fas fa-house"></i> Home / Overview</a>
           <a href="{url page="search"}" class="{if $requestedPage == 'search'}is-active{/if}"><i class="fas fa-magnifying-glass"></i> Search</a>
-          <a href="{url page="announcement"}" class="{if $requestedPage == 'announcement'}is-active{/if}"><i class="fas fa-bullhorn"></i> Announcements</a>
+          {if $currentContext->getData('enableAnnouncements')}
+            <a href="{url page="announcement"}" class="{if $requestedPage == 'announcement'}is-active{/if}"><i class="fas fa-bullhorn"></i> Announcements</a>
+          {/if}
         </div>
 
         <div class="pim-journal-tools-group">

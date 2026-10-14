@@ -7,6 +7,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const root = path.resolve(__dirname, '../..');
@@ -25,7 +26,10 @@ const iconsCss = fs.existsSync(iconsPath) ? fs.readFileSync(iconsPath, 'utf8').r
   const fontPath = path.join(fixtureDir, name);
   return fs.existsSync(fontPath) ? `url(data:font/woff2;base64,${fs.readFileSync(fontPath).toString('base64')})` : match;
 }) : '';
+const renderedIntro = execFileSync(process.env.PHP_BINARY || 'php', [path.join(root, 'tools/qa/journal-homepage.php'), '--render', path.resolve(snapshot)], { encoding: 'utf8' });
 const html = fs.readFileSync(snapshot, 'utf8')
+  .replace(/<h1 class="pkp_screen_reader">[\s\S]*?<\/h1>/, '')
+  .replace(/<div class="additional_content homepage_about"[\s\S]*?(?=<div class="pim-additional-home-content-wrapper")/, renderedIntro)
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
   .replace(/<link\b[^>]*>/gi, '')
   .replace(/https:\/\/journal\.pustakainspirasi\.com\/public\/journals\/1\/(logo|cover)\.png/g, (url, name) => {
@@ -43,7 +47,7 @@ const html = fs.readFileSync(snapshot, 'utf8')
     await page.route('**/*', route => route.abort());
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const width of [1440, 1280, 1200, 1024, 993, 992, 900, 768, 430, 390, 360]) {
+    for (const width of [1440, 1280, 1200, 1024, 993, 992, 900, 768, 600, 430, 390, 375, 360, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.setContent(html, { waitUntil: 'domcontentloaded' });
       await page.addScriptTag({ content: script });
@@ -129,12 +133,120 @@ const html = fs.readFileSync(snapshot, 'utf8')
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
         assert(overflow <= 1, `Overflow: ${overflow}px`);
       });
+      if (width <= 992) await page.locator('.pim-mobile-tools-backdrop').waitFor({ state: 'hidden' });
+      await check('Journal title and introduction fit the reading column', async () => {
+        assert(await page.locator('.pim-journal-title').isVisible());
+        const boxes = await page.evaluate(() => {
+          const main = document.getElementById('pim-main-content').getBoundingClientRect();
+          const title = document.querySelector('.pim-journal-title').getBoundingClientRect();
+          const cover = document.querySelector('.homepage_image');
+          const text = document.querySelector('.pim-journal-hero-text').getBoundingClientRect();
+          return { main: main.toJSON(), title: title.toJSON(), text: text.toJSON(), cover: cover ? cover.getBoundingClientRect().toJSON() : null };
+        });
+        assert(boxes.title.left >= boxes.main.left - 1 && boxes.title.right <= boxes.main.right + 1);
+        if (boxes.cover) assert(boxes.cover.right <= boxes.main.right + 1);
+        if (width < 360 && boxes.cover) assert(boxes.cover.top >= boxes.text.bottom - 1, 'Very small screens retain a full-width introduction above the cover');
+        if (width < 360) assert(await page.locator('.pim-header').evaluate(e => e.getBoundingClientRect().height <= 100), 'Small-screen header stays compact without crowding the title');
+      });
+      await check('Legacy information block starts without an empty editor spacer', async () => {
+        const gap = await page.locator('#customblock-sidebarrye').evaluate(e => {
+          const table = e.querySelector('table');
+          return table ? table.getBoundingClientRect().top - e.getBoundingClientRect().top : 0;
+        });
+        if (width > 992) assert(gap <= 25, `Unexpected leading whitespace: ${gap}px`);
+      });
       results.push(result);
       console.log(`${result.failures.length ? 'FAIL' : 'PASS'} ${width}px: ${result.checks.length} checks; ${result.failures.join('; ')}`);
       if ([1440, 1024, 390].includes(width)) {
         await page.screenshot({ path: path.join(output, `journal-${width}.png`) });
       }
     }
+    const desktopMenuChecks = [];
+    for (const height of [855, 600]) {
+      await page.setViewportSize({ width: 1280, height });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      const menu = page.locator('#pimJournalMenuPanel');
+      const dimensions = await menu.evaluate(e => ({ clientHeight: e.clientHeight, scrollHeight: e.scrollHeight }));
+      desktopMenuChecks.push({ height, ...dimensions });
+      assert(dimensions.scrollHeight - dimensions.clientHeight <= 1,
+        `Desktop menu must use page scrolling, not an inner scrollbar at ${height}px height`);
+      await menu.locator('a').last().focus();
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+      assert.equal(await menu.evaluate(e => e.scrollTop), 0, 'Reaching the last menu action must not scroll a nested rail');
+      const lastAction = await menu.locator('a').last().evaluate(e => {
+        const box = e.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, viewport: innerHeight, scroll: document.scrollingElement.scrollTop };
+      });
+      assert(lastAction.top >= -1 && lastAction.bottom <= lastAction.viewport + 1,
+        `Last menu action remains reachable on a short desktop: ${JSON.stringify(lastAction)}`);
+    }
+    console.log('PASS desktop menu: no nested scrollbar, including short screens and the final action.');
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    await page.addScriptTag({ content: script });
+    await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+    const authoredLinks = await page.locator('#customblock-sidebarrye a, #customblock-flagcounterrye a').evaluateAll(links => links.map(e => e.getAttribute('href')));
+    await page.locator('#customblock-sidebarrye .content').evaluate(e => {
+      e.insertAdjacentHTML('beforeend', '<p id="qa-empty-spacer">&nbsp;</p><p id="qa-authored-note">Editorial office hours</p><p id="qa-widget-spacer"><button aria-label="Open widget"></button></p><p id="qa-anchor-spacer"><a id="qa-destination"></a></p>');
+    });
+    await page.addScriptTag({ content: script });
+    await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+    assert.equal(await page.locator('#qa-empty-spacer').isVisible(), false);
+    assert.equal(await page.locator('#qa-authored-note').isVisible(), true);
+    assert.equal(await page.locator('#qa-widget-spacer').isVisible(), true);
+    assert.equal(await page.locator('#qa-anchor-spacer').evaluate(e => e.classList.contains('pim-empty-spacer')), false);
+    assert.deepEqual(await page.locator('#customblock-sidebarrye a[href], #customblock-flagcounterrye a[href]').evaluateAll(links => links.map(e => e.getAttribute('href'))), authoredLinks);
+    console.log('PASS spacer normalization preserves authored text, widget controls, anchors and links.');
+    const focusRegressions = [];
+    async function focusCheck(name, action) {
+      try { await action(); console.log(`PASS ${name}`); }
+      catch (error) { focusRegressions.push(`${name}: ${error.message}`); console.log(`FAIL ${name}: ${error.message}`); }
+    }
+    await focusCheck('Tab skips disabled and hidden widget controls', async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.locator('#pimJournalLinksPanel').evaluate(e => {
+        const widget = document.createElement('div');
+        widget.innerHTML = '<a id="qa-widget-first" href="/first">First</a>'
+          + '<button disabled tabindex="0">Unavailable</button>'
+          + '<fieldset disabled><input tabindex="0" aria-label="Unavailable input"></fieldset>'
+          + '<button style="visibility:hidden" tabindex="0">Hidden</button>'
+          + '<a id="qa-widget-last" href="/last">Last</a>';
+        e.prepend(widget);
+      });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.getByRole('tab', { name: 'Links', exact: true }).click();
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+      await page.locator('#qa-widget-first').focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'qa-widget-last');
+      await page.keyboard.press('Shift+Tab');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'qa-widget-first');
+      await page.keyboard.press('Escape');
+    });
+    await focusCheck('Focused desktop navigation transfers to tablet tools on resize', async () => {
+      await page.setViewportSize({ width: 1280, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.locator('#pimJournalMenuPanel a').first().focus();
+      await page.setViewportSize({ width: 900, height: 844 });
+      await page.waitForFunction(() => document.getElementById('pimJournalMenuPanel').hasAttribute('inert'));
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'pimMobileToolsToggle');
+    });
+    await focusCheck('Pointer blur outside the rail does not transfer stale focus on resize', async () => {
+      await page.setViewportSize({ width: 1280, height: 844 });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.addScriptTag({ content: script });
+      await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+      await page.locator('#pimJournalMenuPanel a').first().focus();
+      await page.locator('.pim-topbar').click({ position: { x: 2, y: 2 } });
+      assert(await page.evaluate(() => document.activeElement === document.body));
+      await page.setViewportSize({ width: 900, height: 844 });
+      await page.waitForFunction(() => document.getElementById('pimJournalMenuPanel').hasAttribute('inert'));
+      assert(await page.evaluate(() => document.activeElement === document.body), 'Intentional background blur must stay outside the drawer');
+    });
+    assert.equal(focusRegressions.length, 0, focusRegressions.join('; '));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     await page.addScriptTag({ content: script });
@@ -169,7 +281,7 @@ const html = fs.readFileSync(snapshot, 'utf8')
     await page.keyboard.press('Escape');
     console.log('PASS empty sidebar: journal menu still works and the unavailable Links tab is hidden.');
     assert.equal(errors.length, 0, `Theme JavaScript errors: ${errors.join('; ')}`);
-    fs.writeFileSync(path.join(output, 'layout-results.json'), JSON.stringify({ results, errors, resize: 'PASS', emptySidebar: 'PASS', compactLongContentGap: compactGap }, null, 2));
+    fs.writeFileSync(path.join(output, 'layout-results.json'), JSON.stringify({ results, errors, desktopMenuChecks, resize: 'PASS', emptySidebar: 'PASS', compactLongContentGap: compactGap }, null, 2));
     if (results.some(result => result.failures.length)) process.exitCode = 1;
   } finally {
     await browser.close();

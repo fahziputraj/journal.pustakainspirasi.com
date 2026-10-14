@@ -3,6 +3,22 @@ document.addEventListener('DOMContentLoaded', function() {
     icon.setAttribute('aria-hidden', 'true');
   });
 
+  // Ignore empty editor spacers in the two legacy journal blocks, while keeping
+  // authored text, links, media and interactive widgets intact in the DOM.
+  function isJournalSpacer(node) {
+    return !(node.textContent || '').trim() && !node.hasAttribute('aria-label')
+      && !node.querySelector('a, img, svg, input, button, select, textarea, iframe, video, audio, canvas, object, embed, [aria-label], [role], [id]');
+  }
+  document.querySelectorAll('body.pim_public_journal #customblock-sidebarrye > .content, body.pim_public_journal #customblock-flagcounterrye > .content').forEach(function(content) {
+    Array.prototype.forEach.call(content.children, function(node) {
+      if (node.tagName === 'P' && isJournalSpacer(node)) node.classList.add('pim-empty-spacer');
+    });
+    content.querySelectorAll('tr').forEach(function(row) {
+      var cells = Array.prototype.slice.call(row.cells);
+      if (cells.length && cells.every(isJournalSpacer)) row.classList.add('pim-empty-spacer');
+    });
+  });
+
   var navToggle = document.getElementById('navToggle');
   var mainNav = document.getElementById('mainNav');
   if (navToggle && mainNav) {
@@ -133,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var mobileLinksPanel = document.getElementById('pimJournalLinksPanel');
   var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
   var mobileToolsReturnFocus = null;
+  var mobileToolsLastPanelFocus = null;
 
   if (!mobileLinksPanel) {
     mobileToolsTabs.forEach(function(button) {
@@ -172,6 +189,21 @@ document.addEventListener('DOMContentLoaded', function() {
     return document.body.classList.contains('pim-tools-tab-links') ? mobileLinksPanel : mobileMenuPanel;
   }
 
+  function isMobileToolsPanelControl(control) {
+    return !!control && ((mobileMenuPanel && mobileMenuPanel.contains(control))
+      || (mobileLinksPanel && mobileLinksPanel.contains(control)));
+  }
+
+  function getMobileToolsFocusable(container) {
+    if (!container) return [];
+    return Array.prototype.slice.call(container.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')).filter(function(control) {
+      var visibility = window.getComputedStyle(control).visibility;
+      return control.getClientRects().length && control.tabIndex >= 0
+        && !control.matches(':disabled') && !control.closest('[inert]')
+        && visibility !== 'hidden' && visibility !== 'collapse';
+    });
+  }
+
   function openMobileTools(tab, options) {
     if (!mobileToolsToggle || !isMobileToolsViewport()) return;
     setMobileToolsTab(tab || (document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu'));
@@ -180,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mobileToolsToggle.setAttribute('aria-expanded', 'true');
     if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
     var panel = getSelectedMobilePanel();
-    var firstControl = panel ? panel.querySelector('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
+    var firstControl = getMobileToolsFocusable(panel)[0];
     if (firstControl && (!options || options.focusPanel !== false)) {
       window.requestAnimationFrame(function() { firstControl.focus(); });
     }
@@ -206,6 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   if (mobileToolsToggle) {
+    // CSS can hide a focused rail before the resize event runs. Remember its
+    // last focused control so the replacement toolbar can receive focus.
+    document.addEventListener('focusin', function(e) {
+      mobileToolsLastPanelFocus = isMobileToolsPanelControl(e.target) ? e.target : null;
+    });
+    document.addEventListener('pointerdown', function(e) {
+      if (!isMobileToolsPanelControl(e.target)) mobileToolsLastPanelFocus = null;
+    });
     setMobileToolsTab('menu');
     mobileToolsToggle.addEventListener('click', function() {
       if (document.body.classList.contains('pim-tools-open')) {
@@ -222,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (document.body.classList.contains('pim-tools-open')) {
         setMobileToolsTab(tab);
         var panel = getSelectedMobilePanel();
-        var firstControl = panel ? panel.querySelector('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
+        var firstControl = getMobileToolsFocusable(panel)[0];
         if (firstControl) firstControl.focus();
       } else {
         openMobileTools(tab);
@@ -257,11 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var bar = document.querySelector('.pim-mobile-tools-bar');
     var focusable = [];
     [panel, bar].forEach(function(container) {
-      if (!container) return;
-      focusable = focusable.concat(Array.prototype.slice.call(container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')));
-    });
-    focusable = focusable.filter(function(control) {
-      return control.getClientRects().length && control.getAttribute('tabindex') !== '-1' && !control.closest('[inert]');
+      focusable = focusable.concat(getMobileToolsFocusable(container));
     });
     if (!focusable.length) return;
     // Panel links follow the toolbar in the DOM. Explicitly cycle the logical
@@ -284,7 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileLinksPanel.removeAttribute('inert');
       }
     } else if (!document.body.classList.contains('pim-tools-open')) {
+      var focusedControl = document.activeElement;
+      var panelHadFocus = isMobileToolsPanelControl(focusedControl)
+        || (focusedControl === document.body && isMobileToolsPanelControl(mobileToolsLastPanelFocus));
       closeMobileTools({ restoreFocus: false });
+      if (panelHadFocus && mobileToolsToggle) mobileToolsToggle.focus();
     }
   });
 
