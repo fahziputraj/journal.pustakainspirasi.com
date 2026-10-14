@@ -19,8 +19,6 @@
 {include file="frontend/components/header.tpl" pageTitleTranslated=$currentJournal->getLocalizedName()}
 
 <div class="page_index_journal">
-	<h1 class="pkp_screen_reader">{$currentJournal->getLocalizedName()|escape}</h1>
-
 	{call_hook name="Templates::Index::journal"}
 
 	{* Journal Cover Image + About Section - always at the top. Prefer Homepage Image; fall back to Journal Thumbnail. *}
@@ -39,26 +37,29 @@
 
 	{* Journal Description + Cover Image — top hero section *}
 	{if $currentContext->getLocalizedData('description') || $pimHasHomepageImage}
-		<div class="additional_content homepage_about" style="margin-bottom: 24px;" {if $pimHasHomepageImage}data-gp-has-official-image="true"{/if}>
+		<div class="additional_content homepage_about" {if $pimHasHomepageImage}data-gp-has-official-image="true"{/if}>
 			<div class="pim-journal-hero-text">
+				<h1 class="pim-journal-title">{$currentJournal->getLocalizedName()|escape}</h1>
 				{if $currentContext->getLocalizedData('description')}
 					<a id="homepageAbout"></a>
-					<div class="gp-journal-description" style="margin-bottom: 0;">
+					<div class="gp-journal-description">
 						{$currentContext->getLocalizedData('description')}
 					</div>
 				{/if}
 			</div>
 			{if $pimHasHomepageImage}
 				<div class="homepage_image" data-gp-official-home-image="true">
-					<img src="{$publicFilesDir}/{$pimHomepageImage.uploadName|escape:"url"}"{if $pimHomepageImage.altText} alt="{$pimHomepageImage.altText|escape}"{/if} loading="eager" decoding="async" fetchpriority="high">
+					<img src="{$publicFilesDir}/{$pimHomepageImage.uploadName|escape:"url"}" alt="{$pimHomepageImage.altText|default:$currentJournal->getLocalizedName()|escape}" width="132" height="188" loading="eager" decoding="async" fetchpriority="high">
 				</div>
 			{/if}
 		</div>
+	{else}
+		<h1 class="pim-journal-title">{$currentJournal->getLocalizedName()|escape}</h1>
 	{/if}
 
 	{* Additional Home Content (Table, Recommended tools, etc.) — full width section *}
 	{if $additionalHomeContent}
-		<div class="pim-additional-home-content-wrapper" style="margin-bottom: 32px; width: 100%;">
+		<div class="pim-additional-home-content-wrapper">
 			<div class="pim-additional-home-content">
 				{$additionalHomeContent}
 			</div>
@@ -66,7 +67,7 @@
 	{/if}
 
 	{* Sidebar widgets (About, Citation Analysis, etc.) — extracted by JS, placed here BEFORE Current Issue *}
-	<div id="pim-extracted-widgets-container" style="margin-bottom: 24px;"></div>
+	<div id="pim-extracted-widgets-container"></div>
 
 	{* Announcements *}
 	{if $numAnnouncementsHomepage && !empty($announcements)}

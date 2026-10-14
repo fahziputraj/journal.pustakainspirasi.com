@@ -3,6 +3,22 @@ document.addEventListener('DOMContentLoaded', function() {
     icon.setAttribute('aria-hidden', 'true');
   });
 
+  // Ignore empty editor spacers in the two legacy journal blocks, while keeping
+  // authored text, links, media and interactive widgets intact in the DOM.
+  function isJournalSpacer(node) {
+    return !(node.textContent || '').trim() && !node.hasAttribute('aria-label')
+      && !node.querySelector('a, img, svg, input, button, select, textarea, iframe, video, audio, canvas, object, embed, [aria-label], [role], [id]');
+  }
+  document.querySelectorAll('body.pim_public_journal #customblock-sidebarrye > .content, body.pim_public_journal #customblock-flagcounterrye > .content').forEach(function(content) {
+    Array.prototype.forEach.call(content.children, function(node) {
+      if (node.tagName === 'P' && isJournalSpacer(node)) node.classList.add('pim-empty-spacer');
+    });
+    content.querySelectorAll('tr').forEach(function(row) {
+      var cells = Array.prototype.slice.call(row.cells);
+      if (cells.length && cells.every(isJournalSpacer)) row.classList.add('pim-empty-spacer');
+    });
+  });
+
   var navToggle = document.getElementById('navToggle');
   var mainNav = document.getElementById('mainNav');
   if (navToggle && mainNav) {

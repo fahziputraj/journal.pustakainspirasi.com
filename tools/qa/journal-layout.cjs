@@ -7,6 +7,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const root = path.resolve(__dirname, '../..');
@@ -25,7 +26,10 @@ const iconsCss = fs.existsSync(iconsPath) ? fs.readFileSync(iconsPath, 'utf8').r
   const fontPath = path.join(fixtureDir, name);
   return fs.existsSync(fontPath) ? `url(data:font/woff2;base64,${fs.readFileSync(fontPath).toString('base64')})` : match;
 }) : '';
+const renderedIntro = execFileSync(process.env.PHP_BINARY || 'php', [path.join(root, 'tools/qa/journal-homepage.php'), '--render', path.resolve(snapshot)], { encoding: 'utf8' });
 const html = fs.readFileSync(snapshot, 'utf8')
+  .replace(/<h1 class="pkp_screen_reader">[\s\S]*?<\/h1>/, '')
+  .replace(/<div class="additional_content homepage_about"[\s\S]*?(?=<div class="pim-additional-home-content-wrapper")/, renderedIntro)
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
   .replace(/<link\b[^>]*>/gi, '')
   .replace(/https:\/\/journal\.pustakainspirasi\.com\/public\/journals\/1\/(logo|cover)\.png/g, (url, name) => {
@@ -43,7 +47,7 @@ const html = fs.readFileSync(snapshot, 'utf8')
     await page.route('**/*', route => route.abort());
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const width of [1440, 1280, 1200, 1024, 993, 992, 900, 768, 430, 390, 360]) {
+    for (const width of [1440, 1280, 1200, 1024, 993, 992, 900, 768, 600, 430, 390, 375, 360, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.setContent(html, { waitUntil: 'domcontentloaded' });
       await page.addScriptTag({ content: script });
@@ -129,6 +133,28 @@ const html = fs.readFileSync(snapshot, 'utf8')
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
         assert(overflow <= 1, `Overflow: ${overflow}px`);
       });
+      if (width <= 992) await page.locator('.pim-mobile-tools-backdrop').waitFor({ state: 'hidden' });
+      await check('Journal title and introduction fit the reading column', async () => {
+        assert(await page.locator('.pim-journal-title').isVisible());
+        const boxes = await page.evaluate(() => {
+          const main = document.getElementById('pim-main-content').getBoundingClientRect();
+          const title = document.querySelector('.pim-journal-title').getBoundingClientRect();
+          const cover = document.querySelector('.homepage_image');
+          const text = document.querySelector('.pim-journal-hero-text').getBoundingClientRect();
+          return { main: main.toJSON(), title: title.toJSON(), text: text.toJSON(), cover: cover ? cover.getBoundingClientRect().toJSON() : null };
+        });
+        assert(boxes.title.left >= boxes.main.left - 1 && boxes.title.right <= boxes.main.right + 1);
+        if (boxes.cover) assert(boxes.cover.right <= boxes.main.right + 1);
+        if (width < 360 && boxes.cover) assert(boxes.cover.top >= boxes.text.bottom - 1, 'Very small screens retain a full-width introduction above the cover');
+        if (width < 360) assert(await page.locator('.pim-header').evaluate(e => e.getBoundingClientRect().height <= 100), 'Small-screen header stays compact without crowding the title');
+      });
+      await check('Legacy information block starts without an empty editor spacer', async () => {
+        const gap = await page.locator('#customblock-sidebarrye').evaluate(e => {
+          const table = e.querySelector('table');
+          return table ? table.getBoundingClientRect().top - e.getBoundingClientRect().top : 0;
+        });
+        if (width > 992) assert(gap <= 25, `Unexpected leading whitespace: ${gap}px`);
+      });
       results.push(result);
       console.log(`${result.failures.length ? 'FAIL' : 'PASS'} ${width}px: ${result.checks.length} checks; ${result.failures.join('; ')}`);
       if ([1440, 1024, 390].includes(width)) {
@@ -155,6 +181,21 @@ const html = fs.readFileSync(snapshot, 'utf8')
         `Last menu action remains reachable on a short desktop: ${JSON.stringify(lastAction)}`);
     }
     console.log('PASS desktop menu: no nested scrollbar, including short screens and the final action.');
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    await page.addScriptTag({ content: script });
+    await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+    const authoredLinks = await page.locator('#customblock-sidebarrye a, #customblock-flagcounterrye a').evaluateAll(links => links.map(e => e.getAttribute('href')));
+    await page.locator('#customblock-sidebarrye .content').evaluate(e => {
+      e.insertAdjacentHTML('beforeend', '<p id="qa-empty-spacer">&nbsp;</p><p id="qa-authored-note">Editorial office hours</p><p id="qa-widget-spacer"><button aria-label="Open widget"></button></p><p id="qa-anchor-spacer"><a id="qa-destination"></a></p>');
+    });
+    await page.addScriptTag({ content: script });
+    await page.evaluate(() => document.dispatchEvent(new Event('DOMContentLoaded')));
+    assert.equal(await page.locator('#qa-empty-spacer').isVisible(), false);
+    assert.equal(await page.locator('#qa-authored-note').isVisible(), true);
+    assert.equal(await page.locator('#qa-widget-spacer').isVisible(), true);
+    assert.equal(await page.locator('#qa-anchor-spacer').evaluate(e => e.classList.contains('pim-empty-spacer')), false);
+    assert.deepEqual(await page.locator('#customblock-sidebarrye a[href], #customblock-flagcounterrye a[href]').evaluateAll(links => links.map(e => e.getAttribute('href'))), authoredLinks);
+    console.log('PASS spacer normalization preserves authored text, widget controls, anchors and links.');
     const focusRegressions = [];
     async function focusCheck(name, action) {
       try { await action(); console.log(`PASS ${name}`); }
