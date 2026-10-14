@@ -252,3 +252,30 @@ Final production verification for the 2026-10-14 refinement:
   live-desktop-final.jpg, plus five journal layout-results.json files.
 - Independent follow-up review completed and the sole P3 finding was corrected
   and re-reviewed; no remaining important findings were reported within scope.
+
+## Desktop left-panel scrollbar correction
+
+Starting HEAD429ebb69439eeb80e51705debb25c13af7980db4. The owner reported the
+visible nested scrollbar in Journal Menu. Live855px viewport evidence showed
+clientHeight711px versus scrollHeight743px because max-height was100dvh-144px
+and overflow-y:auto. The desktop rail now follows normal page scrolling with
+natural height and no internal scrollbar. It no longer uses desktop sticky
+positioning. Mobile/tablet fixed drawers retain their bounded overflow:auto.
+CSS asset version is20261014-2; JavaScript remains20261014-1.
+
+A new rendered regression failed on the previous CSS and passed after correction.
+It checks no nested menu overflow at855px and600px viewport heights and reaches
+the final menu link via focus without scrolling the rail. All55journal/width
+combinations and keyboard/resize/empty-sidebar/long-content checks passed again.
+Smarty sidebar and announcement rendering and PHP syntax also passed. Runtime
+payload is limited to PustakaMinangThemePlugin.php and styles/pim-layout.css.
+
+The owner's requested ui-ux-pro-max, design-taste-frontend-v1, and
+web-design-guidelines skills were applied to this bounded navigation review.
+The UI/UX search and fresh Vercel Web Interface Guidelines informed the checks
+for unintended overflow, keyboard reachability, visible focus, and responsive
+drawer behavior. Existing OJS/Smarty architecture and scholarly brand styling
+remain the implementation context. Independent rendered review confirmed the
+old711/743px overflow and corrected743/743px dimensions at1280x855, reachable
+last action on600px-high desktop screens, and functioning mobile drawers at
+992,900,and390px. No important findings remained in this scrollbar correction.

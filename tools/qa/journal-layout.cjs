@@ -135,6 +135,26 @@ const html = fs.readFileSync(snapshot, 'utf8')
         await page.screenshot({ path: path.join(output, `journal-${width}.png`) });
       }
     }
+    const desktopMenuChecks = [];
+    for (const height of [855, 600]) {
+      await page.setViewportSize({ width: 1280, height });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      const menu = page.locator('#pimJournalMenuPanel');
+      const dimensions = await menu.evaluate(e => ({ clientHeight: e.clientHeight, scrollHeight: e.scrollHeight }));
+      desktopMenuChecks.push({ height, ...dimensions });
+      assert(dimensions.scrollHeight - dimensions.clientHeight <= 1,
+        `Desktop menu must use page scrolling, not an inner scrollbar at ${height}px height`);
+      await menu.locator('a').last().focus();
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+      assert.equal(await menu.evaluate(e => e.scrollTop), 0, 'Reaching the last menu action must not scroll a nested rail');
+      const lastAction = await menu.locator('a').last().evaluate(e => {
+        const box = e.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, viewport: innerHeight, scroll: document.scrollingElement.scrollTop };
+      });
+      assert(lastAction.top >= -1 && lastAction.bottom <= lastAction.viewport + 1,
+        `Last menu action remains reachable on a short desktop: ${JSON.stringify(lastAction)}`);
+    }
+    console.log('PASS desktop menu: no nested scrollbar, including short screens and the final action.');
     const focusRegressions = [];
     async function focusCheck(name, action) {
       try { await action(); console.log(`PASS ${name}`); }
@@ -220,7 +240,7 @@ const html = fs.readFileSync(snapshot, 'utf8')
     await page.keyboard.press('Escape');
     console.log('PASS empty sidebar: journal menu still works and the unavailable Links tab is hidden.');
     assert.equal(errors.length, 0, `Theme JavaScript errors: ${errors.join('; ')}`);
-    fs.writeFileSync(path.join(output, 'layout-results.json'), JSON.stringify({ results, errors, resize: 'PASS', emptySidebar: 'PASS', compactLongContentGap: compactGap }, null, 2));
+    fs.writeFileSync(path.join(output, 'layout-results.json'), JSON.stringify({ results, errors, desktopMenuChecks, resize: 'PASS', emptySidebar: 'PASS', compactLongContentGap: compactGap }, null, 2));
     if (results.some(result => result.failures.length)) process.exitCode = 1;
   } finally {
     await browser.close();

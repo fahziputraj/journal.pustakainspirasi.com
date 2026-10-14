@@ -1275,18 +1275,15 @@ html, body {
   min-width: 0 !important;
 }
 
-/* Keep every navigation action reachable on shorter desktop screens. */
+/* Desktop navigation follows page scrolling without a nested scrollbar. */
 .pim-journal-tools {
   grid-area: tools !important;
   width: 100% !important;
   min-width: 0 !important;
   flex-shrink: 0 !important;
-  position: sticky !important;
-  top: 128px !important;
-  max-height: calc(100dvh - 144px) !important;
-  overflow-y: auto !important;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
+  position: static !important;
+  max-height: none !important;
+  overflow: visible !important;
   box-sizing: border-box !important;
 }
 .pim-journal-tools-panel {
