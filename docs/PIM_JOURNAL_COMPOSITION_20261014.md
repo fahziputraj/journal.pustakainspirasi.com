@@ -84,3 +84,34 @@ known indexing-in-progress, indexed-by and recommended-tools widget classes;
 captions, image alternative text and links remain. CSS version becomes20261014-4;
 JavaScript remains20261014-3. The previous five-file archive preserves the preceding
 CSS/plugin versions for recovery.
+
+## Final live verification
+
+- Final runtime source: 6072e7e192cdc7a887bda785f9ac0e90a5e95813. The two-file
+  PIM-composition-logos-20261014.zip SHA256 is
+  590279c19a61d7b34eafc5b7391869829a86f60cdd662fe8133529e569afd6a6.
+  Extraction listed only the theme plugin and CSS, with that source commit.
+- All five home pages return 200 with one visible journal h1, CSS 20261014-4
+  and JavaScript 20261014-3. Hosted assets match the source after newline
+  normalization. Editorial Team, submissions, archive and search smoke reads
+  return 200 and retain the public journal navigation shell.
+- All 70 final journal/width combinations passed with zero failures/errors.
+  The actual Smarty intro, sidebar and announcement checks and syntax checks pass.
+  Independent initial and follow-up reviews report no important remaining issues.
+- Live 1440px: header 89px, aligned main/sidebar tops, menu706/706px and no
+  horizontal overflow. The rail remains naturally scrollable with the page.
+  The logo pass reduced the measured MBJ information-rail height from2926px
+  to2748px while keeping captions, labels and links.
+- Live 1024px,390px,320px and812x375px landscape: no horizontal overflow and
+  visible titles. At320px, the introduction has273px reading width and the
+  signed-in header is65px; the signed-out preview header is83px.
+- Mobile Links drawer retains34links, exposes its final focused action through
+  drawer scrolling and closes with Escape. Reduced-motion mode yields0s menu
+  transitions. Chrome confirms loaded Geist400-800 and no console errors.
+- Evidence: live-final-readback.json, live-browser-results.json, public-subpages.json,
+  live-desktop-final.jpg, live-mobile-final.jpg and five layout-results.json files
+  under composition-20261014. Temporary browser overrides were cleared and the
+  task's preview server was stopped. Existing backups and local source preserved.
+
+Git commits and pushes stay on the existing repair branch. No PR, merge,
+main-branch update, repository copy or unrelated hosting/settings change occurred.
