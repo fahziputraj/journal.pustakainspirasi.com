@@ -84,3 +84,24 @@ Pending: a real Section Editor account (and Yeni's) schedules MBJ 113.
   - The 21-23 s outliers have not reappeared yet. Watch them over the next days.
 - Rollback: restore `config.inc.php` from the backup and delete the cron line (cPanel → Cron Jobs).
 - Optional housekeeping: old files in `ojs_files/scheduledTaskLogs` can be pruned.
+
+## Journal Tools revamp (2026-11-27, user-confirmed)
+
+Spec and plan: `docs/superpowers/specs/2026-11-27-pim-journal-tools-design.md`, `docs/superpowers/plans/2026-11-27-pim-journal-tools-revamp.md`.
+
+What changed:
+- Mobile (992 px and below): one four-item dock (Menu, Information, Search, Submit) opens the panels as a bottom sheet with a title and a Close button. Tapping the active item again closes it, Escape closes it, focus returns to the opener, and Tab is kept inside.
+- The current page uses a tonal fill (`#FBEFEF`, accent text). The thick left bar was rejected by the user and removed. The dock uses a tonal pill indicator.
+- The information rail becomes collapsible sections on every width (first two open). The `::` decoration is removed from display text only.
+
+Release:
+- Commit `e1b529f4`, payload of 5 files (LF), SHA256 `4da6c77e…50b79`, 25,810 bytes.
+- The previous live copies are in `/home/pusf3964/pim-backup-20261127/tools/`. The extract listed exactly the 5 paths.
+- Follow-up `65728a15`: the parent theme's negative `.cmp_announcements` margins overflowed 4 px at 768 on MCJ. This fix was applied in place through the cPanel editor (`pim-v2.css` and `PustakaMinangThemePlugin.php`, now `pim-v2.css?v=20261127-3`). Prior copies are in `…/tools-2/`, and the live SHA-256 matches the commit.
+
+Verification:
+- Local: `tools/qa/journal-tools.cjs` passes all 12 cases (open, toggle, switch, close button, focus trap and return, no sidebar, resize, sections, decoration, custom heading, submit fits, active state), alongside the existing harnesses.
+- Live: the dock markup is served (4 items, the old toggle is gone), and `live-routes.sh` exits 0.
+- Live at 375 px: the sheet opens, switches and closes with Escape, focus returns, 5 sections show (2 open), Font Awesome icons load, and there is no overflow.
+- Live at 1440 px: the tonal active state is in place, the dock is hidden, the rail is 1,427 px against 1,358 px of content (was about 2,700 px), and Make a Submission fits.
+- Live audit gate: MBJ index/about/archive and MCJ index pass with 0 blocking findings.
