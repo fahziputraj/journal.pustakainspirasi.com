@@ -51,6 +51,22 @@ Layout audit (8 public pages plus register and lost password, 320-1440 px, text 
 
 Not verified locally: there is no local OJS database, so the dashboard redirect, template rendering in OJS and real Section Editor publishing are verified on production after deployment (record below). Firefox and Safari are not covered by the automated audit.
 
-## Production record
+## Production record (2026-11-27)
 
-(Appended after deployment.)
+- Source commit `9ea5020b` (branch `fix/pim-publish-brand-ux-20261127`). The payload was built with `git -c core.autocrlf=false archive` (LF, committed bytes). The optimised site logo `public/site/pageHeaderTitleImage_en.png` was added (same name, same 1672:941 ratio). Zip: 19 files, 1,708,574 bytes, SHA256 `09B8CEAADD03D780BB470CD5FE10E8598F324656E40A644DE5ED67B98771E29B`.
+- Drift check before replacement: 7 of 9 text files were identical to `main`. Live `header.tpl` and `headerHead.tpl` differed only by an editor-injected `<meta charset="utf-8">`, inside `<header>` and inside a comment, while `<head>` had no charset. The release restores `<meta charset>` in `<head>`.
+- Backup: all 14 replaced paths were copied to `/home/pusf3964/pim-backup-20261127/` (mirrored structure, sizes verified identical, `.htaccess` included). The release zip sits in the same folder.
+- Install: the cPanel Fileman extract into `/home/pusf3964/public_html/journal.pustakainspirasi.com/` listed exactly the 19 payload paths. Templates recompiled without a manual cache clear.
+- Live checks:
+  - Pages: portal, MBJ and login return 200 with `pim-v2.css?v=20261127-1`, `pim-ui.js?v=20261127-1`, the PIM favicon set, `<meta charset>` and `images/pim-logo.png`.
+  - Portal markup: the portal shows the three new subjects (1/2/2), covers, the labelled journal finder, and no idle filter card, letter heading or empty Featured section.
+  - Assets and headers: assets return 200, and `pim-v2.css` sends `Cache-Control: max-age=2592000`, `nosniff` and `Referrer-Policy`.
+  - Bundle: `js/build.js?v=3.5.0.4-pim.20261127` contains the patched publish role list once.
+- `tools/qa/live-routes.sh`: exit 0. All five `/{journal}/dashboard` URLs now return 302 to `/login?source=…`, with no 5xx anywhere.
+- Live layout audit gate, 8 pages × 320-1440 px × text/long-word stress × focus: PASS with 0 blocking findings on every page.
+- Signed-in backend at 390 px: `pim-backend.css` loads, and the bundle URL is versioned. On MBJ submission 113, Preview, Activity Log, Library and Schedule For Publication are all on-screen, with 0 px document overflow.
+- Rollback: copy the paths back from `/home/pusf3964/pim-backup-20261127/`, then delete the five new files (`styles/pim-v2.css`, `styles/pim-backend.css`, and `images/pim-logo.png`, `favicon-32.png`, `apple-touch-icon.png`).
+
+Pending:
+- A real Section Editor account (and Yeni's) schedules MBJ 113.
+- Task 13 (move the OJS scheduler to cron) needs confirmation.
