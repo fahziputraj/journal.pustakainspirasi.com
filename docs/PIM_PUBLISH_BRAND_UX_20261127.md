@@ -105,3 +105,27 @@ Verification:
 - Live at 375 px: the sheet opens, switches and closes with Escape, focus returns, 5 sections show (2 open), Font Awesome icons load, and there is no overflow.
 - Live at 1440 px: the tonal active state is in place, the dock is hidden, the rail is 1,427 px against 1,358 px of content (was about 2,700 px), and Make a Submission fits.
 - Live audit gate: MBJ index/about/archive and MCJ index pass with 0 blocking findings.
+
+## Search UI: page, menu and dock (2026-11-27, user-confirmed)
+
+Plan: `docs/superpowers/plans/2026-11-27-pim-search-ui.md`.
+
+What changed:
+- `/search`:
+  - The keyword field and the Search button share one row.
+  - The filters sit in a collapsible "Refine results", which opens when a filter has a value.
+  - The date selects show Year/Month/Day labels, and all labels use sentence case.
+  - The notice before a search is a helper line. When nothing matches it reads `No articles match "<q>".`, with the query inserted as text.
+  - Field names and the form action are unchanged.
+- Journal Menu (desktop): a quick-search field at the top.
+- Dock (phones): Search opens a Search sheet with the field focused. Without JS the link still goes to `/search`.
+
+Release:
+- Commit `8aee16e2`, payload of 4 files, 26,069 bytes. The previous live copies are in `/home/pusf3964/pim-backup-20261127/search/`.
+- The extract listed exactly the 4 paths. Assets are now `pim-v2.css?v=20261127-4` and `pim-ui.js?v=20261127-3`.
+
+Verification:
+- `tools/qa/journal-search.cjs` (7 cases) and `tools/qa/journal-tools.cjs` (16 cases) pass, along with every existing harness.
+- The live audit gate passes with 0 blocking findings on `mbj/search`, `mbj/search/search?query=betel` and `mbj/index`. A control-overlap between the quick-search button and its input was found on the replays and fixed before release.
+- `live-routes.sh` exits 0.
+- Live at 375 px: the dock Search sheet opens without navigating, focuses `query`, uses the action `/mbj/search/search`, closes with Escape and returns focus to the dock item. The menu form is present.
