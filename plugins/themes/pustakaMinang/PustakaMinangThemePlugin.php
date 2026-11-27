@@ -28,6 +28,9 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css?v=20261014-4');
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
 
+        // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
+        $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);
+
         // Hook into TemplateManager to register custom Smarty modifiers for views/downloads stats
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'registerSmartyModifiers']);
 

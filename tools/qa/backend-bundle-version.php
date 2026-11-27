@@ -44,6 +44,11 @@ namespace {
         fail('init() must register TemplateManager::display => versionBackendBundle exactly once.');
     }
 
+    $backendStyles = array_filter($plugin->styleCalls, static fn($call) => $call[0] === 'pustaka-minang-backend');
+    if (array_values($backendStyles) !== [['pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']]]) {
+        fail('init() must register styles/pim-backend.css?v=20261127-1 for the backend context only.');
+    }
+
     $templateManager = new class {
         public array $scripts = [];
         public function getTemplateVars($name) { return $name === 'baseUrl' ? 'https://journal.example.test' : null; }
