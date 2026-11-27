@@ -66,9 +66,18 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
     public function registerSmartyModifiers($hookName, $args)
     {
         $templateMgr = $args[0];
-        $templateMgr->registerPlugin('modifier', 'pim_article_views', [$this, 'getArticleViews']);
-        $templateMgr->registerPlugin('modifier', 'pim_article_downloads', [$this, 'getArticleDownloads']);
-        $templateMgr->registerPlugin('modifier', 'pim_normalize_editorial_team_urls', [$this, 'normalizeEditorialTeamUrls']);
+        // PIM 20261127: display() can run more than once per request (e.g. a page plus an AJAX
+        // fragment); registering twice threw "Plugin tag ... already registered" (597 log entries).
+        $modifiers = [
+            'pim_article_views' => [$this, 'getArticleViews'],
+            'pim_article_downloads' => [$this, 'getArticleDownloads'],
+            'pim_normalize_editorial_team_urls' => [$this, 'normalizeEditorialTeamUrls'],
+        ];
+        foreach ($modifiers as $name => $callback) {
+            if (empty($templateMgr->registered_plugins['modifier'][$name])) {
+                $templateMgr->registerPlugin('modifier', $name, $callback);
+            }
+        }
         return false;
     }
 
