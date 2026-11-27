@@ -24,6 +24,7 @@ Deviation from the plan: the v2 layer lives in its own `pim-v2.css` (loaded afte
 1. `js/build.js`: insert `,pkp.const.ROLE_ID_SUB_EDITOR` after `pkp.const.ROLE_ID_MANAGER` in the `canPublish` condition. Then run `node tools/qa/workflow-publish-permission.cjs` and bump `PustakaMinangThemePlugin::BACKEND_BUNDLE_VERSION`.
 2. `lib/pkp/pages/dashboard/PKPDashboardHandler.php` and `lib/pkp/classes/core/PKPPageRouter.php`: re-apply the two `PIM 20261127` guards if upstream has not fixed the signed-out dashboard.
 3. `styles/pim-backend.css` targets 3.5.0.4 ui-library markup; re-check it on a phone after upgrading.
+4. `classes/issue/IssueAction.php`: keep the `PIM 20261127` subscription-mode guard in `subscribedDomain()` (reverse DNS stall). Run `php tools/qa/issue-action-dns.php`.
 
 ## Data recommendations for journal managers (not changed by code)
 
@@ -133,3 +134,50 @@ Verification:
 ## Final drift check (2026-11-27)
 
 All 18 deployed runtime files match branch HEAD `50566344`. That is 12 text files by SHA-256 (the two header templates by byte size plus the served HTML, for the reason above) and 6 binaries by size. Production equals the branch.
+
+## Speed fix and refinement layer v2.1 (2026-11-27, user-confirmed)
+
+Why:
+- **First visit took ~25 s.** The first visit to a journal home, issue or article page from an IP without a reverse DNS (PTR) record took about 25 s. OJS called `gethostbyaddr()` (`Request::getRemoteDomain()`) for the institutional subscription check on every such page, and most Indonesian ISP addresses return SERVFAIL. The server resolver then cached the answer, so only first hits were slow. This was the recurring "MBJ 21–24 s" observation. All PIM journals are open access, so the lookup never decided anything.
+- **PDF buried below 1440 px.** Below 1440 px the article page's float pair (560 + 300 px inside a 792 px row) wrapped. The PDF button then sat about 5,100 px down at 1280 px and about 6,600 px down on phones.
+
+What changed:
+- `classes/issue/IssueAction.php`: `subscribedDomain()` only checks institutional subscriptions (and so only resolves the visitor's domain) for journals in subscription mode.
+- `styles/pim-refine.css` (new, after `pim-v2.css`; minimal, subtle, light):
+  - **Article page:**
+    - The page is a two-track grid on one left edge, and it stacks below a 720 px container.
+    - The download buttons sit under the authors at every width.
+    - The abstract is flat, and upright when it is fully italic.
+    - References are numbered with a hanging indent.
+    - The details column uses labels over values with accent links.
+  - **Issue table of contents:** the section heading sits on the content edge, cards have a 16 px gap, and the meta has no fill.
+  - **Archive:** a list on the content edge with a muted series.
+  - **Breadcrumb:** 16 px above the title everywhere.
+  - **Account shell (login, register, reset):**
+    - Full-width fields and button.
+    - Left-aligned title.
+    - Legends above a divider.
+    - Checkbox rows that keep their links inline.
+  - **Smaller fixes:**
+    - Neutral notices (outside search).
+    - A single checklist marker.
+    - No stray divider under the footer heading.
+    - Custom-page titles.
+    - Sentence-case card titles on the journal home.
+- `pim-ui.js`: `PIM.enhanceArticlePage()` moves the galley block under the authors, marks an all-italic abstract and adds the reference number column. It only moves DOM nodes; it does not rewrite content.
+
+Release:
+- Commit `ec7e2be9` on `feat/pim-refine-speed-20261127`, payload of 5 files, 25,178 bytes.
+- The previous live copies are in `/home/pusf3964/pim-backup-20261127-refine/`. `pim-refine.css` is new, so it has no backup.
+- After the extract, all 5 live sizes match HEAD. Assets are now `pim-refine.css?v=20261127-1` and `pim-ui.js?v=20261127-4`.
+
+Verification:
+- `tools/qa/public-refine.cjs` (15 cases, on replays of live markup) passes. All 15 fail without the layer.
+- `php tools/qa/issue-action-dns.php` passes and fails on the previous `IssueAction.php`.
+- All earlier harnesses pass.
+- The layout audit finds no blockers on 8 replayed pages. The remaining majors are the fixed phone dock and footer link targets, which are unchanged chrome.
+- Live at 1440, 1280 and 390 px:
+  - The PDF sits at 408, 408 and 556 px.
+  - 33 references are numbered and the abstract is upright.
+  - The login fields fill the form, and the issue heading is on the content edge.
+  - There are no page errors, and every route returns 200.
