@@ -22,6 +22,7 @@ const swaps = [
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-layout\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-layout.css')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/custom\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/custom.css')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-v2\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-v2.css')],
+  [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-refine\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-refine.css')],
   [/https?:\/\/[^"']*\/pim-ui\.js[^"']*/g, local('pim-ui.js')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/images\/([\w.-]+)[^"']*/g, (m, file) => local('plugins/themes/pustakaMinang/images/' + file)],
 ];
@@ -39,6 +40,10 @@ const swaps = [
     if (!html.includes('pim-v2.css')) {
       // The v2 layer is new in this release: inject it right after the swapped layout stylesheet.
       html = html.replace(/(<link[^>]+pim-layout.css[^>]*>)/i, (m) => m + '<link rel="stylesheet" href="' + local('plugins/themes/pustakaMinang/styles/pim-v2.css') + '" type="text/css">');
+    }
+    if (!html.includes('pim-refine.css')) {
+      // The refinement layer is new in this release: inject it right after the v2 stylesheet.
+      html = html.replace(/(<link[^>]+pim-v2.css[^>]*>)/i, (m) => m + '<link rel="stylesheet" href="' + local('plugins/themes/pustakaMinang/styles/pim-refine.css') + '" type="text/css">');
     }
     html = html.replace(/<head([^>]*)>/i, (m) => m + '<base href="' + url + '">');
     const slug = new URL(url).pathname.replace(/^\/(index\.php\/)?/, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || 'portal';

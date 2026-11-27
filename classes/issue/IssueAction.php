@@ -151,7 +151,10 @@ class IssueAction
     {
         $subscriptionDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO'); /** @var InstitutionalSubscriptionDAO $subscriptionDao */
         $result = false;
-        if (isset($journal)) {
+        // PIM 20261127: institutional subscriptions only exist for journals in subscription mode.
+        // Skipping the check elsewhere avoids the reverse DNS lookup in getRemoteDomain(), which
+        // stalls ~25 s on the first visit from an IP without a PTR record (most ISP addresses).
+        if (isset($journal) && $journal->getData('publishingMode') == Journal::PUBLISHING_MODE_SUBSCRIPTION) {
             $result = $subscriptionDao->isValidInstitutionalSubscription($request->getRemoteDomain(), $request->getRemoteAddr(), $journal->getId());
 
             // If no valid subscription, check if there is an expired subscription

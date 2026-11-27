@@ -29,6 +29,8 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
         // Design system v2 for the public shell; must stay after the two layers above.
         $this->addStyle('pustaka-minang-v2', 'styles/pim-v2.css?v=20261127-4');
+        // Refinement layer v2.1 (article, issue, archive, custom pages, account shell); after v2.
+        $this->addStyle('pustaka-minang-refine', 'styles/pim-refine.css?v=20261127-1');
 
         // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
         $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);

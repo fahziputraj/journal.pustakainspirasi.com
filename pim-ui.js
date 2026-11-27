@@ -1121,3 +1121,54 @@ window.PIM.enhanceSearchPage = function (root) {
 document.addEventListener('DOMContentLoaded', function () {
   if (document.body.classList.contains('pkp_page_search')) window.PIM.enhanceSearchPage(document);
 });
+
+/*
+ * Article page (refinement layer v2.1): download buttons right under the authors at every width,
+ * an upright abstract when the editor italicised all of it, and numbered references with a
+ * separate number column for the hanging indent. DOM moves only; no content is rewritten.
+ */
+window.PIM.enhanceArticlePage = function (root) {
+  var article = root.querySelector('.obj_article_details');
+  if (!article) return;
+  var main = article.querySelector('.main_entry');
+  var galleys = article.querySelector('.entry_details > .item.galleys');
+  if (main && galleys && !article.querySelector('.pim-article-actions')) {
+    galleys.classList.add('pim-article-actions');
+    var authors = main.querySelector(':scope > .item.authors');
+    main.insertBefore(galleys, authors ? authors.nextSibling : main.firstChild);
+  }
+
+  var abstract = article.querySelector('.item.abstract');
+  if (abstract) {
+    var total = 0;
+    var slanted = 0;
+    Array.prototype.forEach.call(abstract.childNodes, function (node) {
+      if (node.nodeType === 1 && node.classList.contains('label')) return;
+      total += (node.textContent || '').replace(/\s+/g, '').length;
+    });
+    Array.prototype.forEach.call(abstract.querySelectorAll('em, i'), function (node) {
+      var outer = node.parentElement && node.parentElement.closest('em, i');
+      if (outer && abstract.contains(outer)) return; // counted with its outermost italic ancestor
+      slanted += (node.textContent || '').replace(/\s+/g, '').length;
+    });
+    if (total > 0 && slanted / total > 0.6) abstract.classList.add('pim-abstract-upright');
+  }
+
+  Array.prototype.forEach.call(article.querySelectorAll('.item.references .value p'), function (p) {
+    if (p.querySelector('.pim-ref-num')) return;
+    var first = p.firstChild;
+    while (first && first.nodeType === 3 && !first.nodeValue.trim()) first = first.nextSibling;
+    if (!first || first.nodeType !== 3) return;
+    var match = first.nodeValue.match(/^\s*(\[\d{1,3}\]|\d{1,3}\.)\s*/);
+    if (!match) return;
+    var num = document.createElement('span');
+    num.className = 'pim-ref-num';
+    num.textContent = match[1];
+    first.nodeValue = first.nodeValue.slice(match[0].length);
+    p.insertBefore(num, first);
+    p.insertBefore(document.createTextNode(' '), first);
+  });
+};
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.querySelector('.obj_article_details')) window.PIM.enhanceArticlePage(document);
+});
