@@ -27,6 +27,8 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         // Add our custom CSS overrides for MDPI-style UI/UX and Marawa branding
         $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css?v=20261014-4');
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
+        // Design system v2 for the public shell; must stay after the two layers above.
+        $this->addStyle('pustaka-minang-v2', 'styles/pim-v2.css?v=20261127-1');
 
         // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
         $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);
