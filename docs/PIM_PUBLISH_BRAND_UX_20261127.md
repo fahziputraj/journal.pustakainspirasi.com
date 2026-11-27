@@ -54,7 +54,7 @@ Not verified locally: there is no local OJS database, so the dashboard redirect,
 ## Production record (2026-11-27)
 
 - Source commit `9ea5020b` (branch `fix/pim-publish-brand-ux-20261127`). The payload was built with `git -c core.autocrlf=false archive` (LF, committed bytes). The optimised site logo `public/site/pageHeaderTitleImage_en.png` was added (same name, same 1672:941 ratio). Zip: 19 files, 1,708,574 bytes, SHA256 `09B8CEAADD03D780BB470CD5FE10E8598F324656E40A644DE5ED67B98771E29B`.
-- Drift check before replacement: 7 of 9 text files were identical to `main`. Live `header.tpl` and `headerHead.tpl` differed only by an editor-injected `<meta charset="utf-8">`, inside `<header>` and inside a comment, while `<head>` had no charset. The release restores `<meta charset>` in `<head>`.
+- Drift check before replacement: 7 of 9 text files were identical to `main`. `header.tpl` and `headerHead.tpl` appeared to differ by an injected `<meta charset="utf-8">`. A later check showed this is how cPanel `Fileman::get_file_content` returns files that contain `<head>`/`<header>`: the files on disk have the committed sizes, and the served HTML has exactly one `<meta charset>` in `<head>`. Never edit `.tpl` files through the cPanel editor or API, because a save would write the injected tag to disk.
 - Backup: all 14 replaced paths were copied to `/home/pusf3964/pim-backup-20261127/` (mirrored structure, sizes verified identical, `.htaccess` included). The release zip sits in the same folder.
 - Install: the cPanel Fileman extract into `/home/pusf3964/public_html/journal.pustakainspirasi.com/` listed exactly the 19 payload paths. Templates recompiled without a manual cache clear.
 - Live checks:
@@ -129,3 +129,7 @@ Verification:
 - The live audit gate passes with 0 blocking findings on `mbj/search`, `mbj/search/search?query=betel` and `mbj/index`. A control-overlap between the quick-search button and its input was found on the replays and fixed before release.
 - `live-routes.sh` exits 0.
 - Live at 375 px: the dock Search sheet opens without navigating, focuses `query`, uses the action `/mbj/search/search`, closes with Escape and returns focus to the dock item. The menu form is present.
+
+## Final drift check (2026-11-27)
+
+All 18 deployed runtime files match branch HEAD `50566344`. That is 12 text files by SHA-256 (the two header templates by byte size plus the served HTML, for the reason above) and 6 binaries by size. Production equals the branch.
