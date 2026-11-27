@@ -1144,3 +1144,211 @@
 :root body[class] .cmp_announcements.cmp_announcements {
   margin-inline: 0 !important;
 }
+
+/* ================================================================ search page v2
+   Plan: docs/superpowers/plans/2026-11-27-pim-search-ui.md (form enhanced by PIM.enhanceSearchPage). */
+:root body[class] .page_search form.pim-search-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "input button" "filters filters";
+  gap: 12px 0 !important;
+  padding: 20px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: none !important;
+}
+:root body[class] .page_search .pim-search-form .search_input {
+  grid-area: input;
+  position: relative;
+  min-width: 0;
+  margin: 0 !important;
+}
+:root body[class] .page_search .pim-search-form .search_input::before {
+  content: "\f002";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: var(--pim2-muted);
+  pointer-events: none;
+}
+:root body[class] .page_search .pim-search-form .search_input input.query {
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px;
+  padding: 0 14px 0 42px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-right: 0 !important;
+  border-radius: var(--pim2-radius) 0 0 var(--pim2-radius) !important;
+  font-size: 16px !important;
+}
+:root body[class] .page_search .pim-search-form > .submit {
+  grid-area: button;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root body[class] .page_search .pim-search-form > .submit button {
+  height: 48px !important;
+  min-height: 48px;
+  padding: 0 22px !important;
+  border-radius: 0 var(--pim2-radius) var(--pim2-radius) 0 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+:root body[class] .page_search .pim-search-filters {
+  grid-area: filters;
+  min-width: 0;
+}
+:root body[class] .page_search .pim-search-filters__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 4px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--pim2-accent);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+:root body[class] .page_search .pim-search-filters__summary::-webkit-details-marker {
+  display: none;
+}
+:root body[class] .page_search .pim-search-filters__summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .page_search .pim-search-filters[open] > .pim-search-filters__summary::after {
+  transform: rotate(-135deg) translateY(-1px);
+}
+:root body[class] .page_search .pim-search-filters fieldset.search_advanced {
+  display: grid !important;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px 24px !important;
+  margin: 12px 0 0 !important;
+  padding: 16px 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--pim2-line) !important;
+  background: transparent !important;
+}
+:root body[class] .page_search .search_advanced > legend {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+:root body[class] .page_search .search_advanced .date_range {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px !important;
+  min-width: 0;
+}
+:root body[class].pkp_page_search .pkp_structure_main .date_range fieldset {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+:root body[class] .page_search .date_range legend,
+:root body[class] .page_search .search_advanced .author label {
+  display: block;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .page_search .pim-date-part {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+:root body[class] .page_search .search_advanced .date_range label {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: normal !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_search .search_advanced .author {
+  min-width: 0;
+}
+:root body[class] .page_search .search_advanced .author input {
+  width: 100% !important;
+}
+/* Results and notices */
+:root body[class] .page_search .search_results {
+  list-style: none !important;
+  margin: 24px 0 0 !important;
+  padding: 0 !important;
+}
+:root body[class] .page_search .search_results > li {
+  margin: 0 !important;
+  padding: 16px 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title a {
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .authors {
+  margin-top: 4px;
+  font-size: 14px !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_search .cmp_notification {
+  margin-top: 24px !important;
+  padding: 16px 20px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-left: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font-size: 15px !important;
+}
+:root body[class] .page_search .cmp_notification strong {
+  color: var(--pim2-ink);
+}
+@media (max-width: 600px) {
+  :root body[class] .page_search form.pim-search-form {
+    padding: 16px !important;
+  }
+  :root body[class] .page_search .pim-search-filters fieldset.search_advanced,
+  :root body[class] .page_search .search_advanced .date_range {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root body[class] .page_search .pim-search-form > .submit button {
+    padding: 0 16px !important;
+  }
+}
+:root body[class] .page_search .pim-search-form > .submit button {
+  margin: 0 !important;
+}
+:root body[class] .page_search .search_results:empty {
+  display: none !important;
+}

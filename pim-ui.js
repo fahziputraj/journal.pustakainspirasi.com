@@ -994,3 +994,66 @@ window.PIM.buildRailSections = function (panel, options) {
 document.addEventListener('DOMContentLoaded', function () {
   window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
 });
+
+/*
+ * Search page (plan 2026-11-27-pim-search-ui): inline search bar, labelled date parts inside a
+ * collapsible "Refine results", and honest empty states. Field names and the form action are untouched.
+ */
+window.PIM = window.PIM || {};
+window.PIM.enhanceSearchPage = function (root) {
+  var form = root.querySelector('.page_search form.cmp_form');
+  if (!form || form.getAttribute('data-pim-enhanced')) return;
+  form.setAttribute('data-pim-enhanced', '1');
+  form.classList.add('pim-search-form');
+
+  var advanced = form.querySelector('fieldset.search_advanced');
+  if (advanced) {
+    advanced.querySelectorAll('.date_range fieldset').forEach(function (set) {
+      var legend = set.querySelector('legend');
+      if (legend) legend.textContent = legend.textContent.trim().replace(/^Published (After|Before)$/i, function (m, w) { return 'Published ' + w.toLowerCase(); });
+      Array.prototype.slice.call(set.querySelectorAll(':scope > label')).forEach(function (label) {
+        var select = label.nextElementSibling;
+        if (!select || select.tagName !== 'SELECT') return;
+        var part = document.createElement('div');
+        part.className = 'pim-date-part';
+        set.insertBefore(part, label);
+        part.appendChild(label);
+        part.appendChild(select);
+      });
+    });
+    var authorLabel = advanced.querySelector('.author label');
+    if (authorLabel && /^by author$/i.test(authorLabel.textContent.trim())) authorLabel.textContent = 'Author';
+    var details = document.createElement('details');
+    details.className = 'pim-search-filters';
+    var summary = document.createElement('summary');
+    summary.className = 'pim-search-filters__summary';
+    summary.textContent = 'Refine results';
+    details.appendChild(summary);
+    advanced.parentNode.insertBefore(details, advanced);
+    details.appendChild(advanced);
+    details.open = Array.prototype.some.call(advanced.querySelectorAll('select, input'), function (el) {
+      return el.value && el.value.trim();
+    });
+  }
+
+  var notice = root.querySelector('.page_search .cmp_notification');
+  var results = root.querySelector('.page_search .search_results');
+  var queryInput = form.querySelector('input[name="query"]');
+  var query = queryInput ? queryInput.value.trim() : '';
+  if (notice && results && !results.children.length && /no results/i.test(notice.textContent)) {
+    notice.textContent = '';
+    if (!query) {
+      notice.textContent = 'Search titles, abstracts and authors in this journal.';
+      notice.classList.add('pim-search-hint');
+    } else {
+      var strong = document.createElement('strong');
+      strong.textContent = 'No articles match "' + query + '".';
+      notice.appendChild(strong);
+      notice.appendChild(document.createTextNode(' Try fewer or different words.'));
+      notice.classList.add('pim-search-empty');
+    }
+  }
+};
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.body.classList.contains('pkp_page_search')) window.PIM.enhanceSearchPage(document);
+});
