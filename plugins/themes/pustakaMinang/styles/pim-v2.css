@@ -864,3 +864,9 @@
     transform: none;
   }
 }
+
+/* Form and breadcrumb links share the accent colour (OJS default blue elsewhere). */
+:root body[class] .pkp_structure_main :is(.cmp_form a:not([class*="button"]), .cmp_breadcrumbs a) {
+  color: var(--pim2-accent) !important;
+  text-underline-offset: 3px;
+}
