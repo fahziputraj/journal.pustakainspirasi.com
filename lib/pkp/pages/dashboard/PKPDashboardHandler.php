@@ -104,6 +104,11 @@ abstract class PKPDashboardHandler extends Handler
     public function authorize($request, &$args, $roleAssignments)
     {
         if (!$this->dashboardPage) {
+            // PIM 20261127: signed-out visits to /{journal}/dashboard ended in HTTP 500 because
+            // redirectHome() needs a user. Send them to login and return them here afterwards.
+            if (!$request->getUser()) {
+                \PKP\security\Validation::redirectLogin();
+            }
             $pkpPageRouter = $request->getRouter();  /** @var \PKP\core\PKPPageRouter $pkpPageRouter */
             $pkpPageRouter->redirectHome($request);
         }
