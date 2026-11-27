@@ -40,11 +40,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="footer-logo-mark">
-          {if $displayPageHeaderLogo}
-            <img src="{$publicFilesDir}/{$displayPageHeaderLogo.uploadName|escape:"url"}" alt="Pustaka Inspirasi Minang" loading="lazy" decoding="async" style="max-height: 50px; width: auto; object-fit: contain;">
-          {else}
-            <img src="{$baseUrl}/logo.png" alt="Pustaka Inspirasi Minang" loading="lazy" decoding="async" style="max-height: 50px; width: auto; object-fit: contain;">
-          {/if}
+          <img src="{$baseUrl}/plugins/themes/pustakaMinang/images/pim-logo.png?v=20261127" alt="Pustaka Inspirasi Minang" width="69" height="48" loading="lazy" decoding="async">
         </div>
         <h3>PIM Journal Portal</h3>
         <p>Pustaka Inspirasi Minang supports open access journals, rigorous peer review, and long-term scholarly archiving across biological, chemical, computer, mathematical, and physical sciences.</p>
@@ -92,7 +88,7 @@
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js?v=20261014-3"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20261127-3"></script>
 
 {load_script context="frontend"}
 

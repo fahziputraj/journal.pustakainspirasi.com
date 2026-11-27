@@ -10,6 +10,13 @@ namespace APP\plugins\themes\pustakaMinang;
 class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
 {
     /**
+     * Cache key for the locally patched OJS backend bundle (js/build.js).
+     * Change it whenever js/build.js changes: the host sends no Cache-Control for the
+     * bundle, so browsers keep the previous copy until its URL changes.
+     */
+    public const BACKEND_BUNDLE_VERSION = '3.5.0.4-pim.20261127';
+
+    /**
      * Initialize the theme's styles, scripts and hooks.
      */
     public function init()
@@ -20,9 +27,35 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         // Add our custom CSS overrides for MDPI-style UI/UX and Marawa branding
         $this->addStyle('pustaka-minang-layout', 'styles/pim-layout.css?v=20261014-4');
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
+        // Design system v2 for the public shell; must stay after the two layers above.
+        $this->addStyle('pustaka-minang-v2', 'styles/pim-v2.css?v=20261127-4');
+
+        // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
+        $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);
 
         // Hook into TemplateManager to register custom Smarty modifiers for views/downloads stats
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'registerSmartyModifiers']);
+
+        // Serve the patched backend bundle under its own cache key.
+        \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'versionBackendBundle']);
+    }
+
+    /**
+     * Re-register the core "pkpApp" bundle with a PIM version so cached copies are replaced.
+     * The URL already contains "?", so OJS does not append its own "?v=<app version>".
+     */
+    public function versionBackendBundle($hookName, $args)
+    {
+        $templateMgr = $args[0];
+        $templateMgr->addJavaScript(
+            'pkpApp',
+            $templateMgr->getTemplateVars('baseUrl') . '/js/build.js?v=' . self::BACKEND_BUNDLE_VERSION,
+            [
+                'priority' => \PKP\template\PKPTemplateManager::STYLE_SEQUENCE_LATE,
+                'contexts' => ['backend'],
+            ]
+        );
+        return false;
     }
 
     /**

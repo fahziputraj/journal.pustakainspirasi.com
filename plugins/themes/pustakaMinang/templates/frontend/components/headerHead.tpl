@@ -20,9 +20,14 @@
 	{/if}
 	<title>{$pimDocumentTitle|escape}{if $requestedPage|escape|default:"index" != 'index' && $currentContext && $currentContext->getLocalizedName()} | {$currentContext->getLocalizedName()|escape}{/if}</title>
 
-	{* Add favicon from the site root *}
-	<link rel="icon" href="{$baseUrl}/favicon.png" type="image/png">
-	<link rel="shortcut icon" href="{$baseUrl}/favicon.png" type="image/png">
+	{* PIM favicon set, unless the journal uploaded its own favicon in OJS (load_header outputs that one) *}
+	{* pim-favicon:start *}
+	{if !$currentContext || !$currentContext->getLocalizedFavicon()}
+		<link rel="icon" href="{$baseUrl}/favicon.ico" sizes="any">
+		<link rel="icon" type="image/png" sizes="32x32" href="{$baseUrl}/plugins/themes/pustakaMinang/images/favicon-32.png?v=20261127">
+		<link rel="apple-touch-icon" href="{$baseUrl}/plugins/themes/pustakaMinang/images/apple-touch-icon.png?v=20261127">
+	{/if}
+	{* pim-favicon:end *}
 
 	{load_header context="frontend"}
 	{load_stylesheet context="frontend"}

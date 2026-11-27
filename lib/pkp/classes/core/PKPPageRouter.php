@@ -406,6 +406,10 @@ class PKPPageRouter extends PKPRouter
         }
 
         $user = Auth::user(); /** @var \PKP\user\User $user */
+        // PIM 20261127: guard signed-out callers; $user->getId() on null caused HTTP 500.
+        if (!$user) {
+            return $request->url(null, 'index');
+        }
         $userId = $user->getId();
         // fetch user groups for the user in the current context
         $userGroups = UserGroup::query()

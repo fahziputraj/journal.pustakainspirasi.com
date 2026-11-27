@@ -2,9 +2,22 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/pusf3964/public_html/journal.pustakainspirasi.com/
-    - /bin/cp plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php $DEPLOYPATH/plugins/themes/pustakaMinang/PustakaMinangThemePlugin.php
-    - /bin/cp plugins/themes/pustakaMinang/styles/pim-layout.css $DEPLOYPATH/plugins/themes/pustakaMinang/styles/pim-layout.css
-    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/header.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl
-    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/components/footer.tpl
-    - /bin/cp plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl $DEPLOYPATH/plugins/themes/pustakaMinang/templates/frontend/pages/indexJournal.tpl
+    - export THEME=plugins/themes/pustakaMinang
+    - /bin/mkdir -p $DEPLOYPATH/$THEME/images
+    - /bin/cp .htaccess $DEPLOYPATH/.htaccess
+    - /bin/cp js/build.js $DEPLOYPATH/js/build.js
+    - /bin/cp logo.png $DEPLOYPATH/logo.png
+    - /bin/cp favicon.ico $DEPLOYPATH/favicon.ico
     - /bin/cp pim-ui.js $DEPLOYPATH/pim-ui.js
+    - /bin/cp lib/pkp/classes/core/PKPPageRouter.php $DEPLOYPATH/lib/pkp/classes/core/PKPPageRouter.php
+    - /bin/cp lib/pkp/pages/dashboard/PKPDashboardHandler.php $DEPLOYPATH/lib/pkp/pages/dashboard/PKPDashboardHandler.php
+    - /bin/cp $THEME/PustakaMinangThemePlugin.php $DEPLOYPATH/$THEME/PustakaMinangThemePlugin.php
+    - /bin/cp $THEME/styles/pim-layout.css $DEPLOYPATH/$THEME/styles/pim-layout.css
+    - /bin/cp $THEME/styles/pim-v2.css $DEPLOYPATH/$THEME/styles/pim-v2.css
+    - /bin/cp $THEME/styles/pim-backend.css $DEPLOYPATH/$THEME/styles/pim-backend.css
+    - /bin/cp $THEME/images/pim-logo.png $THEME/images/favicon-32.png $THEME/images/apple-touch-icon.png $DEPLOYPATH/$THEME/images/
+    - /bin/cp $THEME/templates/frontend/components/header.tpl $DEPLOYPATH/$THEME/templates/frontend/components/header.tpl
+    - /bin/cp $THEME/templates/frontend/components/headerHead.tpl $DEPLOYPATH/$THEME/templates/frontend/components/headerHead.tpl
+    - /bin/cp $THEME/templates/frontend/components/footer.tpl $DEPLOYPATH/$THEME/templates/frontend/components/footer.tpl
+    - /bin/cp $THEME/templates/frontend/pages/indexSite.tpl $DEPLOYPATH/$THEME/templates/frontend/pages/indexSite.tpl
+    - /bin/cp $THEME/templates/frontend/pages/indexJournal.tpl $DEPLOYPATH/$THEME/templates/frontend/pages/indexJournal.tpl

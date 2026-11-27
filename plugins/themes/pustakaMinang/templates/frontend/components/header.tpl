@@ -52,9 +52,9 @@
   <div class="pim-container">
     <a class="pim-brand" href="{$baseUrl}/">
       {if $displayPageHeaderLogo}
-        <img src="{$publicFilesDir}/{$displayPageHeaderLogo.uploadName|escape:"url"}" alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
+        <img src="{$publicFilesDir}/{$displayPageHeaderLogo.uploadName|escape:"url"}"{if $displayPageHeaderLogo.width && $displayPageHeaderLogo.height} width="{$displayPageHeaderLogo.width|escape}" height="{$displayPageHeaderLogo.height|escape}"{/if} alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
       {else}
-        <img src="{$baseUrl}/logo.png" alt="PIM Journal Logo">
+        <img src="{$baseUrl}/plugins/themes/pustakaMinang/images/pim-logo.png?v=20261127" width="344" height="240" alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
       {/if}
     </a>
 
@@ -86,15 +86,13 @@
 
 {if $gpPublicJournalLayout}
   <div class="pim-mobile-tools-backdrop" data-pim-tools-close aria-hidden="true"></div>
-  <div class="pim-mobile-tools-bar" aria-label="Mobile journal tools">
-    <button type="button" class="pim-mobile-tools-toggle" id="pimMobileToolsToggle" aria-expanded="false" aria-controls="pimJournalMenuPanel pimJournalLinksPanel">
-      <i class="fas fa-sliders"></i> Journal Tools
-    </button>
-    <div class="pim-mobile-tools-tabs" role="tablist" aria-label="Journal mobile panels">
-      <button type="button" role="tab" class="is-active" data-pim-tools-tab="menu" aria-controls="pimJournalMenuPanel" aria-selected="true">Menu</button>
-      <button type="button" role="tab" data-pim-tools-tab="links" aria-controls="pimJournalLinksPanel" aria-selected="false">Links</button>
-    </div>
-  </div>
+  {* Journal dock (phones and tablets): two panel buttons open the bottom sheet, two direct actions. *}
+  <nav class="pim-mobile-tools-bar pim-dock" aria-label="Journal tools">
+    <button type="button" class="pim-dock-item" data-pim-tools-tab="menu" aria-controls="pimJournalMenuPanel" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i><span>Menu</span></button>
+    <button type="button" class="pim-dock-item" data-pim-tools-tab="links" aria-controls="pimJournalLinksPanel" aria-expanded="false"><i class="fas fa-circle-info" aria-hidden="true"></i><span>Information</span></button>
+    <a class="pim-dock-item pim-dock-search" href="{url page="search"}"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></a>
+    <a class="pim-dock-item pim-dock-submit" href="{url page="about" op="submissions"}"><i class="fas fa-paper-plane" aria-hidden="true"></i><span>Submit</span></a>
+  </nav>
 {/if}
 
 {if $currentContext || $gpAccountLayout}

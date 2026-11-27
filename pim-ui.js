@@ -141,62 +141,156 @@ document.addEventListener('DOMContentLoaded', function() {
   // Popper style stripping removed to prevent layout thrashing and sluggishness.
 
 
-  var mobileToolsToggle = document.getElementById('pimMobileToolsToggle');
-  var mobileToolsTabs = document.querySelectorAll('[data-pim-tools-tab]');
+  // Journal dock and bottom sheet (spec 2026-11-27-pim-journal-tools-design).
+  // State lives on <body>: pim-tools-open plus pim-tools-tab-menu|links. Dock buttons open the
+  // sheet on their panel, close it when tapped again and switch panels otherwise.
+  var mobileToolsBar = document.querySelector('.pim-mobile-tools-bar');
   var mobileToolsClosers = document.querySelectorAll('[data-pim-tools-close]');
   var mobileToolsBackdrop = document.querySelector('.pim-mobile-tools-backdrop');
   var mobileMenuPanel = document.getElementById('pimJournalMenuPanel');
   var mobileLinksPanel = document.getElementById('pimJournalLinksPanel');
+  var mobileSearchPanel = null;
   var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
   var mobileToolsReturnFocus = null;
   var mobileToolsLastPanelFocus = null;
+  var mobileToolsTitles = { menu: 'Journal menu', links: 'Journal information', search: 'Search' };
+
+  // Quick search (plan 2026-11-27-pim-search-ui): a field at the top of the Journal Menu and a
+  // Search sheet opened from the dock. Both submit GET <journal>/search/search?query=…
+  var dockSearchLink = mobileToolsBar && mobileToolsBar.querySelector('.pim-dock-search');
+  var menuSearchLink = mobileMenuPanel && mobileMenuPanel.querySelector('.pim-journal-tools-group a[href$="/search"]');
+  var searchSource = dockSearchLink || menuSearchLink;
+  var searchAction = searchSource ? searchSource.getAttribute('href').replace(/\/+$/, '') + '/search' : '';
+  function buildSearchForm(className, inputId, placeholder) {
+    var currentQuery = new URLSearchParams(window.location.search).get('query') || '';
+    var form = document.createElement('form');
+    form.className = className;
+    form.setAttribute('action', searchAction);
+    form.setAttribute('method', 'get');
+    form.setAttribute('role', 'search');
+    var label = document.createElement('label');
+    label.className = 'pkp_screen_reader';
+    label.setAttribute('for', inputId);
+    label.textContent = 'Search this journal';
+    var input = document.createElement('input');
+    input.type = 'search';
+    input.id = inputId;
+    input.name = 'query';
+    input.value = currentQuery;
+    input.placeholder = placeholder || 'Search this journal';
+    input.setAttribute('autocomplete', 'off');
+    var button = document.createElement('button');
+    button.type = 'submit';
+    button.setAttribute('aria-label', 'Search');
+    button.innerHTML = '<i class="fas fa-magnifying-glass" aria-hidden="true"></i>';
+    form.appendChild(label);
+    form.appendChild(input);
+    form.appendChild(button);
+    return form;
+  }
+  if (searchAction && mobileMenuPanel) {
+    var toolsPanelInner = mobileMenuPanel.querySelector('.pim-journal-tools-panel');
+    var toolsHead = toolsPanelInner && toolsPanelInner.querySelector('.pim-journal-tools-head');
+    if (toolsPanelInner && !toolsPanelInner.querySelector('.pim-menu-search')) {
+      toolsPanelInner.insertBefore(buildSearchForm('pim-menu-search', 'pimMenuSearchQuery', 'Search'), toolsHead ? toolsHead.nextSibling : toolsPanelInner.firstChild);
+    }
+  }
+  if (searchAction && dockSearchLink) {
+    mobileSearchPanel = document.createElement('aside');
+    mobileSearchPanel.id = 'pimJournalSearchPanel';
+    mobileSearchPanel.className = 'pim-search-sheet';
+    mobileSearchPanel.setAttribute('aria-label', 'Search');
+    mobileSearchPanel.appendChild(buildSearchForm('pim-sheet-search', 'pimSheetSearchQuery'));
+    document.body.appendChild(mobileSearchPanel);
+    dockSearchLink.setAttribute('data-pim-tools-tab', 'search');
+    dockSearchLink.setAttribute('aria-controls', 'pimJournalSearchPanel');
+    dockSearchLink.setAttribute('aria-expanded', 'false');
+  }
+  var mobileToolsTabs = Array.prototype.slice.call(document.querySelectorAll('.pim-mobile-tools-bar [data-pim-tools-tab]'));
+  var mobileToolsPanels = { menu: mobileMenuPanel, links: mobileLinksPanel, search: mobileSearchPanel };
 
   if (!mobileLinksPanel) {
     mobileToolsTabs.forEach(function(button) {
       if (button.getAttribute('data-pim-tools-tab') === 'links') button.hidden = true;
     });
+    if (mobileToolsBar) mobileToolsBar.classList.add('pim-dock--compact');
   }
+
+  // Mark the current page for assistive technology; the visual state uses the same element.
+  document.querySelectorAll('.pim-journal-tools-panel a.is-active').forEach(function(link) {
+    link.setAttribute('aria-current', 'page');
+  });
 
   function isMobileToolsViewport() {
     return mobileToolsQuery ? mobileToolsQuery.matches : window.innerWidth <= 992;
   }
 
+  function addSheetHead(panel, tab) {
+    if (!panel || panel.querySelector(':scope > .pim-sheet-head')) return;
+    var head = document.createElement('div');
+    head.className = 'pim-sheet-head';
+    var title = document.createElement('h2');
+    title.textContent = mobileToolsTitles[tab];
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'pim-sheet-close';
+    close.setAttribute('aria-label', 'Close');
+    close.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
+    close.addEventListener('click', function() { closeMobileTools(); });
+    head.appendChild(title);
+    head.appendChild(close);
+    panel.insertBefore(head, panel.firstChild);
+  }
+  addSheetHead(mobileMenuPanel, 'menu');
+  addSheetHead(mobileLinksPanel, 'links');
+  addSheetHead(mobileSearchPanel, 'search');
+
+  function currentMobileTab() {
+    if (document.body.classList.contains('pim-tools-tab-links')) return 'links';
+    if (document.body.classList.contains('pim-tools-tab-search')) return 'search';
+    return 'menu';
+  }
+
+  function syncDockButtons() {
+    var open = document.body.classList.contains('pim-tools-open');
+    var tab = currentMobileTab();
+    mobileToolsTabs.forEach(function(button) {
+      var active = open && button.getAttribute('data-pim-tools-tab') === tab;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-expanded', active ? 'true' : 'false');
+    });
+  }
+
   function setMobileToolsTab(tab) {
-    var selected = tab === 'links' ? 'links' : 'menu';
+    var selected = mobileToolsPanels[tab] ? tab : 'menu';
     document.body.classList.toggle('pim-tools-tab-menu', selected === 'menu');
     document.body.classList.toggle('pim-tools-tab-links', selected === 'links');
-    mobileToolsTabs.forEach(function(button) {
-      var active = button.getAttribute('data-pim-tools-tab') === selected;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-selected', active ? 'true' : 'false');
-      button.setAttribute('tabindex', active ? '0' : '-1');
-    });
+    document.body.classList.toggle('pim-tools-tab-search', selected === 'search');
     if (isMobileToolsViewport()) {
-      if (mobileMenuPanel) {
-        mobileMenuPanel.setAttribute('aria-hidden', selected === 'menu' ? 'false' : 'true');
-        if (selected === 'menu') mobileMenuPanel.removeAttribute('inert');
-        else mobileMenuPanel.setAttribute('inert', '');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.setAttribute('aria-hidden', selected === 'links' ? 'false' : 'true');
-        if (selected === 'links') mobileLinksPanel.removeAttribute('inert');
-        else mobileLinksPanel.setAttribute('inert', '');
-      }
+      [[mobileMenuPanel, 'menu'], [mobileLinksPanel, 'links'], [mobileSearchPanel, 'search']].forEach(function(entry) {
+        if (!entry[0]) return;
+        var shown = document.body.classList.contains('pim-tools-open') && entry[1] === selected;
+        entry[0].setAttribute('aria-hidden', shown ? 'false' : 'true');
+        if (shown) entry[0].removeAttribute('inert');
+        else entry[0].setAttribute('inert', '');
+      });
     }
+    syncDockButtons();
   }
 
   function getSelectedMobilePanel() {
-    return document.body.classList.contains('pim-tools-tab-links') ? mobileLinksPanel : mobileMenuPanel;
+    return mobileToolsPanels[currentMobileTab()] || mobileMenuPanel;
   }
 
   function isMobileToolsPanelControl(control) {
     return !!control && ((mobileMenuPanel && mobileMenuPanel.contains(control))
-      || (mobileLinksPanel && mobileLinksPanel.contains(control)));
+      || (mobileLinksPanel && mobileLinksPanel.contains(control))
+      || (mobileSearchPanel && mobileSearchPanel.contains(control)));
   }
 
   function getMobileToolsFocusable(container) {
     if (!container) return [];
-    return Array.prototype.slice.call(container.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')).filter(function(control) {
+    return Array.prototype.slice.call(container.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]')).filter(function(control) {
       var visibility = window.getComputedStyle(control).visibility;
       return control.getClientRects().length && control.tabIndex >= 0
         && !control.matches(':disabled') && !control.closest('[inert]')
@@ -204,42 +298,40 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function openMobileTools(tab, options) {
-    if (!mobileToolsToggle || !isMobileToolsViewport()) return;
-    setMobileToolsTab(tab || (document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu'));
-    mobileToolsReturnFocus = document.activeElement;
-    document.body.classList.add('pim-tools-open');
-    mobileToolsToggle.setAttribute('aria-expanded', 'true');
-    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
+  function focusFirstInPanel() {
     var panel = getSelectedMobilePanel();
-    var firstControl = getMobileToolsFocusable(panel)[0];
-    if (firstControl && (!options || options.focusPanel !== false)) {
-      window.requestAnimationFrame(function() { firstControl.focus(); });
-    }
+    var first = panel && (panel.querySelector('input[name="query"]') || panel.querySelector('.pim-sheet-close') || getMobileToolsFocusable(panel)[0]);
+    if (first) window.requestAnimationFrame(function() { first.focus(); });
+  }
+
+  function openMobileTools(tab, opener) {
+    if (!isMobileToolsViewport()) return;
+    mobileToolsReturnFocus = opener || document.activeElement;
+    document.body.classList.add('pim-tools-open');
+    setMobileToolsTab(tab);
+    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
+    focusFirstInPanel();
   }
 
   function closeMobileTools(options) {
     document.body.classList.remove('pim-tools-open');
-    if (mobileToolsToggle) mobileToolsToggle.setAttribute('aria-expanded', 'false');
     if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'true');
     if (isMobileToolsViewport()) {
-      if (mobileMenuPanel) {
-        mobileMenuPanel.setAttribute('aria-hidden', 'true');
-        mobileMenuPanel.setAttribute('inert', '');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.setAttribute('aria-hidden', 'true');
-        mobileLinksPanel.setAttribute('inert', '');
-      }
+      [mobileMenuPanel, mobileLinksPanel, mobileSearchPanel].forEach(function(panel) {
+        if (!panel) return;
+        panel.setAttribute('aria-hidden', 'true');
+        panel.setAttribute('inert', '');
+      });
     }
+    syncDockButtons();
     if ((!options || options.restoreFocus !== false) && mobileToolsReturnFocus && mobileToolsReturnFocus.focus) {
       mobileToolsReturnFocus.focus();
     }
   }
 
-  if (mobileToolsToggle) {
+  if (mobileToolsTabs.length) {
     // CSS can hide a focused rail before the resize event runs. Remember its
-    // last focused control so the replacement toolbar can receive focus.
+    // last focused control so the dock can receive focus instead.
     document.addEventListener('focusin', function(e) {
       mobileToolsLastPanelFocus = isMobileToolsPanelControl(e.target) ? e.target : null;
     });
@@ -247,61 +339,38 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!isMobileToolsPanelControl(e.target)) mobileToolsLastPanelFocus = null;
     });
     setMobileToolsTab('menu');
-    mobileToolsToggle.addEventListener('click', function() {
-      if (document.body.classList.contains('pim-tools-open')) {
-        closeMobileTools();
-      } else {
-        openMobileTools();
-      }
-    });
   }
 
   mobileToolsTabs.forEach(function(button) {
-    button.addEventListener('click', function() {
+    button.addEventListener('click', function(e) {
       var tab = button.getAttribute('data-pim-tools-tab') || 'menu';
-      if (document.body.classList.contains('pim-tools-open')) {
+      // The dock Search link keeps its href (no-JS fallback); with JS it opens the Search sheet.
+      if (button.tagName === 'A') {
+        if (!isMobileToolsViewport()) return;
+        e.preventDefault();
+      }
+      if (!document.body.classList.contains('pim-tools-open')) {
+        openMobileTools(tab, button);
+      } else if (currentMobileTab() === tab) {
+        closeMobileTools();
+      } else {
+        mobileToolsReturnFocus = button;
         setMobileToolsTab(tab);
-        var panel = getSelectedMobilePanel();
-        var firstControl = getMobileToolsFocusable(panel)[0];
-        if (firstControl) firstControl.focus();
-      } else {
-        openMobileTools(tab);
+        focusFirstInPanel();
       }
-    });
-    button.addEventListener('keydown', function(e) {
-      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
-      var tabs = Array.prototype.slice.call(mobileToolsTabs).filter(function(tab) { return !tab.hidden; });
-      var index = tabs.indexOf(button);
-      if (e.key === 'Home') index = 0;
-      else if (e.key === 'End') index = tabs.length - 1;
-      else index = (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-      e.preventDefault();
-      var nextTab = tabs[index];
-      if (document.body.classList.contains('pim-tools-open')) {
-        setMobileToolsTab(nextTab.getAttribute('data-pim-tools-tab'));
-      } else {
-        openMobileTools(nextTab.getAttribute('data-pim-tools-tab'), { focusPanel: false });
-      }
-      nextTab.focus();
     });
   });
 
   mobileToolsClosers.forEach(function(closer) {
-    closer.addEventListener('click', closeMobileTools);
+    closer.addEventListener('click', function() { closeMobileTools(); });
   });
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && document.body.classList.contains('pim-tools-open')) closeMobileTools();
     if (e.key !== 'Tab' || !document.body.classList.contains('pim-tools-open')) return;
-    var panel = getSelectedMobilePanel();
-    var bar = document.querySelector('.pim-mobile-tools-bar');
-    var focusable = [];
-    [panel, bar].forEach(function(container) {
-      focusable = focusable.concat(getMobileToolsFocusable(container));
-    });
+    var focusable = getMobileToolsFocusable(getSelectedMobilePanel()).concat(getMobileToolsFocusable(mobileToolsBar));
     if (!focusable.length) return;
-    // Panel links follow the toolbar in the DOM. Explicitly cycle the logical
-    // drawer order so Tab cannot escape from the last link into page content.
+    // Cycle panel then dock explicitly so Tab cannot escape into page content.
     var currentIndex = focusable.indexOf(document.activeElement);
     var nextIndex = currentIndex === -1 ? 0 : (currentIndex + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
     e.preventDefault();
@@ -311,20 +380,17 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', function() {
     if (!isMobileToolsViewport()) {
       closeMobileTools({ restoreFocus: false });
-      if (mobileMenuPanel) {
-        mobileMenuPanel.removeAttribute('aria-hidden');
-        mobileMenuPanel.removeAttribute('inert');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.removeAttribute('aria-hidden');
-        mobileLinksPanel.removeAttribute('inert');
-      }
+      [mobileMenuPanel, mobileLinksPanel].forEach(function(panel) {
+        if (!panel) return;
+        panel.removeAttribute('aria-hidden');
+        panel.removeAttribute('inert');
+      });
     } else if (!document.body.classList.contains('pim-tools-open')) {
       var focusedControl = document.activeElement;
       var panelHadFocus = isMobileToolsPanelControl(focusedControl)
         || (focusedControl === document.body && isMobileToolsPanelControl(mobileToolsLastPanelFocus));
       closeMobileTools({ restoreFocus: false });
-      if (panelHadFocus && mobileToolsToggle) mobileToolsToggle.focus();
+      if (panelHadFocus && mobileToolsTabs[0]) mobileToolsTabs[0].focus();
     }
   });
 
@@ -860,4 +926,198 @@ document.addEventListener('DOMContentLoaded', function() {
   relabelPublicSubmitButtons();
   extractJournalHomepageWidgets();
   handleBrokenImages();
+});
+
+/*
+ * Journal home "Past Issues" (spec D-critique: no empty section headings).
+ * Builds cards from the public archive page with DOM text only (titles are never parsed as HTML),
+ * skips the first summary (the current issue, shown above) and keeps the section hidden when
+ * there is nothing else to show.
+ */
+window.PIM = window.PIM || {};
+window.PIM.renderPastIssues = function (container, archiveHtml, options) {
+  var limit = (options && options.limit) || 4;
+  var grid = container.querySelector('.pim-issues-grid');
+  if (!grid) return 0;
+  grid.textContent = '';
+  var doc = new DOMParser().parseFromString(archiveHtml, 'text/html');
+  var summaries = Array.prototype.slice.call(doc.querySelectorAll('.obj_issue_summary'), 1, 1 + limit);
+  summaries.forEach(function (item) {
+    var titleEl = item.querySelector('.title') || item.querySelector('h2 a') || item.querySelector('h2');
+    var linkEl = item.querySelector('a.title[href]') || item.querySelector('a[href]');
+    var href = linkEl ? linkEl.getAttribute('href') : '';
+    if (!href || !/^(https?:)?\//.test(href)) return;
+    var seriesEl = item.querySelector('.series') || item.querySelector('.identification');
+    var imgEl = item.querySelector('.cover img') || item.querySelector('img');
+    var title = titleEl ? titleEl.textContent.trim() : '';
+
+    var card = document.createElement('article');
+    card.className = 'pim-issue-card';
+    var coverLink = document.createElement('a');
+    coverLink.className = 'pim-issue-card__cover';
+    coverLink.href = href;
+    coverLink.setAttribute('tabindex', '-1');
+    coverLink.setAttribute('aria-hidden', 'true');
+    var img = document.createElement('img');
+    img.src = imgEl && imgEl.getAttribute('src') ? imgEl.getAttribute('src') : (container.dataset.fallbackCover || '');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    coverLink.appendChild(img);
+    var heading = document.createElement('h3');
+    var titleLink = document.createElement('a');
+    titleLink.href = href;
+    titleLink.textContent = title || 'View issue';
+    heading.appendChild(titleLink);
+    card.appendChild(coverLink);
+    card.appendChild(heading);
+    if (seriesEl && seriesEl.textContent.trim()) {
+      var series = document.createElement('p');
+      series.className = 'pim-issue-card__series';
+      series.textContent = seriesEl.textContent.trim();
+      card.appendChild(series);
+    }
+    grid.appendChild(card);
+  });
+  var count = grid.children.length;
+  container.hidden = count === 0;
+  return count;
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+  var containers = document.querySelectorAll('[data-pim-past-issues]');
+  if (!containers.length) return;
+  Array.prototype.forEach.call(containers, function (container) {
+    var url = container.dataset.archiveUrl;
+    if (!url) return;
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (response) { return response.ok ? response.text() : ''; })
+      .then(function (html) { window.PIM.renderPastIssues(container, html || ''); })
+      .catch(function () { container.hidden = true; })
+      .then(function () { window.__pimPastIssuesDone = true; });
+  });
+});
+
+/*
+ * Journal information rail: each titled OJS block becomes a disclosure section
+ * (spec 2026-11-27-pim-journal-tools-design). Links, order and stored HTML stay intact;
+ * only a leading/trailing "::" decoration is removed from visible text.
+ */
+window.PIM = window.PIM || {};
+window.PIM.stripRailDecoration = function (root) {
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  var node;
+  while ((node = walker.nextNode())) {
+    var match = /^(\s*)::\s*(.*?)\s*::(\s*)$/.exec(node.nodeValue);
+    if (match && match[2] && !(node.parentElement && node.parentElement.closest('a'))) {
+      node.nodeValue = match[1] + match[2] + match[3];
+    }
+  }
+};
+window.PIM.buildRailSections = function (panel, options) {
+  if (!panel) return 0;
+  var openCount = options && typeof options.open === 'number' ? options.open : 2;
+  window.PIM.stripRailDecoration(panel);
+  var blocks = Array.prototype.filter.call(panel.children, function (el) { return el.classList.contains('pkp_block'); });
+  var index = 0;
+  blocks.forEach(function (block) {
+    if (block.querySelector(':scope > details.pim-rail-section')) { index++; return; }
+    var title = block.querySelector(':scope > .title');
+    var label = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
+    var heading = null;
+    if (!label) {
+      heading = block.querySelector(':scope > .content > h2, :scope > .content > h3, :scope > .content > h4');
+      label = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : '';
+    }
+    if (!label) return;
+    var details = document.createElement('details');
+    details.className = 'pim-rail-section';
+    if (index < openCount) details.open = true;
+    var summary = document.createElement('summary');
+    summary.className = 'pim-rail-summary';
+    if (heading) {
+      summary.appendChild(heading);
+    } else {
+      var text = document.createElement('span');
+      text.textContent = label;
+      summary.appendChild(text);
+      title.hidden = true;
+    }
+    var body = document.createElement('div');
+    body.className = 'pim-rail-body';
+    Array.prototype.slice.call(block.childNodes).forEach(function (child) {
+      if (child !== title) body.appendChild(child);
+    });
+    details.appendChild(summary);
+    details.appendChild(body);
+    block.appendChild(details);
+    index++;
+  });
+  return panel.querySelectorAll('details.pim-rail-section').length;
+};
+document.addEventListener('DOMContentLoaded', function () {
+  window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
+});
+
+/*
+ * Search page (plan 2026-11-27-pim-search-ui): inline search bar, labelled date parts inside a
+ * collapsible "Refine results", and honest empty states. Field names and the form action are untouched.
+ */
+window.PIM = window.PIM || {};
+window.PIM.enhanceSearchPage = function (root) {
+  var form = root.querySelector('.page_search form.cmp_form');
+  if (!form || form.getAttribute('data-pim-enhanced')) return;
+  form.setAttribute('data-pim-enhanced', '1');
+  form.classList.add('pim-search-form');
+
+  var advanced = form.querySelector('fieldset.search_advanced');
+  if (advanced) {
+    advanced.querySelectorAll('.date_range fieldset').forEach(function (set) {
+      var legend = set.querySelector('legend');
+      if (legend) legend.textContent = legend.textContent.trim().replace(/^Published (After|Before)$/i, function (m, w) { return 'Published ' + w.toLowerCase(); });
+      Array.prototype.slice.call(set.querySelectorAll(':scope > label')).forEach(function (label) {
+        var select = label.nextElementSibling;
+        if (!select || select.tagName !== 'SELECT') return;
+        var part = document.createElement('div');
+        part.className = 'pim-date-part';
+        set.insertBefore(part, label);
+        part.appendChild(label);
+        part.appendChild(select);
+      });
+    });
+    var authorLabel = advanced.querySelector('.author label');
+    if (authorLabel && /^by author$/i.test(authorLabel.textContent.trim())) authorLabel.textContent = 'Author';
+    var details = document.createElement('details');
+    details.className = 'pim-search-filters';
+    var summary = document.createElement('summary');
+    summary.className = 'pim-search-filters__summary';
+    summary.textContent = 'Refine results';
+    details.appendChild(summary);
+    advanced.parentNode.insertBefore(details, advanced);
+    details.appendChild(advanced);
+    details.open = Array.prototype.some.call(advanced.querySelectorAll('select, input'), function (el) {
+      return el.value && el.value.trim();
+    });
+  }
+
+  var notice = root.querySelector('.page_search .cmp_notification');
+  var results = root.querySelector('.page_search .search_results');
+  var queryInput = form.querySelector('input[name="query"]');
+  var query = queryInput ? queryInput.value.trim() : '';
+  if (notice && results && !results.children.length && /no results/i.test(notice.textContent)) {
+    notice.textContent = '';
+    if (!query) {
+      notice.textContent = 'Search titles, abstracts and authors in this journal.';
+      notice.classList.add('pim-search-hint');
+    } else {
+      var strong = document.createElement('strong');
+      strong.textContent = 'No articles match "' + query + '".';
+      notice.appendChild(strong);
+      notice.appendChild(document.createTextNode(' Try fewer or different words.'));
+      notice.classList.add('pim-search-empty');
+    }
+  }
+};
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.body.classList.contains('pkp_page_search')) window.PIM.enhanceSearchPage(document);
 });

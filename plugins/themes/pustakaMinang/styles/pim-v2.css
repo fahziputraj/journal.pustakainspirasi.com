@@ -1,0 +1,1453 @@
+/*
+ * PIM public shell, design system v2 ("clean international journal").
+ * Spec: docs/superpowers/specs/2026-11-27-pim-journal-requests-design.md section 4b.
+ * Loaded after pim-layout.css and custom.css. Selectors are prefixed with `:root body[class]`
+ * so they win over the earlier layer without editing it; existing class names are unchanged.
+ */
+
+:root {
+  --pim2-font: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --pim2-ink: #1e2022;
+  --pim2-text: #334155;
+  --pim2-muted: #5b6575;
+  --pim2-bg: #ffffff;
+  --pim2-bg-alt: #f7f8fa;
+  --pim2-line: #e3e7ed;
+  --pim2-line-strong: #c9d0da;
+  --pim2-accent: #a91d22;
+  --pim2-accent-hover: #8b181c;
+  --pim2-accent-soft: #fbefef;
+  --pim2-gold: #d2a758;
+  --pim2-gold-ink: #8a6418;
+  --pim2-gold-soft: #fbf5e8;
+  --pim2-radius: 8px;
+  --pim2-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --pim2-fast: 160ms;
+  /* The earlier layer reads these names; point them at the v2 values. */
+  --pim-font-sans: var(--pim2-font);
+  --pim-font-serif: var(--pim2-font);
+  --pim-muted: var(--pim2-muted);
+}
+
+/* ---------------------------------------------------------------- base */
+:root body[class] {
+  font-family: var(--pim2-font) !important;
+  color: var(--pim2-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+:root body[class] ::selection {
+  background: #f3d9d9;
+  color: var(--pim2-ink);
+}
+:root body[class] :is(h1, h2, h3, h4) {
+  font-family: var(--pim2-font) !important;
+  color: var(--pim2-ink);
+  text-wrap: balance;
+}
+:root body[class] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--pim2-accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+:root body[class] :is(a, button) {
+  transition: color var(--pim2-fast) var(--pim2-ease), background-color var(--pim2-fast) var(--pim2-ease),
+    border-color var(--pim2-fast) var(--pim2-ease), transform var(--pim2-fast) var(--pim2-ease) !important;
+}
+
+/* ---------------------------------------------------------------- buttons */
+:root body[class] :is(.btn-publish, .pim-journal-submit, .pim-home-current-link) {
+  background: var(--pim2-accent) !important;
+  border: 1px solid var(--pim2-accent) !important;
+  color: #ffffff !important;
+  border-radius: var(--pim2-radius) !important;
+  font-family: var(--pim2-font) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+  min-height: 40px;
+  padding: 10px 16px !important;
+  box-shadow: none !important;
+  justify-content: center;
+}
+:root body[class] :is(.btn-publish, .pim-journal-submit, .pim-home-current-link):hover {
+  background: var(--pim2-accent-hover) !important;
+  border-color: var(--pim2-accent-hover) !important;
+  color: #ffffff !important;
+}
+:root body[class] :is(.btn-publish, .pim-journal-submit, .pim-home-current-link) i {
+  color: inherit !important;
+}
+/* Secondary actions: card-level submit and the right-rail submission block. */
+:root body[class] :is(.pim-btn-submit, .pim-journal-sidebar .block_make_submission a) {
+  background: var(--pim2-bg) !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  color: var(--pim2-ink) !important;
+  border-radius: var(--pim2-radius) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  min-height: 40px;
+  padding: 9px 14px !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+:root body[class] :is(.pim-btn-submit, .pim-journal-sidebar .block_make_submission a):hover {
+  border-color: var(--pim2-accent) !important;
+  color: var(--pim2-accent) !important;
+  background: var(--pim2-bg) !important;
+}
+
+/* ---------------------------------------------------------------- top bar */
+:root body[class] .pim-topbar {
+  background: var(--pim2-bg-alt) !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+  padding: 0 !important;
+}
+:root body[class] .pim-topbar .pim-container {
+  min-height: 32px;
+  flex-wrap: wrap !important;
+  gap: 4px 16px !important;
+}
+:root body[class] :is(.pim-topbar-left, .pim-topbar-right) {
+  min-width: 0;
+}
+:root body[class] :is(.pim-topbar-left, .pim-topbar-right) a {
+  color: var(--pim2-muted) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  min-height: 32px;
+  overflow-wrap: anywhere;
+}
+:root body[class] :is(.pim-topbar-left, .pim-topbar-right) a:hover {
+  color: var(--pim2-accent) !important;
+}
+
+/* ---------------------------------------------------------------- header */
+:root body[class] .pim-header {
+  padding-block: 12px !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-header .pim-container {
+  position: relative !important;
+  min-width: 0;
+}
+:root body[class] .pim-brand {
+  min-width: 0;
+}
+:root body:not(.pim_public_journal) .pim-brand img {
+  height: 56px !important;
+  max-width: 220px !important;
+}
+:root body[class] .pim-nav a {
+  font-family: var(--pim2-font) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] :is(.pim-nav a:hover, .pim-nav a.active) {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-header-actions {
+  min-width: 0;
+  gap: 12px !important;
+}
+:root body[class] .pim-header-actions > * {
+  min-width: 0;
+}
+:root body[class] .btn-login {
+  color: var(--pim2-ink) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  min-height: 44px;
+  padding-inline: 4px;
+}
+:root body[class] .btn-login:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .nav-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: var(--pim2-line-strong) !important;
+  border-radius: var(--pim2-radius) !important;
+}
+@media (max-width: 768px) {
+  :root body:not(.pim_public_journal) .pim-brand img {
+    height: 44px !important;
+  }
+}
+/* D1: on phones the site-level hamburger joins the logo row instead of overflowing the actions row. */
+@media (max-width: 480px) {
+  :root body[class] .pim-header .nav-toggle {
+    position: absolute !important;
+    top: 0;
+    right: var(--pim-gutter, 16px);
+    margin: 0 !important;
+  }
+  :root body[class] .pim-header-actions {
+    margin-left: 0 !important;
+  }
+  :root body[class] .pim-header-actions .btn-publish {
+    white-space: nowrap !important;
+    padding: 10px 14px !important;
+  }
+}
+
+/* ---------------------------------------------------------------- footer */
+:root body[class] .footer.pkp_structure_footer_wrapper {
+  background: var(--pim2-bg-alt) !important;
+  border-top: 1px solid var(--pim2-line) !important;
+  padding: 48px 0 24px !important;
+  margin-top: 48px !important;
+  color: var(--pim2-text) !important;
+}
+/* The brand column already carries the mission; the duplicate serif topline is dropped. */
+:root body[class] .footer-topline {
+  display: none !important;
+}
+:root body[class] .footer-grid {
+  gap: 32px !important;
+  margin-bottom: 32px !important;
+}
+:root body[class] .footer-grid > * {
+  min-width: 0;
+}
+:root body[class] .footer-brand h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+  margin: 12px 0 6px !important;
+}
+:root body[class] .footer-brand p {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: var(--pim2-muted) !important;
+  max-width: 52ch;
+}
+:root body[class] .footer-grid h4 {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  border-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 0 12px !important;
+}
+:root body[class] :is(.footer-links-list a, .footer-contact-item span, .footer-contact-item a, .footer-bottom span, .footer-bottom a, .footer-grid h3, .footer-grid h4) {
+  overflow-wrap: anywhere;
+}
+:root body[class] .footer-links-list a,
+:root body[class] .footer-contact-item {
+  color: var(--pim2-text) !important;
+  font-size: 14px !important;
+}
+:root body[class] .footer-links-list a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .footer-contact-item i {
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .footer-bottom {
+  border-top: 1px solid var(--pim2-line) !important;
+  padding-top: 20px !important;
+  font-size: 13px !important;
+  color: var(--pim2-muted) !important;
+  gap: 8px 24px;
+  flex-wrap: wrap;
+}
+:root body[class] .footer-bottom a {
+  color: var(--pim2-accent) !important;
+}
+
+/* ---------------------------------------------------------------- badges and accents (D3) */
+:root body[class] .pim-badge {
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 3px 10px !important;
+  border: 0 !important;
+}
+:root body[class] .pim-badge-oa {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-badge-pr {
+  background: var(--pim2-gold-soft) !important;
+  color: var(--pim2-gold-ink) !important;
+}
+:root body[class] :is(.pim-badge, .pim-badge i) {
+  color: inherit;
+}
+:root body[class] :is(.pim-view-link, .pim-home-current-series) {
+  color: var(--pim2-gold-ink) !important;
+}
+:root body[class] .pim-view-link {
+  color: var(--pim2-accent) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+:root body[class] .pim-view-link:hover {
+  color: var(--pim2-accent-hover) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- portal directory */
+:root body[class] .pim-portal-layout > * {
+  min-width: 0;
+}
+:root body[class] .pim-sidebar-card,
+:root body[class] .jl-insight-card {
+  background: var(--pim2-bg) !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-sidebar-card h3,
+:root body[class] .jl-insight-card h2 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+:root body[class] .pim-sidebar-btn {
+  color: var(--pim2-ink) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  min-height: 40px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+:root body[class] .pim-sidebar-btn:hover,
+:root body[class] .pim-sidebar-btn.is-active {
+  border-color: var(--pim2-accent) !important;
+  color: var(--pim2-accent) !important;
+  background: var(--pim2-accent-soft) !important;
+}
+:root body[class] .pim-sidebar-btn .count {
+  flex: none;
+  color: var(--pim2-text) !important;
+  background: var(--pim2-bg-alt) !important;
+}
+:root body[class] .pim-sidebar-journal-link {
+  font-size: 14px !important;
+  color: var(--pim2-ink) !important;
+  min-width: 0;
+}
+:root body[class] .pim-sidebar-journal-link:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-main-toolbar {
+  flex-wrap: wrap !important;
+  gap: 12px 16px !important;
+  min-width: 0;
+}
+:root body[class] :is(.pim-main-toolbar-left, .pim-main-toolbar-right) {
+  min-width: 0;
+}
+:root body[class] .pim-toolbar-title {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--pim2-ink) !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-sort-btn {
+  white-space: nowrap !important;
+  min-width: 2.75rem;
+  min-height: 36px;
+}
+:root body[class] .pim-sort-btn.is-active {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-card {
+  background: var(--pim2-bg) !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  box-shadow: none !important;
+  padding: 20px 24px !important;
+  min-width: 0;
+}
+:root body[class] .pim-journal-card:hover {
+  border-color: var(--pim2-line-strong) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-card-header {
+  gap: 16px !important;
+  min-width: 0;
+}
+:root body[class] .pim-card-title-group {
+  min-width: 0;
+}
+:root body[class] .pim-card-thumb {
+  flex: none;
+  width: 88px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg) !important;
+  overflow: hidden;
+}
+:root body[class] .pim-card-thumb img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto;
+  object-fit: contain !important;
+}
+:root body[class] .pim-journal-title {
+  font-size: 18px !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-title a {
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-journal-title a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-desc {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  color: var(--pim2-text) !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+:root body[class] .pim-card-actions {
+  border-top: 1px solid var(--pim2-line) !important;
+  padding-top: 14px !important;
+  margin-top: 14px !important;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+:root body[class] .pim-portal-right-col {
+  min-width: 0;
+}
+@media (max-width: 1024px) {
+  :root body[class] .pim-portal-right-col {
+    width: auto !important;
+    max-width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  :root body[class] .pim-journal-card {
+    padding: 16px !important;
+  }
+  :root body[class] .pim-card-thumb {
+    width: 64px !important;
+  }
+  :root body[class] .pim-main-toolbar-right {
+    width: 100%;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ---------------------------------------------------------------- journal home */
+:root body[class] .page_index_journal .pim-journal-title {
+  font-size: clamp(1.5rem, 1.15rem + 1.4vw, 2rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+:root body[class] .pkp_structure_main :is(.current_issue > h2, .pim-past-issues > h2, #pim-popular-issues-container > h2) {
+  font-size: 1.375rem !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+  margin: 32px 0 16px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .pim-home-current-issue-card {
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  box-shadow: none !important;
+  background: var(--pim2-bg) !important;
+}
+:root body[class] .pim-home-current-series {
+  color: var(--pim2-gold-ink) !important;
+  font-weight: 600 !important;
+}
+:root body[class] .pim-additional-home-content table {
+  border-collapse: collapse !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius);
+}
+:root body[class] .pim-additional-home-content :is(td, th) {
+  border: 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+  background: var(--pim2-bg) !important;
+  font-size: 14.5px;
+}
+:root body[class] .pim-additional-home-content tr > td:first-child {
+  color: var(--pim2-muted) !important;
+  font-size: 14px;
+}
+:root body[class] .pim-additional-home-content a {
+  color: var(--pim2-accent) !important;
+  text-underline-offset: 3px;
+}
+
+/* Journal rails: lighter, hairline structure, clear active state. */
+:root body[class] .pim-journal-tools-panel {
+  background: var(--pim2-bg-alt) !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-journal-tools-head span {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-tools-group h2 {
+  color: var(--pim2-muted) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.06em !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-tools-panel a:not(.pim-journal-submit) {
+  color: var(--pim2-ink) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  min-height: 40px;
+  border-radius: 6px !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-tools-panel a:not(.pim-journal-submit):hover {
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-submit {
+  width: 100%;
+}
+:root body[class] .pim-journal-sidebar .pkp_block {
+  background: var(--pim2-bg) !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-journal-sidebar .pkp_block .title {
+  color: var(--pim2-ink) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-sidebar .pkp_block a {
+  color: var(--pim2-ink);
+}
+:root body[class] .pim-journal-sidebar .pkp_block a:hover {
+  color: var(--pim2-accent) !important;
+}
+/* D6: indexing and tool logos keep their natural proportions. */
+:root body[class] :is(.pim-widget-indexing-in-progress, .pim-widget-recommended-tools, .pim-widget-indexed-by) .content img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 40px !important;
+  object-fit: contain !important;
+}
+/* D5: keep focused content clear of the fixed mobile Journal Tools bar. */
+@media (max-width: 992px) {
+  html:has(body.pim_public_journal) {
+    scroll-padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+}
+
+/* ---------------------------------------------------------------- content pages */
+:root body[class] .pkp_structure_main {
+  color: var(--pim2-text);
+}
+:root body[class] .pkp_structure_main .page > h1,
+:root body[class] .pkp_structure_main > .page h1:first-of-type {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pkp_structure_main .page :is(h2, h3) {
+  overflow-wrap: anywhere;
+}
+:root body[class] .pkp_structure_main .page :is(p, li) a:not([class]) {
+  color: var(--pim2-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:root body[class] .cmp_breadcrumbs {
+  font-size: 14px !important;
+  color: var(--pim2-muted) !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pkp_structure_main .page table:not(.pim-additional-home-content table) {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+/* ---------------------------------------------------------------- forms and account pages */
+:root body[class] .pkp_structure_main form :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="url"], input[type="tel"], select, textarea) {
+  min-height: 44px;
+  font-size: 16px !important;
+  font-family: var(--pim2-font) !important;
+  color: var(--pim2-ink) !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: var(--pim2-radius) !important;
+  padding: 10px 12px !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: none !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+:root body[class] .pkp_structure_main form :is(input, select, textarea):focus {
+  border-color: var(--pim2-accent) !important;
+}
+:root body[class] .pkp_structure_main form .label,
+:root body[class] .pkp_structure_main form label {
+  color: var(--pim2-ink);
+  font-weight: 600;
+  font-size: 14px;
+}
+:root body[class] .pkp_structure_main form :is(button[type="submit"], button.submit, .buttons button:not(.cmp_button_link)) {
+  background: var(--pim2-accent) !important;
+  background-image: none !important;
+  border: 1px solid var(--pim2-accent) !important;
+  color: #ffffff !important;
+  border-radius: var(--pim2-radius) !important;
+  font-family: var(--pim2-font) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  min-height: 44px;
+  padding: 10px 20px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+:root body[class] .pkp_structure_main form :is(button[type="submit"], button.submit, .buttons button:not(.cmp_button_link)):hover {
+  background: var(--pim2-accent-hover) !important;
+  border-color: var(--pim2-accent-hover) !important;
+}
+:root body[class] .pkp_structure_main form :is(.buttons a, a.register, a.login, .lost_password a) {
+  color: var(--pim2-accent) !important;
+  text-underline-offset: 3px;
+}
+:root body[class] .pkp_structure_main form fieldset {
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- motion */
+@media (prefers-reduced-motion: reduce) {
+  :root body[class] *,
+  :root body[class] *::before,
+  :root body[class] *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------- iteration 2: audited residuals */
+/* Screen-reader text: the parent theme parks it at left:-2000px, which creates off-screen
+   overflow; keep it clipped in place instead (still announced, never visible). */
+:root body[class] .pkp_screen_reader:not(:focus) {
+  left: auto !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%);
+}
+/* Primary navigation copes with long labels and narrow widths. */
+:root body[class] .pim-nav {
+  min-width: 0;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+:root body[class] .pim-nav a {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-submit {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+/* D1 (journal and site pages): the actions row wraps instead of overflowing on phones. */
+@media (max-width: 480px) {
+  :root body[class] .pim-header .pim-container {
+    flex-wrap: wrap !important;
+    row-gap: 10px !important;
+  }
+  :root body[class] .pim-header-actions {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px 12px !important;
+  }
+  :root body[class] .pim-header-actions .btn-publish {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: 14px !important;
+  }
+  :root body[class] .pim-header-actions .btn-publish i {
+    display: none !important;
+  }
+  :root body.pim_public_journal .pim-brand img {
+    height: 44px !important;
+  }
+}
+/* D2: sort controls never break "A-Z" and never push the page sideways. */
+:root body[class] .pim-sort-btn-group {
+  flex-wrap: wrap;
+  max-width: 100%;
+  min-width: 0;
+}
+:root body[class] .pim-sort-btn {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:root body[class] .pim-main-toolbar-right {
+  flex-wrap: wrap !important;
+  max-width: 100%;
+}
+:root body[class] .pim-portal-right-col .pim-sidebar-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Sidebar block images (custom HTML with width/height attributes) keep their proportions. */
+:root body[class] .pim-journal-sidebar .pkp_block img {
+  height: auto !important;
+  max-width: 100% !important;
+  object-fit: contain;
+}
+/* Issue archive: gold series text uses the contrast-safe ink; grid tracks may shrink. */
+:root body[class] .obj_issue_summary .series {
+  color: var(--pim2-gold-ink) !important;
+}
+:root body[class].pkp_page_issue.pkp_op_archive .issues {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)) !important;
+}
+:root body[class].pkp_page_issue.pkp_op_archive .issues > * {
+  min-width: 0;
+}
+/* Search: date selects share the row without overflowing. */
+:root body[class].pkp_page_search .pkp_structure_main .date_range fieldset {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- iteration 3: audited residuals */
+/* Parent theme gives the archive list negative side margins, which overflow narrow viewports. */
+:root body[class] .issues_archive {
+  margin-inline: 0 !important;
+}
+/* Search date labels are screen-reader text parked at left:-2000px by the parent theme. */
+:root body[class] .search_advanced .date_range label {
+  position: absolute !important;
+  left: auto !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:root body[class].pkp_page_search .pkp_structure_main .date_range select {
+  margin: 0 !important;
+  min-width: 0;
+}
+/* Portal: right-rail cards keep their 280px preference only when it fits. */
+:root body[class] .pim-portal-right-col > .pim-sidebar-card {
+  min-width: min(280px, 100%) !important;
+}
+/* Header actions may shrink; labels wrap only when they genuinely cannot fit. */
+:root body[class] .pim-header-actions {
+  flex-shrink: 1 !important;
+}
+:root body[class] :is(.btn-login, .btn-publish) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+:root body[class] .btn-publish {
+  white-space: normal !important;
+}
+/* The skip link must disappear immediately when focus leaves it. */
+:root body[class] .pim-skip-link {
+  transition: none !important;
+}
+:root body[class] :is(.pim-mobile-filter-toggle, .pim-sort-label) {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------- count-aware sections and issue cards */
+/* Sections the scripts hide when they have nothing to show must stay hidden over theme display rules. */
+:root body[class] :is(#activeFiltersCard, #jlFeaturedSection, .pim-past-issues, .jl-letter-header)[hidden] {
+  display: none !important;
+}
+:root body[class] .pim-past-issues .pim-issues-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: 16px;
+}
+:root body[class] .pim-issue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--pim2-bg);
+  border: 1px solid var(--pim2-line);
+  border-radius: var(--pim2-radius);
+  transition: border-color var(--pim2-fast) var(--pim2-ease), transform var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .pim-issue-card:hover {
+  border-color: var(--pim2-line-strong);
+  transform: translateY(-2px);
+}
+:root body[class] .pim-issue-card__cover img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--pim2-bg-alt);
+  border-radius: 6px;
+}
+:root body[class] .pim-issue-card h3 {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-issue-card h3 a {
+  color: var(--pim2-ink) !important;
+  text-decoration: none !important;
+}
+:root body[class] .pim-issue-card h3 a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-issue-card__series {
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: var(--pim2-gold-ink) !important;
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root body[class] .pim-issue-card:hover {
+    transform: none;
+  }
+}
+
+/* Form and breadcrumb links share the accent colour (OJS default blue elsewhere). */
+:root body[class] .pkp_structure_main :is(.cmp_form a:not([class*="button"]), .cmp_breadcrumbs a) {
+  color: var(--pim2-accent) !important;
+  text-underline-offset: 3px;
+}
+
+/* ================================================================ journal tools v2
+   Spec: docs/superpowers/specs/2026-11-27-pim-journal-tools-design.md
+   Dock + bottom sheet below 993px, collapsible rail sections at every width,
+   and a tonal current-page state (no bars, borders or inset shadows). */
+
+/* ---- menu items: rest, hover, current, pressed */
+:root body[class] .pim-journal-tools-group a {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+  min-height: 40px;
+  padding: 8px 10px !important;
+  border-radius: var(--pim2-radius) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--pim2-ink) !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+}
+:root body[class] .pim-journal-tools-group a i {
+  flex: none;
+  width: 20px !important;
+  font-size: 14px !important;
+  text-align: center;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .pim-journal-tools-group a:hover {
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-journal-tools-group a:active {
+  transform: scale(0.98);
+}
+:root body[class] .pim-journal-tools-group a:is(.is-active, [aria-current="page"]) {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+:root body[class] .pim-journal-tools-group a:is(.is-active, [aria-current="page"]) i {
+  color: var(--pim2-accent) !important;
+}
+
+/* ---- rail sections (details/summary built by PIM.buildRailSections) */
+:root body[class] .pim-rail-section {
+  margin: 0;
+}
+:root body[class] .pim-rail-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0;
+  padding: 4px 2px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--pim2-ink);
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+}
+:root body[class] .pim-rail-summary::-webkit-details-marker {
+  display: none;
+}
+:root body[class] .pim-rail-summary::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-right: 1.5px solid var(--pim2-muted);
+  border-bottom: 1.5px solid var(--pim2-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .pim-rail-section[open] > .pim-rail-summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+:root body[class] .pim-rail-summary:hover {
+  color: var(--pim2-accent);
+}
+:root body[class] .pim-rail-summary :is(h2, h3, h4, .title) {
+  all: unset;
+  font: inherit;
+  color: inherit;
+}
+:root body[class] .pim-rail-body {
+  padding-top: 4px;
+}
+
+/* ---- dock and bottom sheet (phones and tablets) */
+@media (max-width: 992px) {
+  :root body.pim_public_journal .pim-mobile-tools-bar.pim-dock {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch !important;
+    gap: 0 !important;
+    height: auto !important;
+    min-height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 6px env(safe-area-inset-bottom, 0px) !important;
+    background: var(--pim2-bg) !important;
+    border-top: 1px solid var(--pim2-line) !important;
+    box-shadow: none !important;
+  }
+  :root body.pim_public_journal .pim-dock.pim-dock--compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  :root body.pim_public_journal .pim-dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 56px;
+    padding: 4px 2px;
+    border: 0 !important;
+    border-radius: var(--pim2-radius);
+    background: transparent !important;
+    color: var(--pim2-muted) !important;
+    font: 600 12px/1.1 var(--pim2-font) !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :root body.pim_public_journal .pim-dock-item[hidden] {
+    display: none !important;
+  }
+  :root body.pim_public_journal .pim-dock-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Tonal indicator behind the icon; scales in, never a bar or border. */
+  :root body.pim_public_journal .pim-dock-item i {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    max-width: 100%;
+    height: 30px;
+    border-radius: 999px;
+    font-size: 17px;
+    color: inherit;
+    background: transparent;
+    transition: background-color var(--pim2-fast) var(--pim2-ease), transform var(--pim2-fast) var(--pim2-ease);
+  }
+  :root body.pim_public_journal .pim-dock-item:hover {
+    color: var(--pim2-ink) !important;
+  }
+  :root body.pim_public_journal .pim-dock-item:active i {
+    transform: scale(0.92);
+  }
+  :root body.pim_public_journal .pim-dock-item:is(.is-active, [aria-expanded="true"]) {
+    color: var(--pim2-accent) !important;
+  }
+  :root body.pim_public_journal .pim-dock-item:is(.is-active, [aria-expanded="true"]) i {
+    background: var(--pim2-accent-soft);
+    animation: pim-dock-pill 200ms var(--pim2-ease);
+  }
+  :root body.pim_public_journal .pim-dock-submit {
+    color: var(--pim2-accent) !important;
+  }
+
+  /* Sheet: both panels rise from the dock as one anchored surface. */
+  :root body.pim_public_journal .pim-mobile-tools-backdrop {
+    background: rgba(30, 32, 34, 0.45) !important;
+    backdrop-filter: none !important;
+  }
+  :root body.pim_public_journal.pim-tools-open.pim-tools-tab-menu .pim-journal-tools,
+  :root body.pim_public_journal.pim-tools-open.pim-tools-tab-links .pim-journal-sidebar {
+    inset: auto 0 calc(60px + env(safe-area-inset-bottom, 0px)) 0 !important;
+    max-height: min(80dvh, 640px) !important;
+    padding: 0 16px 16px !important;
+    border: 0 !important;
+    border-top: 1px solid var(--pim2-line) !important;
+    border-radius: 16px 16px 0 0 !important;
+    background: var(--pim2-bg) !important;
+    box-shadow: 0 -12px 32px rgba(30, 32, 34, 0.16) !important;
+    animation: pim-sheet-in 200ms var(--pim2-ease);
+  }
+  :root body.pim_public_journal .pim-journal-tools .pim-journal-tools-panel {
+    border: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  :root body.pim_public_journal .pim-journal-tools .pim-journal-tools-head {
+    display: none !important;
+  }
+  :root body.pim_public_journal .pim-sheet-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 -16px 8px;
+    padding: 18px 8px 10px 20px;
+    background: var(--pim2-bg);
+    border-bottom: 1px solid var(--pim2-line);
+  }
+  /* Grab-handle affordance (visual only). */
+  :root body.pim_public_journal .pim-sheet-head::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 36px;
+    height: 4px;
+    margin-left: -18px;
+    border-radius: 999px;
+    background: var(--pim2-line-strong);
+  }
+  :root body.pim_public_journal .pim-sheet-head h2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--pim2-ink) !important;
+  }
+  :root body.pim_public_journal .pim-sheet-close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--pim2-muted);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  :root body.pim_public_journal .pim-sheet-close:hover {
+    background: var(--pim2-bg-alt);
+    color: var(--pim2-ink);
+  }
+  :root body.pim_public_journal.pim-tools-open .pim-journal-sidebar .pkp_block {
+    border: 0 !important;
+    border-bottom: 1px solid var(--pim2-line) !important;
+    border-radius: 0 !important;
+    padding: 4px 4px 8px !important;
+  }
+  :root body.pim_public_journal {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+@media (min-width: 993px) {
+  :root body[class] .pim-sheet-head {
+    display: none !important;
+  }
+}
+@keyframes pim-sheet-in {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes pim-dock-pill {
+  from { transform: scale(0.8); }
+  to { transform: none; }
+}
+:root body[class] .pkp_block > .title[hidden] {
+  display: none !important;
+}
+:root body[class] .pim-journal-submit {
+  box-sizing: border-box !important;
+  max-width: 100%;
+}
+/* Parent theme gives announcement lists negative side margins (like the archive); keep them inside the column. */
+:root body[class] .cmp_announcements.cmp_announcements {
+  margin-inline: 0 !important;
+}
+
+/* ================================================================ search page v2
+   Plan: docs/superpowers/plans/2026-11-27-pim-search-ui.md (form enhanced by PIM.enhanceSearchPage). */
+:root body[class] .page_search form.pim-search-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "input button" "filters filters";
+  gap: 12px 0 !important;
+  padding: 20px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: none !important;
+}
+:root body[class] .page_search .pim-search-form .search_input {
+  grid-area: input;
+  position: relative;
+  min-width: 0;
+  margin: 0 !important;
+}
+:root body[class] .page_search .pim-search-form .search_input::before {
+  content: "\f002";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: var(--pim2-muted);
+  pointer-events: none;
+}
+:root body[class] .page_search .pim-search-form .search_input input.query {
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px;
+  padding: 0 14px 0 42px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-right: 0 !important;
+  border-radius: var(--pim2-radius) 0 0 var(--pim2-radius) !important;
+  font-size: 16px !important;
+}
+:root body[class] .page_search .pim-search-form > .submit {
+  grid-area: button;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root body[class] .page_search .pim-search-form > .submit button {
+  height: 48px !important;
+  min-height: 48px;
+  padding: 0 22px !important;
+  border-radius: 0 var(--pim2-radius) var(--pim2-radius) 0 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+:root body[class] .page_search .pim-search-filters {
+  grid-area: filters;
+  min-width: 0;
+}
+:root body[class] .page_search .pim-search-filters__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 4px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--pim2-accent);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+:root body[class] .page_search .pim-search-filters__summary::-webkit-details-marker {
+  display: none;
+}
+:root body[class] .page_search .pim-search-filters__summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .page_search .pim-search-filters[open] > .pim-search-filters__summary::after {
+  transform: rotate(-135deg) translateY(-1px);
+}
+:root body[class] .page_search .pim-search-filters fieldset.search_advanced {
+  display: grid !important;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px 24px !important;
+  margin: 12px 0 0 !important;
+  padding: 16px 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--pim2-line) !important;
+  background: transparent !important;
+}
+:root body[class] .page_search .search_advanced > legend {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+:root body[class] .page_search .search_advanced .date_range {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px !important;
+  min-width: 0;
+}
+:root body[class].pkp_page_search .pkp_structure_main .date_range fieldset {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+:root body[class] .page_search .date_range legend,
+:root body[class] .page_search .search_advanced .author label {
+  display: block;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .page_search .pim-date-part {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+:root body[class] .page_search .search_advanced .date_range label {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: normal !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_search .search_advanced .author {
+  min-width: 0;
+}
+:root body[class] .page_search .search_advanced .author input {
+  width: 100% !important;
+}
+/* Results and notices */
+:root body[class] .page_search .search_results {
+  list-style: none !important;
+  margin: 24px 0 0 !important;
+  padding: 0 !important;
+}
+:root body[class] .page_search .search_results > li {
+  margin: 0 !important;
+  padding: 16px 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title a {
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .title a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .page_search .search_results .obj_article_summary .authors {
+  margin-top: 4px;
+  font-size: 14px !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_search .cmp_notification {
+  margin-top: 24px !important;
+  padding: 16px 20px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-left: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font-size: 15px !important;
+}
+:root body[class] .page_search .cmp_notification strong {
+  color: var(--pim2-ink);
+}
+@media (max-width: 600px) {
+  :root body[class] .page_search form.pim-search-form {
+    padding: 16px !important;
+  }
+  :root body[class] .page_search .pim-search-filters fieldset.search_advanced,
+  :root body[class] .page_search .search_advanced .date_range {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root body[class] .page_search .pim-search-form > .submit button {
+    padding: 0 16px !important;
+  }
+}
+:root body[class] .page_search .pim-search-form > .submit button {
+  margin: 0 !important;
+}
+:root body[class] .page_search .search_results:empty {
+  display: none !important;
+}
+
+/* ================================================================ quick search (menu field + dock sheet) */
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin: 0 0 12px;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 44px 0 12px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+  font: 400 14px/1.2 var(--pim2-font) !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"]:focus {
+  border-color: var(--pim2-accent) !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 0 var(--pim2-radius) var(--pim2-radius) 0;
+  background: transparent;
+  color: var(--pim2-muted);
+  cursor: pointer;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button:hover {
+  color: var(--pim2-accent);
+}
+:root body[class] .pim-sheet-search input[type="search"] {
+  height: 48px;
+  min-height: 48px;
+  font-size: 16px !important;
+}
+:root body[class] .pim-sheet-search button {
+  width: 48px;
+  height: 48px;
+}
+:root body[class] .pim-search-sheet {
+  display: none;
+}
+@media (max-width: 992px) {
+  :root body.pim_public_journal.pim-tools-open.pim-tools-tab-search .pim-search-sheet {
+    display: block !important;
+    position: fixed !important;
+    inset: auto 0 calc(60px + env(safe-area-inset-bottom, 0px)) 0 !important;
+    z-index: 1046 !important;
+    padding: 0 16px 20px !important;
+    border-top: 1px solid var(--pim2-line) !important;
+    border-radius: 16px 16px 0 0 !important;
+    background: var(--pim2-bg) !important;
+    box-shadow: 0 -12px 32px rgba(30, 32, 34, 0.16) !important;
+    animation: pim-sheet-in 200ms var(--pim2-ease);
+  }
+}
+
+/* Quick search: the form is the bordered field; input and button sit side by side (no overlapping hit areas). */
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) {
+  border: 1px solid var(--pim2-line-strong);
+  border-radius: var(--pim2-radius);
+  background: var(--pim2-bg);
+  overflow: hidden;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search):focus-within {
+  border-color: var(--pim2-accent);
+  outline: 2px solid var(--pim2-accent);
+  outline-offset: 1px;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 4px 0 12px !important;
+  background: transparent !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"]:focus-visible {
+  outline: none !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button {
+  position: static;
+  flex: none;
+  border-radius: 0;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button:focus-visible {
+  outline-offset: -3px !important;
+}
