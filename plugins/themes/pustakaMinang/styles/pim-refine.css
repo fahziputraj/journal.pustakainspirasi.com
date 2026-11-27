@@ -769,3 +769,137 @@
     padding: var(--pim2-space-5) 20px !important;
   }
 }
+
+/* ---------------------------------------------------------------- right rail (GPI layout)
+ * Static sections, never collapsible: flat (no cards), a small uppercase heading per group, links as
+ * full-width tinted rows. Group headings come from the stored custom-block HTML (PIM.markRailGroups).
+ */
+:root body[class] #pimJournalLinksPanel > .pkp_block {
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-heading,
+:root body[class] #pimJournalLinksPanel .pim-rail-group {
+  display: block;
+  margin: 0 0 var(--pim2-space-2) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font: 600 11px/1.4 var(--pim2-font) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-group :is(strong, b, span) {
+  font: inherit !important;
+  color: inherit !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-heading.pkp_screen_reader {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body {
+  padding: 0 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body > .content > p:empty,
+:root body[class] #pimJournalLinksPanel .pim-empty-spacer {
+  display: none !important;
+}
+/* Stored tables become plain stacks. */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(table, tbody, tr) {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body table + table,
+:root body[class] #pimJournalLinksPanel .pim-rail-body tr:has(> .pim-rail-group):not(:first-child) {
+  margin-top: var(--pim2-space-4) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(td, th) {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  text-align: left !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body .pim-rail-empty {
+  display: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body ul {
+  display: grid;
+  gap: var(--pim2-space-1);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body li {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+/* Link rows: Information list items and link cells from custom blocks. */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a) {
+  display: block !important;
+  margin: 0 0 var(--pim2-space-1) !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13.5px/1.4 var(--pim2-font) !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body li > a {
+  margin-bottom: 0 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a):hover {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a):is(.is-active, [aria-current="page"]) {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+  font-weight: 600 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a) :is(span, strong) {
+  color: inherit !important;
+}
+/* Primary action in the rail, as on GPI. */
+:root body[class] #pimJournalLinksPanel > .block_make_submission {
+  margin: var(--pim2-space-2) 0 var(--pim2-space-5) !important;
+}
+:root body[class] #pimJournalLinksPanel .block_make_submission_link {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-accent) !important;
+  color: #fff !important;
+  font: 600 14px/1 var(--pim2-font) !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .block_make_submission_link:hover {
+  background: var(--pim2-accent-hover) !important;
+}

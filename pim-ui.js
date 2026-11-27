@@ -999,7 +999,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /*
- * Journal information rail: each titled OJS block becomes a disclosure section
+ * Journal information rail: each titled OJS block becomes a static section (see below)
  * (spec 2026-11-27-pim-journal-tools-design). Links, order and stored HTML stay intact;
  * only a leading/trailing "::" decoration is removed from visible text.
  */
@@ -1014,14 +1014,62 @@ window.PIM.stripRailDecoration = function (root) {
     }
   }
 };
-window.PIM.buildRailSections = function (panel, options) {
+/*
+ * Static rail (GPI layout, 2026-11-27 follow-up): sections are always open, never collapsible.
+ * Inside custom blocks, label-only cells (":: PEOPLE ::", "E-ISSN ONLINE") become group headings
+ * and empty cells are hidden. A block that brings its own group headings keeps its title for
+ * screen readers only, so the groups read as peers (Information, People, Policies, Submission).
+ */
+window.PIM.markRailGroups = function (body) {
+  var groups = 0;
+  var MEDIA = 'a, img, iframe, svg, input, button, form';
+  var clean = function (el) { return el.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim(); };
+  var hasVisible = function (el) { return !!el && (!!el.querySelector(MEDIA) || clean(el).length > 0); };
+  // Table cells (stored custom blocks) and bold-only paragraphs ("<p><strong>PEOPLE</strong></p>").
+  var cells = Array.prototype.slice.call(body.querySelectorAll('td, th'));
+  Array.prototype.forEach.call(body.querySelectorAll('p'), function (para) {
+    if (para.closest('td, th')) return;
+    var strong = para.querySelector(':scope > strong, :scope > b');
+    var link = para.querySelector(':scope > a');
+    if (strong && !para.querySelector(MEDIA) && clean(strong) === clean(para)) cells.push(para);
+    else if (link && para.children.length === 1 && !para.querySelector('img') && clean(link) === clean(para)) para.classList.add('pim-rail-link');
+  });
+  cells.forEach(function (cell) {
+    var text = clean(cell);
+    var media = cell.querySelector(MEDIA);
+    if (!text && !media) {
+      cell.classList.add('pim-rail-empty');
+    } else if (text && !media && text.length <= 40) {
+      cell.classList.add('pim-rail-group');
+      groups++;
+    } else if (cell.querySelector('a') && !cell.querySelector('img')) {
+      cell.classList.add('pim-rail-link');
+    }
+  });
+  // A group heading with nothing visible after it (e.g. an empty "E-ISSN ONLINE" slot) is hidden.
+  Array.prototype.forEach.call(body.querySelectorAll('.pim-rail-group'), function (cell) {
+    var row = cell.closest('tr') || cell;
+    var next = row.nextElementSibling;
+    if (!next && row.tagName === 'TR') {
+      var table = row.closest('table');
+      next = table && table.nextElementSibling;
+    }
+    while (next && next.tagName === 'P' && !hasVisible(next)) next = next.nextElementSibling;
+    var nextIsLabelOnly = next && next.querySelector('.pim-rail-group') && !next.querySelector(MEDIA);
+    if (!hasVisible(next) || nextIsLabelOnly || (next.classList && next.classList.contains('pim-rail-group'))) {
+      cell.classList.add('pim-rail-empty');
+      cell.classList.remove('pim-rail-group');
+      groups--;
+    }
+  });
+  return groups;
+};
+window.PIM.buildRailSections = function (panel) {
   if (!panel) return 0;
-  var openCount = options && typeof options.open === 'number' ? options.open : 2;
   window.PIM.stripRailDecoration(panel);
   var blocks = Array.prototype.filter.call(panel.children, function (el) { return el.classList.contains('pkp_block'); });
-  var index = 0;
   blocks.forEach(function (block) {
-    if (block.querySelector(':scope > details.pim-rail-section')) { index++; return; }
+    if (block.querySelector(':scope > .pim-rail-section')) return;
     var title = block.querySelector(':scope > .title');
     var label = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
     var heading = null;
@@ -1030,30 +1078,27 @@ window.PIM.buildRailSections = function (panel, options) {
       label = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : '';
     }
     if (!label) return;
-    var details = document.createElement('details');
-    details.className = 'pim-rail-section';
-    if (index < openCount) details.open = true;
-    var summary = document.createElement('summary');
-    summary.className = 'pim-rail-summary';
-    if (heading) {
-      summary.appendChild(heading);
-    } else {
-      var text = document.createElement('span');
-      text.textContent = label;
-      summary.appendChild(text);
-      title.hidden = true;
-    }
+    var section = document.createElement('section');
+    section.className = 'pim-rail-section';
+    var head = document.createElement('h2');
+    head.className = 'pim-rail-heading';
+    head.textContent = label;
+    if (heading) heading.hidden = true;
+    if (title) title.hidden = true;
     var body = document.createElement('div');
     body.className = 'pim-rail-body';
     Array.prototype.slice.call(block.childNodes).forEach(function (child) {
       if (child !== title) body.appendChild(child);
     });
-    details.appendChild(summary);
-    details.appendChild(body);
-    block.appendChild(details);
-    index++;
+    if (window.PIM.markRailGroups(body) > 0) {
+      head.classList.add('pkp_screen_reader');
+      section.classList.add('pim-rail-section--grouped');
+    }
+    section.appendChild(head);
+    section.appendChild(body);
+    block.appendChild(section);
   });
-  return panel.querySelectorAll('details.pim-rail-section').length;
+  return panel.querySelectorAll('.pim-rail-section').length;
 };
 document.addEventListener('DOMContentLoaded', function () {
   window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
