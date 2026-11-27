@@ -933,3 +933,64 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function () { window.__pimPastIssuesDone = true; });
   });
 });
+
+/*
+ * Journal information rail: each titled OJS block becomes a disclosure section
+ * (spec 2026-11-27-pim-journal-tools-design). Links, order and stored HTML stay intact;
+ * only a leading/trailing "::" decoration is removed from visible text.
+ */
+window.PIM = window.PIM || {};
+window.PIM.stripRailDecoration = function (root) {
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  var node;
+  while ((node = walker.nextNode())) {
+    var match = /^(\s*)::\s*(.*?)\s*::(\s*)$/.exec(node.nodeValue);
+    if (match && match[2] && !(node.parentElement && node.parentElement.closest('a'))) {
+      node.nodeValue = match[1] + match[2] + match[3];
+    }
+  }
+};
+window.PIM.buildRailSections = function (panel, options) {
+  if (!panel) return 0;
+  var openCount = options && typeof options.open === 'number' ? options.open : 2;
+  window.PIM.stripRailDecoration(panel);
+  var blocks = Array.prototype.filter.call(panel.children, function (el) { return el.classList.contains('pkp_block'); });
+  var index = 0;
+  blocks.forEach(function (block) {
+    if (block.querySelector(':scope > details.pim-rail-section')) { index++; return; }
+    var title = block.querySelector(':scope > .title');
+    var label = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
+    var heading = null;
+    if (!label) {
+      heading = block.querySelector(':scope > .content > h2, :scope > .content > h3, :scope > .content > h4');
+      label = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : '';
+    }
+    if (!label) return;
+    var details = document.createElement('details');
+    details.className = 'pim-rail-section';
+    if (index < openCount) details.open = true;
+    var summary = document.createElement('summary');
+    summary.className = 'pim-rail-summary';
+    if (heading) {
+      summary.appendChild(heading);
+    } else {
+      var text = document.createElement('span');
+      text.textContent = label;
+      summary.appendChild(text);
+      title.hidden = true;
+    }
+    var body = document.createElement('div');
+    body.className = 'pim-rail-body';
+    Array.prototype.slice.call(block.childNodes).forEach(function (child) {
+      if (child !== title) body.appendChild(child);
+    });
+    details.appendChild(summary);
+    details.appendChild(body);
+    block.appendChild(details);
+    index++;
+  });
+  return panel.querySelectorAll('details.pim-rail-section').length;
+};
+document.addEventListener('DOMContentLoaded', function () {
+  window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
+});

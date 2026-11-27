@@ -141,6 +141,71 @@ async function check(name, fn) {
       assert.equal(s.open, false); assert.notEqual(s.bodyOverflow, 'hidden');
       assert.equal(await visibleIn(p, '.pim-mobile-tools-bar'), false, 'dock hidden on desktop');
     });
+    await check('sections', async () => {
+      await load(p, true, 1280);
+      const s = await p.evaluate(() => {
+        const panel = document.getElementById('pimJournalLinksPanel');
+        return {
+          sections: [...panel.querySelectorAll('details.pim-rail-section')].map((d) => ({ open: d.open, title: d.querySelector('summary').textContent.trim() })),
+          links: [...panel.querySelectorAll('a')].map((a) => a.getAttribute('href')),
+          nested: panel.querySelectorAll('details details').length,
+          again: window.PIM.buildRailSections(panel),
+        };
+      });
+      assert.deepEqual(s.sections.map((x) => x.open), [true, true, false]);
+      assert.deepEqual(s.links, ['/r', '/a', '/team', '/rev', 'https://scholar.google.com'], 'links kept in order');
+      assert.equal(s.nested, 0); assert.equal(s.again, 3, 'idempotent');
+      assert.deepEqual(s.sections.map((x) => x.title), ['Information', 'Journal Information', 'Indexed By']);
+    });
+    await check('decoration', async () => {
+      const text = await p.evaluate(() => [...document.querySelectorAll('#pimJournalLinksPanel strong')].map((n) => n.textContent));
+      assert.deepEqual(text, ['PEOPLE'], 'legacy :: decoration stripped from display text');
+    });
+    await check('customHeading', async () => {
+      const count = await p.evaluate(() => {
+        const block = document.querySelectorAll('#pimJournalLinksPanel .pkp_block')[2];
+        return { headings: block.querySelectorAll('h3').length, inSummary: !!block.querySelector('summary h3') };
+      });
+      assert.equal(count.headings, 1); assert.equal(count.inSummary, true);
+    });
+    await check('submitFits', async () => {
+      await load(p, true, 1280);
+      const r = await p.evaluate(() => {
+        const panel = document.querySelector('.pim-journal-tools-panel').getBoundingClientRect();
+        const btn = document.querySelector('.pim-journal-submit').getBoundingClientRect();
+        return { over: Math.round(btn.right - panel.right) };
+      });
+      assert.ok(r.over <= 0, 'Make a Submission overflows the rail by ' + r.over + 'px');
+    });
+    await check('activeState', async () => {
+      for (const width of [1280, 390]) {
+        await load(p, true, width);
+        if (width === 390) await p.click('[data-pim-tools-tab="menu"]');
+        const st = await p.evaluate(() => {
+          const a = document.querySelector('.pim-journal-tools-group a.is-active');
+          const cs = getComputedStyle(a);
+          return { current: a.getAttribute('aria-current'), shadow: cs.boxShadow, border: cs.borderLeftWidth, bg: cs.backgroundColor };
+        });
+        assert.equal(st.current, 'page'); assert.equal(st.shadow, 'none', 'no inset bar at ' + width);
+        assert.equal(st.border, '0px'); assert.equal(st.bg, 'rgb(251, 239, 239)', 'tonal fill at ' + width);
+      }
+      await p.waitForTimeout(300); // let the 160ms indicator transition settle
+      const dockItem = await p.evaluate(() => {
+        const i = document.querySelector('[data-pim-tools-tab="menu"] i');
+        const b = document.querySelector('[data-pim-tools-tab="menu"]');
+        return { pill: getComputedStyle(i).backgroundColor, top: getComputedStyle(b).borderTopWidth };
+      });
+      assert.equal(dockItem.pill, 'rgb(251, 239, 239)'); assert.equal(dockItem.top, '0px');
+    });
+    if (process.env.SHOTS_DIR) {
+      // Optional visual evidence: SHOTS_DIR=<dir> saves the key states as PNGs.
+      fs.mkdirSync(process.env.SHOTS_DIR, { recursive: true });
+      const shot = (name) => p.screenshot({ path: path.join(process.env.SHOTS_DIR, name + ".png") });
+      await load(p, true, 390); await shot("390-closed");
+      await p.click("[data-pim-tools-tab=\"menu\"]"); await p.waitForTimeout(300); await shot("390-menu");
+      await p.click("[data-pim-tools-tab=\"links\"]"); await p.waitForTimeout(300); await shot("390-information");
+      await load(p, true, 1280); await p.screenshot({ path: path.join(process.env.SHOTS_DIR, "1280-rails.png"), fullPage: true });
+    }
   } finally {
     await browser.close();
   }
