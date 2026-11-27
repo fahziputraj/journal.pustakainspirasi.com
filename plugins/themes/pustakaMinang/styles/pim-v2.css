@@ -1140,3 +1140,7 @@
   box-sizing: border-box !important;
   max-width: 100%;
 }
+/* Parent theme gives announcement lists negative side margins (like the archive); keep them inside the column. */
+:root body[class] .cmp_announcements.cmp_announcements {
+  margin-inline: 0 !important;
+}
