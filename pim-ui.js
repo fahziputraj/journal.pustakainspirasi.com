@@ -141,8 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Popper style stripping removed to prevent layout thrashing and sluggishness.
 
 
-  var mobileToolsToggle = document.getElementById('pimMobileToolsToggle');
-  var mobileToolsTabs = document.querySelectorAll('[data-pim-tools-tab]');
+  // Journal dock and bottom sheet (spec 2026-11-27-pim-journal-tools-design).
+  // State lives on <body>: pim-tools-open plus pim-tools-tab-menu|links. Dock buttons open the
+  // sheet on their panel, close it when tapped again and switch panels otherwise.
+  var mobileToolsBar = document.querySelector('.pim-mobile-tools-bar');
+  var mobileToolsTabs = Array.prototype.slice.call(document.querySelectorAll('.pim-mobile-tools-bar [data-pim-tools-tab]'));
   var mobileToolsClosers = document.querySelectorAll('[data-pim-tools-close]');
   var mobileToolsBackdrop = document.querySelector('.pim-mobile-tools-backdrop');
   var mobileMenuPanel = document.getElementById('pimJournalMenuPanel');
@@ -150,43 +153,75 @@ document.addEventListener('DOMContentLoaded', function() {
   var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
   var mobileToolsReturnFocus = null;
   var mobileToolsLastPanelFocus = null;
+  var mobileToolsTitles = { menu: 'Journal menu', links: 'Journal information' };
 
   if (!mobileLinksPanel) {
     mobileToolsTabs.forEach(function(button) {
       if (button.getAttribute('data-pim-tools-tab') === 'links') button.hidden = true;
     });
+    if (mobileToolsBar) mobileToolsBar.classList.add('pim-dock--compact');
   }
+
+  // Mark the current page for assistive technology; the visual state uses the same element.
+  document.querySelectorAll('.pim-journal-tools-panel a.is-active').forEach(function(link) {
+    link.setAttribute('aria-current', 'page');
+  });
 
   function isMobileToolsViewport() {
     return mobileToolsQuery ? mobileToolsQuery.matches : window.innerWidth <= 992;
   }
 
+  function addSheetHead(panel, tab) {
+    if (!panel || panel.querySelector(':scope > .pim-sheet-head')) return;
+    var head = document.createElement('div');
+    head.className = 'pim-sheet-head';
+    var title = document.createElement('h2');
+    title.textContent = mobileToolsTitles[tab];
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'pim-sheet-close';
+    close.setAttribute('aria-label', 'Close');
+    close.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
+    close.addEventListener('click', function() { closeMobileTools(); });
+    head.appendChild(title);
+    head.appendChild(close);
+    panel.insertBefore(head, panel.firstChild);
+  }
+  addSheetHead(mobileMenuPanel, 'menu');
+  addSheetHead(mobileLinksPanel, 'links');
+
+  function currentMobileTab() {
+    return document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu';
+  }
+
+  function syncDockButtons() {
+    var open = document.body.classList.contains('pim-tools-open');
+    var tab = currentMobileTab();
+    mobileToolsTabs.forEach(function(button) {
+      var active = open && button.getAttribute('data-pim-tools-tab') === tab;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-expanded', active ? 'true' : 'false');
+    });
+  }
+
   function setMobileToolsTab(tab) {
-    var selected = tab === 'links' ? 'links' : 'menu';
+    var selected = tab === 'links' && mobileLinksPanel ? 'links' : 'menu';
     document.body.classList.toggle('pim-tools-tab-menu', selected === 'menu');
     document.body.classList.toggle('pim-tools-tab-links', selected === 'links');
-    mobileToolsTabs.forEach(function(button) {
-      var active = button.getAttribute('data-pim-tools-tab') === selected;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-selected', active ? 'true' : 'false');
-      button.setAttribute('tabindex', active ? '0' : '-1');
-    });
     if (isMobileToolsViewport()) {
-      if (mobileMenuPanel) {
-        mobileMenuPanel.setAttribute('aria-hidden', selected === 'menu' ? 'false' : 'true');
-        if (selected === 'menu') mobileMenuPanel.removeAttribute('inert');
-        else mobileMenuPanel.setAttribute('inert', '');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.setAttribute('aria-hidden', selected === 'links' ? 'false' : 'true');
-        if (selected === 'links') mobileLinksPanel.removeAttribute('inert');
-        else mobileLinksPanel.setAttribute('inert', '');
-      }
+      [[mobileMenuPanel, 'menu'], [mobileLinksPanel, 'links']].forEach(function(entry) {
+        if (!entry[0]) return;
+        var shown = document.body.classList.contains('pim-tools-open') && entry[1] === selected;
+        entry[0].setAttribute('aria-hidden', shown ? 'false' : 'true');
+        if (shown) entry[0].removeAttribute('inert');
+        else entry[0].setAttribute('inert', '');
+      });
     }
+    syncDockButtons();
   }
 
   function getSelectedMobilePanel() {
-    return document.body.classList.contains('pim-tools-tab-links') ? mobileLinksPanel : mobileMenuPanel;
+    return currentMobileTab() === 'links' ? mobileLinksPanel : mobileMenuPanel;
   }
 
   function isMobileToolsPanelControl(control) {
@@ -196,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function getMobileToolsFocusable(container) {
     if (!container) return [];
-    return Array.prototype.slice.call(container.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')).filter(function(control) {
+    return Array.prototype.slice.call(container.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]')).filter(function(control) {
       var visibility = window.getComputedStyle(control).visibility;
       return control.getClientRects().length && control.tabIndex >= 0
         && !control.matches(':disabled') && !control.closest('[inert]')
@@ -204,42 +239,40 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function openMobileTools(tab, options) {
-    if (!mobileToolsToggle || !isMobileToolsViewport()) return;
-    setMobileToolsTab(tab || (document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu'));
-    mobileToolsReturnFocus = document.activeElement;
-    document.body.classList.add('pim-tools-open');
-    mobileToolsToggle.setAttribute('aria-expanded', 'true');
-    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
+  function focusFirstInPanel() {
     var panel = getSelectedMobilePanel();
-    var firstControl = getMobileToolsFocusable(panel)[0];
-    if (firstControl && (!options || options.focusPanel !== false)) {
-      window.requestAnimationFrame(function() { firstControl.focus(); });
-    }
+    var first = panel && (panel.querySelector('.pim-sheet-close') || getMobileToolsFocusable(panel)[0]);
+    if (first) window.requestAnimationFrame(function() { first.focus(); });
+  }
+
+  function openMobileTools(tab, opener) {
+    if (!isMobileToolsViewport()) return;
+    mobileToolsReturnFocus = opener || document.activeElement;
+    document.body.classList.add('pim-tools-open');
+    setMobileToolsTab(tab);
+    if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'false');
+    focusFirstInPanel();
   }
 
   function closeMobileTools(options) {
     document.body.classList.remove('pim-tools-open');
-    if (mobileToolsToggle) mobileToolsToggle.setAttribute('aria-expanded', 'false');
     if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'true');
     if (isMobileToolsViewport()) {
-      if (mobileMenuPanel) {
-        mobileMenuPanel.setAttribute('aria-hidden', 'true');
-        mobileMenuPanel.setAttribute('inert', '');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.setAttribute('aria-hidden', 'true');
-        mobileLinksPanel.setAttribute('inert', '');
-      }
+      [mobileMenuPanel, mobileLinksPanel].forEach(function(panel) {
+        if (!panel) return;
+        panel.setAttribute('aria-hidden', 'true');
+        panel.setAttribute('inert', '');
+      });
     }
+    syncDockButtons();
     if ((!options || options.restoreFocus !== false) && mobileToolsReturnFocus && mobileToolsReturnFocus.focus) {
       mobileToolsReturnFocus.focus();
     }
   }
 
-  if (mobileToolsToggle) {
+  if (mobileToolsTabs.length) {
     // CSS can hide a focused rail before the resize event runs. Remember its
-    // last focused control so the replacement toolbar can receive focus.
+    // last focused control so the dock can receive focus instead.
     document.addEventListener('focusin', function(e) {
       mobileToolsLastPanelFocus = isMobileToolsPanelControl(e.target) ? e.target : null;
     });
@@ -247,61 +280,33 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!isMobileToolsPanelControl(e.target)) mobileToolsLastPanelFocus = null;
     });
     setMobileToolsTab('menu');
-    mobileToolsToggle.addEventListener('click', function() {
-      if (document.body.classList.contains('pim-tools-open')) {
-        closeMobileTools();
-      } else {
-        openMobileTools();
-      }
-    });
   }
 
   mobileToolsTabs.forEach(function(button) {
     button.addEventListener('click', function() {
       var tab = button.getAttribute('data-pim-tools-tab') || 'menu';
-      if (document.body.classList.contains('pim-tools-open')) {
+      if (!document.body.classList.contains('pim-tools-open')) {
+        openMobileTools(tab, button);
+      } else if (currentMobileTab() === tab) {
+        closeMobileTools();
+      } else {
+        mobileToolsReturnFocus = button;
         setMobileToolsTab(tab);
-        var panel = getSelectedMobilePanel();
-        var firstControl = getMobileToolsFocusable(panel)[0];
-        if (firstControl) firstControl.focus();
-      } else {
-        openMobileTools(tab);
+        focusFirstInPanel();
       }
-    });
-    button.addEventListener('keydown', function(e) {
-      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
-      var tabs = Array.prototype.slice.call(mobileToolsTabs).filter(function(tab) { return !tab.hidden; });
-      var index = tabs.indexOf(button);
-      if (e.key === 'Home') index = 0;
-      else if (e.key === 'End') index = tabs.length - 1;
-      else index = (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-      e.preventDefault();
-      var nextTab = tabs[index];
-      if (document.body.classList.contains('pim-tools-open')) {
-        setMobileToolsTab(nextTab.getAttribute('data-pim-tools-tab'));
-      } else {
-        openMobileTools(nextTab.getAttribute('data-pim-tools-tab'), { focusPanel: false });
-      }
-      nextTab.focus();
     });
   });
 
   mobileToolsClosers.forEach(function(closer) {
-    closer.addEventListener('click', closeMobileTools);
+    closer.addEventListener('click', function() { closeMobileTools(); });
   });
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && document.body.classList.contains('pim-tools-open')) closeMobileTools();
     if (e.key !== 'Tab' || !document.body.classList.contains('pim-tools-open')) return;
-    var panel = getSelectedMobilePanel();
-    var bar = document.querySelector('.pim-mobile-tools-bar');
-    var focusable = [];
-    [panel, bar].forEach(function(container) {
-      focusable = focusable.concat(getMobileToolsFocusable(container));
-    });
+    var focusable = getMobileToolsFocusable(getSelectedMobilePanel()).concat(getMobileToolsFocusable(mobileToolsBar));
     if (!focusable.length) return;
-    // Panel links follow the toolbar in the DOM. Explicitly cycle the logical
-    // drawer order so Tab cannot escape from the last link into page content.
+    // Cycle panel then dock explicitly so Tab cannot escape into page content.
     var currentIndex = focusable.indexOf(document.activeElement);
     var nextIndex = currentIndex === -1 ? 0 : (currentIndex + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
     e.preventDefault();
@@ -311,20 +316,17 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', function() {
     if (!isMobileToolsViewport()) {
       closeMobileTools({ restoreFocus: false });
-      if (mobileMenuPanel) {
-        mobileMenuPanel.removeAttribute('aria-hidden');
-        mobileMenuPanel.removeAttribute('inert');
-      }
-      if (mobileLinksPanel) {
-        mobileLinksPanel.removeAttribute('aria-hidden');
-        mobileLinksPanel.removeAttribute('inert');
-      }
+      [mobileMenuPanel, mobileLinksPanel].forEach(function(panel) {
+        if (!panel) return;
+        panel.removeAttribute('aria-hidden');
+        panel.removeAttribute('inert');
+      });
     } else if (!document.body.classList.contains('pim-tools-open')) {
       var focusedControl = document.activeElement;
       var panelHadFocus = isMobileToolsPanelControl(focusedControl)
         || (focusedControl === document.body && isMobileToolsPanelControl(mobileToolsLastPanelFocus));
       closeMobileTools({ restoreFocus: false });
-      if (panelHadFocus && mobileToolsToggle) mobileToolsToggle.focus();
+      if (panelHadFocus && mobileToolsTabs[0]) mobileToolsTabs[0].focus();
     }
   });
 
