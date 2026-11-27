@@ -104,7 +104,8 @@
 - Modify: `plugins/themes/pustakaMinang/styles/pim-v2.css`, adding a section `/* journal tools v2 (spec 2026-11-27-pim-journal-tools-design) */`
 - Modify: `PustakaMinangThemePlugin.php` (v2 to `20261127-2`) and `footer.tpl` (`pim-ui.js?v=20261127-2`)
 
-- [ ] **Step 1: Implement the spec component rules.** Cover the dock grid, active bar, sheet radius, handle, header, backdrop at ink 45%, the slide-in, the summary chevron and focus ring, the desktop rail heading style and the icon column.
+- [ ] **Step 0: Write the failing active-state assertion.** Add a `journal-tools.cjs` case `activeState`. On the menu item for the current page at 390 and at 1440, the computed `box-shadow` is `none`, `border-left-width` is `0px` and `background-color` equals `rgb(251, 239, 239)`. On the active dock item, the `.pim-dock-item i` indicator background is the same colour and there is no top border. The header template marks the current item with `aria-current="page"` alongside `is-active`.
+- [ ] **Step 1: Implement the spec component rules.** Remove the v2 rule `.pim-journal-tools-panel a.is-active { box-shadow: inset 3px 0 0 … }` and any inherited left border from `pim-layout.css`. Cover the dock grid, active bar, sheet radius, handle, header, backdrop at ink 45%, the slide-in, the summary chevron and focus ring, the desktop rail heading style and the icon column.
 - [ ] **Step 2: Verify.** Render the fixture pages from Task 2, plus REPLAY of `mbj/index`, `mbj/about` and `mbj/issue/archive` (CSS only), then AUDIT at 320, 360, 390, 768, 1024 and 1440 with `--stress text,longword --focus`, then `node tools/qa/audit-gate.cjs`. Expected: PASS. Inspect screenshots at 390, sheet open and closed, and at 1440.
 - [ ] **Step 3: Run the full QA.** Run all `tools/qa` harnesses (Tasks 1-3 plus the existing ones). Expected: all PASS.
 - [ ] **Step 4: Commit.** "Style the journal dock, bottom sheet and rail sections with v2 tokens".

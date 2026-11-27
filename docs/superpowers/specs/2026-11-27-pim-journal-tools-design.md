@@ -36,7 +36,8 @@ Component: **Journal dock and sheet**
   safe area, icon 18 px above a 12 px/600 label.
   - Menu and Information are `button`s with `aria-controls` and `aria-expanded`.
   - Search and Submit are links (Submit goes to `about/submissions`).
-  - The active item uses accent ink with a 2 px accent bar at the top.
+  - The active item shows a tonal indicator: a 56x30 px pill in `--pim2-accent-soft` (#FBEFEF) behind the icon, with the icon and
+    label in accent and the label at 600. There is no bar or border. The pill scales in from 0.8 with the standard motion.
 - Sheet: the existing panels presented as a bottom sheet. A header row holds the title ("Journal menu" or "Journal information")
   and a close button (`aria-label="Close"`). The body scrolls with `overscroll-behavior: contain`. It slides in with
   `transform` over 200 ms `cubic-bezier(0.16, 1, 0.3, 1)`, instantly under reduced motion.
@@ -44,6 +45,14 @@ Component: **Journal dock and sheet**
   `<summary>` (an existing heading is moved, not copied). Blocks without a title stay as plain content.
 - Desktop (≥ 993 px): no dock. The left menu keeps natural scrolling, as decided earlier: no nested scrollbar. The right rail
   uses the same sections, first two open.
+- Menu item states (desktop rail and mobile sheet) replace the thick left border, which the user rejected as a generic
+  "AI component" look:
+  - Rest: ink text, muted 14 px icon in a 20 px column, 40 px row, 8 px radius.
+  - Hover: `--pim2-bg` surface on the alt rail, with ink text.
+  - Current page (`aria-current="page"`): a tonal fill in `--pim2-accent-soft` with accent text and icon at weight 600.
+    There is no border, inset shadow or bar.
+  - Focus-visible: the 2 px accent outline, offset 2 px.
+  - Pressed: `transform: scale(0.98)`.
 - States:
   - Sheet: closed, opening, open (menu), open (information) and closing.
   - Section: open and closed, with a focus-visible ring on the summary.
