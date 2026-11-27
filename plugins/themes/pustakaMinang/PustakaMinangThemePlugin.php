@@ -10,6 +10,13 @@ namespace APP\plugins\themes\pustakaMinang;
 class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
 {
     /**
+     * Cache key for the locally patched OJS backend bundle (js/build.js).
+     * Change it whenever js/build.js changes: the host sends no Cache-Control for the
+     * bundle, so browsers keep the previous copy until its URL changes.
+     */
+    public const BACKEND_BUNDLE_VERSION = '3.5.0.4-pim.20261127';
+
+    /**
      * Initialize the theme's styles, scripts and hooks.
      */
     public function init()
@@ -23,6 +30,27 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
 
         // Hook into TemplateManager to register custom Smarty modifiers for views/downloads stats
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'registerSmartyModifiers']);
+
+        // Serve the patched backend bundle under its own cache key.
+        \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'versionBackendBundle']);
+    }
+
+    /**
+     * Re-register the core "pkpApp" bundle with a PIM version so cached copies are replaced.
+     * The URL already contains "?", so OJS does not append its own "?v=<app version>".
+     */
+    public function versionBackendBundle($hookName, $args)
+    {
+        $templateMgr = $args[0];
+        $templateMgr->addJavaScript(
+            'pkpApp',
+            $templateMgr->getTemplateVars('baseUrl') . '/js/build.js?v=' . self::BACKEND_BUNDLE_VERSION,
+            [
+                'priority' => \PKP\template\PKPTemplateManager::STYLE_SEQUENCE_LATE,
+                'contexts' => ['backend'],
+            ]
+        );
+        return false;
     }
 
     /**
