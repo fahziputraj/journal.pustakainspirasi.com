@@ -861,3 +861,73 @@ document.addEventListener('DOMContentLoaded', function() {
   extractJournalHomepageWidgets();
   handleBrokenImages();
 });
+
+/*
+ * Journal home "Past Issues" (spec D-critique: no empty section headings).
+ * Builds cards from the public archive page with DOM text only (titles are never parsed as HTML),
+ * skips the first summary (the current issue, shown above) and keeps the section hidden when
+ * there is nothing else to show.
+ */
+window.PIM = window.PIM || {};
+window.PIM.renderPastIssues = function (container, archiveHtml, options) {
+  var limit = (options && options.limit) || 4;
+  var grid = container.querySelector('.pim-issues-grid');
+  if (!grid) return 0;
+  grid.textContent = '';
+  var doc = new DOMParser().parseFromString(archiveHtml, 'text/html');
+  var summaries = Array.prototype.slice.call(doc.querySelectorAll('.obj_issue_summary'), 1, 1 + limit);
+  summaries.forEach(function (item) {
+    var titleEl = item.querySelector('.title') || item.querySelector('h2 a') || item.querySelector('h2');
+    var linkEl = item.querySelector('a.title[href]') || item.querySelector('a[href]');
+    var href = linkEl ? linkEl.getAttribute('href') : '';
+    if (!href || !/^(https?:)?\//.test(href)) return;
+    var seriesEl = item.querySelector('.series') || item.querySelector('.identification');
+    var imgEl = item.querySelector('.cover img') || item.querySelector('img');
+    var title = titleEl ? titleEl.textContent.trim() : '';
+
+    var card = document.createElement('article');
+    card.className = 'pim-issue-card';
+    var coverLink = document.createElement('a');
+    coverLink.className = 'pim-issue-card__cover';
+    coverLink.href = href;
+    coverLink.setAttribute('tabindex', '-1');
+    coverLink.setAttribute('aria-hidden', 'true');
+    var img = document.createElement('img');
+    img.src = imgEl && imgEl.getAttribute('src') ? imgEl.getAttribute('src') : (container.dataset.fallbackCover || '');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    coverLink.appendChild(img);
+    var heading = document.createElement('h3');
+    var titleLink = document.createElement('a');
+    titleLink.href = href;
+    titleLink.textContent = title || 'View issue';
+    heading.appendChild(titleLink);
+    card.appendChild(coverLink);
+    card.appendChild(heading);
+    if (seriesEl && seriesEl.textContent.trim()) {
+      var series = document.createElement('p');
+      series.className = 'pim-issue-card__series';
+      series.textContent = seriesEl.textContent.trim();
+      card.appendChild(series);
+    }
+    grid.appendChild(card);
+  });
+  var count = grid.children.length;
+  container.hidden = count === 0;
+  return count;
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+  var containers = document.querySelectorAll('[data-pim-past-issues]');
+  if (!containers.length) return;
+  Array.prototype.forEach.call(containers, function (container) {
+    var url = container.dataset.archiveUrl;
+    if (!url) return;
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (response) { return response.ok ? response.text() : ''; })
+      .then(function (html) { window.PIM.renderPastIssues(container, html || ''); })
+      .catch(function () { container.hidden = true; })
+      .then(function () { window.__pimPastIssuesDone = true; });
+  });
+});

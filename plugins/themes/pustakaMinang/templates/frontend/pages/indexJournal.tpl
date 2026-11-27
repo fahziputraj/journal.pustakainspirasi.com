@@ -198,62 +198,11 @@
 	{/if}
 
 
-	{* Scraper for Popular Issues *}
-<div id="pim-popular-issues-container" style="margin-top: 48px; display: none;">
-	<h2 style="margin-bottom: 24px; font-size: 1.6rem; font-weight: 800;">Popular & Past Issues</h2>
-	<div class="pim-issues-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px;">
-		<!-- Issues will be loaded here via JS -->
-	</div>
-</div>
-	{* Second script: Popular Issues Scraper with Smarty-generated URL *}
-	<script>
-	(function() {
-		var archiveUrl = '{url router=$smarty.const.ROUTE_PAGE page="issue" op="archive"}';
-		{literal}
-		var issuesContainer = document.getElementById('pim-popular-issues-container');
-		var grid = issuesContainer ? issuesContainer.querySelector('.pim-issues-grid') : null;
-		if (!issuesContainer || !grid) return;
-		fetch(archiveUrl)
-			.then(function(r) { return r.text(); })
-			.then(function(html) {
-				var parser = new DOMParser();
-				var doc = parser.parseFromString(html, 'text/html');
-				var items = doc.querySelectorAll('.obj_issue_summary');
-				if (items.length === 0) return;
-				issuesContainer.style.display = 'block';
-				var count = 0; var index = 0;
-				items.forEach(function(item) {
-					index++;
-					if (index === 1) return; // Skip first issue (Current Issue)
-					if (count >= 4) return;
-					var titleEl = item.querySelector('.title a') || item.querySelector('.title') || item.querySelector('h2 a') || item.querySelector('h2');
-					var href = titleEl ? (titleEl.href || '#') : '#';
-					var titleText = titleEl ? titleEl.textContent.trim() : 'View Issue';
-					var seriesEl = item.querySelector('.series') || item.querySelector('.identification');
-					var seriesText = seriesEl ? seriesEl.textContent.trim() : '';
-					var imgEl = item.querySelector('.cover img') || item.querySelector('img');
-					var imgSrc = imgEl ? imgEl.src : '';
-					var imgAlt = imgEl ? (imgEl.alt || titleText) : titleText;
-					var thumbHtml = imgSrc
-					? '<img src="' + imgSrc + '" alt="' + imgAlt + '" loading="lazy" decoding="async" style="width:100%;height:220px;object-fit:contain;border-radius:6px;border:1px solid #e2e8f0;">'
-						: '<img src="{/literal}{$baseUrl}{literal}/default_journal_issue_cover.png" alt="Default issue cover" loading="lazy" decoding="async" style="width:100%;height:220px;object-fit:contain;border-radius:6px;border:1px solid #e2e8f0;">';
-					var card = document.createElement('div');
-					card.style.cssText = 'background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;';
-					card.onmouseover = function() { this.style.transform = 'translateY(-3px)'; this.style.boxShadow = '0 10px 24px rgba(0,0,0,0.10)'; };
-					card.onmouseout  = function() { this.style.transform = 'none'; this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; };
-					card.innerHTML =
-						'<a href="' + href + '" style="display:block;margin-bottom:12px;">' + thumbHtml + '</a>' +
-						'<h3 style="margin:0 0 4px 0;font-size:0.95rem;font-weight:700;line-height:1.3;"><a href="' + href + '" style="color:#0f172a;text-decoration:none;">' + titleText + '</a></h3>' +
-						'<div style="color:#64748b;font-size:0.8rem;font-weight:600;margin-bottom:12px;">' + seriesText + '</div>' +
-						'<div style="margin-top:auto;"><a href="' + href + '" style="display:block;width:100%;padding:6px;text-align:center;font-size:0.8rem;border:1px solid #e2e8f0;border-radius:5px;color:#A91D22;font-weight:600;text-decoration:none;background:#fff5f5;">View Issue</a></div>';
-					grid.appendChild(card);
-					count++;
-				});
-			})
-			.catch(function(e) { console.log('Issue fetch error:', e); });
-	})();
-	{/literal}
-	</script>
+	{* Past issues: rendered by pim-ui.js (window.PIM.renderPastIssues) only when the archive has more than the current issue *}
+	<section class="pim-past-issues" id="pim-popular-issues-container" data-pim-past-issues data-archive-url="{url router=$smarty.const.ROUTE_PAGE page="issue" op="archive"}" data-fallback-cover="{$baseUrl}/default_journal_issue_cover.png" hidden>
+		<h2>Past Issues</h2>
+		<div class="pim-issues-grid"></div>
+	</section>
 
 </div><!-- .page -->
 

@@ -805,3 +805,62 @@
   white-space: normal !important;
   overflow-wrap: anywhere;
 }
+
+/* ---------------------------------------------------------------- count-aware sections and issue cards */
+/* Sections the scripts hide when they have nothing to show must stay hidden over theme display rules. */
+:root body[class] :is(#activeFiltersCard, #jlFeaturedSection, .pim-past-issues, .jl-letter-header)[hidden] {
+  display: none !important;
+}
+:root body[class] .pim-past-issues .pim-issues-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: 16px;
+}
+:root body[class] .pim-issue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--pim2-bg);
+  border: 1px solid var(--pim2-line);
+  border-radius: var(--pim2-radius);
+  transition: border-color var(--pim2-fast) var(--pim2-ease), transform var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .pim-issue-card:hover {
+  border-color: var(--pim2-line-strong);
+  transform: translateY(-2px);
+}
+:root body[class] .pim-issue-card__cover img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--pim2-bg-alt);
+  border-radius: 6px;
+}
+:root body[class] .pim-issue-card h3 {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-issue-card h3 a {
+  color: var(--pim2-ink) !important;
+  text-decoration: none !important;
+}
+:root body[class] .pim-issue-card h3 a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-issue-card__series {
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: var(--pim2-gold-ink) !important;
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root body[class] .pim-issue-card:hover {
+    transform: none;
+  }
+}
