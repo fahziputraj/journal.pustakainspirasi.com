@@ -181,3 +181,9 @@ Verification:
   - 33 references are numbered and the abstract is upright.
   - The login fields fill the form, and the issue heading is on the content edge.
   - There are no page errors, and every route returns 200.
+- Cold first hit after 40 quiet minutes, from the same IP without PTR that measured 25.7 s on `mbj/index` before the fix (10:56 UTC):
+  - `mmj/index` 1.10 s; this is the known LSAPI cold start.
+  - `mbj/article/view/113` 0.57 s.
+  - `mbj/issue/view/13` 0.25 s.
+  - `mcsj/index` 0.19 s.
+  - `mbj/index` 0.21 s.
