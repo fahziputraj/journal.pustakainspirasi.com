@@ -52,9 +52,9 @@
   <div class="pim-container">
     <a class="pim-brand" href="{$baseUrl}/">
       {if $displayPageHeaderLogo}
-        <img src="{$publicFilesDir}/{$displayPageHeaderLogo.uploadName|escape:"url"}" alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
+        <img src="{$publicFilesDir}/{$displayPageHeaderLogo.uploadName|escape:"url"}"{if $displayPageHeaderLogo.width && $displayPageHeaderLogo.height} width="{$displayPageHeaderLogo.width|escape}" height="{$displayPageHeaderLogo.height|escape}"{/if} alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
       {else}
-        <img src="{$baseUrl}/logo.png" alt="PIM Journal Logo">
+        <img src="{$baseUrl}/plugins/themes/pustakaMinang/images/pim-logo.png?v=20261127" width="344" height="240" alt="{if $currentContext}{$currentContext->getLocalizedName()|escape}{else}{$siteTitle|escape|default:"PIM Portal"}{/if}">
       {/if}
     </a>
 
