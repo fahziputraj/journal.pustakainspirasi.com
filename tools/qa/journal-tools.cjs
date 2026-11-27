@@ -168,6 +168,43 @@ async function check(name, fn) {
       });
       assert.equal(count.headings, 1); assert.equal(count.inSummary, true);
     });
+    await check('menuSearch', async () => {
+      await load(p, true, 1280);
+      const r = await p.evaluate(() => {
+        const f = document.querySelector('#pimJournalMenuPanel form.pim-menu-search');
+        if (!f) return null;
+        const input = f.querySelector('input[name="query"]');
+        return { action: f.getAttribute('action'), method: f.getAttribute('method'), label: input && (input.getAttribute('aria-label') || (input.labels[0] && input.labels[0].textContent.trim())) };
+      });
+      assert.ok(r, 'menu search form exists');
+      assert.ok(/\/mbj\/search\/search$/.test(r.action), 'action ' + r.action); assert.equal(r.method, 'get');
+      assert.equal(r.label, 'Search this journal');
+    });
+    await check('dockSearchSheet', async () => {
+      await load(p, true, 390);
+      await p.click('.pim-dock-search');
+      await p.waitForTimeout(150);
+      const r = await p.evaluate(() => ({
+        open: document.body.classList.contains('pim-tools-open') && document.body.classList.contains('pim-tools-tab-search'),
+        title: document.querySelector('#pimJournalSearchPanel .pim-sheet-head h2')?.textContent,
+        focused: document.activeElement && document.activeElement.name,
+        expanded: document.querySelector('.pim-dock-search').getAttribute('aria-expanded'),
+        url: location.pathname,
+      }));
+      assert.equal(r.open, true); assert.equal(r.title, 'Search'); assert.equal(r.focused, 'query');
+      assert.equal(r.expanded, 'true'); assert.equal(r.url, '/mbj/index', 'stayed on the page');
+    });
+    await check('searchSheetFocus', async () => {
+      for (let i = 0; i < 12; i++) {
+        await p.keyboard.press('Tab');
+        assert.ok(await p.evaluate(() => !!document.activeElement.closest('#pimJournalSearchPanel, .pim-mobile-tools-bar')), 'focus left the search sheet');
+      }
+      await p.keyboard.press('Escape');
+      assert.equal(await p.evaluate(() => document.activeElement.classList.contains('pim-dock-search')), true);
+    });
+    await check('dockSearchFallback', async () => {
+      assert.ok(/\/mbj\/search$/.test(await p.getAttribute('.pim-dock-search', 'href')));
+    });
     await check('submitFits', async () => {
       await load(p, true, 1280);
       const r = await p.evaluate(() => {
@@ -204,6 +241,7 @@ async function check(name, fn) {
       await load(p, true, 390); await shot("390-closed");
       await p.click("[data-pim-tools-tab=\"menu\"]"); await p.waitForTimeout(300); await shot("390-menu");
       await p.click("[data-pim-tools-tab=\"links\"]"); await p.waitForTimeout(300); await shot("390-information");
+      await p.keyboard.press("Escape"); await p.click(".pim-dock-search"); await p.waitForTimeout(300); await shot("390-search");
       await load(p, true, 1280); await p.screenshot({ path: path.join(process.env.SHOTS_DIR, "1280-rails.png"), fullPage: true });
     }
   } finally {

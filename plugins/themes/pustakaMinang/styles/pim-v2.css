@@ -1352,3 +1352,102 @@
 :root body[class] .page_search .search_results:empty {
   display: none !important;
 }
+
+/* ================================================================ quick search (menu field + dock sheet) */
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin: 0 0 12px;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 44px 0 12px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+  font: 400 14px/1.2 var(--pim2-font) !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"]:focus {
+  border-color: var(--pim2-accent) !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 0 var(--pim2-radius) var(--pim2-radius) 0;
+  background: transparent;
+  color: var(--pim2-muted);
+  cursor: pointer;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button:hover {
+  color: var(--pim2-accent);
+}
+:root body[class] .pim-sheet-search input[type="search"] {
+  height: 48px;
+  min-height: 48px;
+  font-size: 16px !important;
+}
+:root body[class] .pim-sheet-search button {
+  width: 48px;
+  height: 48px;
+}
+:root body[class] .pim-search-sheet {
+  display: none;
+}
+@media (max-width: 992px) {
+  :root body.pim_public_journal.pim-tools-open.pim-tools-tab-search .pim-search-sheet {
+    display: block !important;
+    position: fixed !important;
+    inset: auto 0 calc(60px + env(safe-area-inset-bottom, 0px)) 0 !important;
+    z-index: 1046 !important;
+    padding: 0 16px 20px !important;
+    border-top: 1px solid var(--pim2-line) !important;
+    border-radius: 16px 16px 0 0 !important;
+    background: var(--pim2-bg) !important;
+    box-shadow: 0 -12px 32px rgba(30, 32, 34, 0.16) !important;
+    animation: pim-sheet-in 200ms var(--pim2-ease);
+  }
+}
+
+/* Quick search: the form is the bordered field; input and button sit side by side (no overlapping hit areas). */
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) {
+  border: 1px solid var(--pim2-line-strong);
+  border-radius: var(--pim2-radius);
+  background: var(--pim2-bg);
+  overflow: hidden;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search):focus-within {
+  border-color: var(--pim2-accent);
+  outline: 2px solid var(--pim2-accent);
+  outline-offset: 1px;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 4px 0 12px !important;
+  background: transparent !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"]:focus-visible {
+  outline: none !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button {
+  position: static;
+  flex: none;
+  border-radius: 0;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button:focus-visible {
+  outline-offset: -3px !important;
+}

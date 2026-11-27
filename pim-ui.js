@@ -145,15 +145,69 @@ document.addEventListener('DOMContentLoaded', function() {
   // State lives on <body>: pim-tools-open plus pim-tools-tab-menu|links. Dock buttons open the
   // sheet on their panel, close it when tapped again and switch panels otherwise.
   var mobileToolsBar = document.querySelector('.pim-mobile-tools-bar');
-  var mobileToolsTabs = Array.prototype.slice.call(document.querySelectorAll('.pim-mobile-tools-bar [data-pim-tools-tab]'));
   var mobileToolsClosers = document.querySelectorAll('[data-pim-tools-close]');
   var mobileToolsBackdrop = document.querySelector('.pim-mobile-tools-backdrop');
   var mobileMenuPanel = document.getElementById('pimJournalMenuPanel');
   var mobileLinksPanel = document.getElementById('pimJournalLinksPanel');
+  var mobileSearchPanel = null;
   var mobileToolsQuery = window.matchMedia ? window.matchMedia('(max-width: 992px)') : null;
   var mobileToolsReturnFocus = null;
   var mobileToolsLastPanelFocus = null;
-  var mobileToolsTitles = { menu: 'Journal menu', links: 'Journal information' };
+  var mobileToolsTitles = { menu: 'Journal menu', links: 'Journal information', search: 'Search' };
+
+  // Quick search (plan 2026-11-27-pim-search-ui): a field at the top of the Journal Menu and a
+  // Search sheet opened from the dock. Both submit GET <journal>/search/search?query=…
+  var dockSearchLink = mobileToolsBar && mobileToolsBar.querySelector('.pim-dock-search');
+  var menuSearchLink = mobileMenuPanel && mobileMenuPanel.querySelector('.pim-journal-tools-group a[href$="/search"]');
+  var searchSource = dockSearchLink || menuSearchLink;
+  var searchAction = searchSource ? searchSource.getAttribute('href').replace(/\/+$/, '') + '/search' : '';
+  function buildSearchForm(className, inputId, placeholder) {
+    var currentQuery = new URLSearchParams(window.location.search).get('query') || '';
+    var form = document.createElement('form');
+    form.className = className;
+    form.setAttribute('action', searchAction);
+    form.setAttribute('method', 'get');
+    form.setAttribute('role', 'search');
+    var label = document.createElement('label');
+    label.className = 'pkp_screen_reader';
+    label.setAttribute('for', inputId);
+    label.textContent = 'Search this journal';
+    var input = document.createElement('input');
+    input.type = 'search';
+    input.id = inputId;
+    input.name = 'query';
+    input.value = currentQuery;
+    input.placeholder = placeholder || 'Search this journal';
+    input.setAttribute('autocomplete', 'off');
+    var button = document.createElement('button');
+    button.type = 'submit';
+    button.setAttribute('aria-label', 'Search');
+    button.innerHTML = '<i class="fas fa-magnifying-glass" aria-hidden="true"></i>';
+    form.appendChild(label);
+    form.appendChild(input);
+    form.appendChild(button);
+    return form;
+  }
+  if (searchAction && mobileMenuPanel) {
+    var toolsPanelInner = mobileMenuPanel.querySelector('.pim-journal-tools-panel');
+    var toolsHead = toolsPanelInner && toolsPanelInner.querySelector('.pim-journal-tools-head');
+    if (toolsPanelInner && !toolsPanelInner.querySelector('.pim-menu-search')) {
+      toolsPanelInner.insertBefore(buildSearchForm('pim-menu-search', 'pimMenuSearchQuery', 'Search'), toolsHead ? toolsHead.nextSibling : toolsPanelInner.firstChild);
+    }
+  }
+  if (searchAction && dockSearchLink) {
+    mobileSearchPanel = document.createElement('aside');
+    mobileSearchPanel.id = 'pimJournalSearchPanel';
+    mobileSearchPanel.className = 'pim-search-sheet';
+    mobileSearchPanel.setAttribute('aria-label', 'Search');
+    mobileSearchPanel.appendChild(buildSearchForm('pim-sheet-search', 'pimSheetSearchQuery'));
+    document.body.appendChild(mobileSearchPanel);
+    dockSearchLink.setAttribute('data-pim-tools-tab', 'search');
+    dockSearchLink.setAttribute('aria-controls', 'pimJournalSearchPanel');
+    dockSearchLink.setAttribute('aria-expanded', 'false');
+  }
+  var mobileToolsTabs = Array.prototype.slice.call(document.querySelectorAll('.pim-mobile-tools-bar [data-pim-tools-tab]'));
+  var mobileToolsPanels = { menu: mobileMenuPanel, links: mobileLinksPanel, search: mobileSearchPanel };
 
   if (!mobileLinksPanel) {
     mobileToolsTabs.forEach(function(button) {
@@ -189,9 +243,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   addSheetHead(mobileMenuPanel, 'menu');
   addSheetHead(mobileLinksPanel, 'links');
+  addSheetHead(mobileSearchPanel, 'search');
 
   function currentMobileTab() {
-    return document.body.classList.contains('pim-tools-tab-links') ? 'links' : 'menu';
+    if (document.body.classList.contains('pim-tools-tab-links')) return 'links';
+    if (document.body.classList.contains('pim-tools-tab-search')) return 'search';
+    return 'menu';
   }
 
   function syncDockButtons() {
@@ -205,11 +262,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function setMobileToolsTab(tab) {
-    var selected = tab === 'links' && mobileLinksPanel ? 'links' : 'menu';
+    var selected = mobileToolsPanels[tab] ? tab : 'menu';
     document.body.classList.toggle('pim-tools-tab-menu', selected === 'menu');
     document.body.classList.toggle('pim-tools-tab-links', selected === 'links');
+    document.body.classList.toggle('pim-tools-tab-search', selected === 'search');
     if (isMobileToolsViewport()) {
-      [[mobileMenuPanel, 'menu'], [mobileLinksPanel, 'links']].forEach(function(entry) {
+      [[mobileMenuPanel, 'menu'], [mobileLinksPanel, 'links'], [mobileSearchPanel, 'search']].forEach(function(entry) {
         if (!entry[0]) return;
         var shown = document.body.classList.contains('pim-tools-open') && entry[1] === selected;
         entry[0].setAttribute('aria-hidden', shown ? 'false' : 'true');
@@ -221,12 +279,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function getSelectedMobilePanel() {
-    return currentMobileTab() === 'links' ? mobileLinksPanel : mobileMenuPanel;
+    return mobileToolsPanels[currentMobileTab()] || mobileMenuPanel;
   }
 
   function isMobileToolsPanelControl(control) {
     return !!control && ((mobileMenuPanel && mobileMenuPanel.contains(control))
-      || (mobileLinksPanel && mobileLinksPanel.contains(control)));
+      || (mobileLinksPanel && mobileLinksPanel.contains(control))
+      || (mobileSearchPanel && mobileSearchPanel.contains(control)));
   }
 
   function getMobileToolsFocusable(container) {
@@ -241,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function focusFirstInPanel() {
     var panel = getSelectedMobilePanel();
-    var first = panel && (panel.querySelector('.pim-sheet-close') || getMobileToolsFocusable(panel)[0]);
+    var first = panel && (panel.querySelector('input[name="query"]') || panel.querySelector('.pim-sheet-close') || getMobileToolsFocusable(panel)[0]);
     if (first) window.requestAnimationFrame(function() { first.focus(); });
   }
 
@@ -258,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.remove('pim-tools-open');
     if (mobileToolsBackdrop) mobileToolsBackdrop.setAttribute('aria-hidden', 'true');
     if (isMobileToolsViewport()) {
-      [mobileMenuPanel, mobileLinksPanel].forEach(function(panel) {
+      [mobileMenuPanel, mobileLinksPanel, mobileSearchPanel].forEach(function(panel) {
         if (!panel) return;
         panel.setAttribute('aria-hidden', 'true');
         panel.setAttribute('inert', '');
@@ -283,8 +342,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   mobileToolsTabs.forEach(function(button) {
-    button.addEventListener('click', function() {
+    button.addEventListener('click', function(e) {
       var tab = button.getAttribute('data-pim-tools-tab') || 'menu';
+      // The dock Search link keeps its href (no-JS fallback); with JS it opens the Search sheet.
+      if (button.tagName === 'A') {
+        if (!isMobileToolsViewport()) return;
+        e.preventDefault();
+      }
       if (!document.body.classList.contains('pim-tools-open')) {
         openMobileTools(tab, button);
       } else if (currentMobileTab() === tab) {
