@@ -164,6 +164,21 @@ async function check(name, fn) {
       assert.equal(r.list, 'none');
       assert.ok(r.fh.every((w) => w === '0px'), 'footer heading borders ' + r.fh);
     });
+    for (const part of ['mbj-index', 'mcj-index']) {
+      await check(`rail@${part}: static sections, groups as peers, no orphan labels`, async () => {
+        await open(part, 1440);
+        const r = await p.evaluate(() => {
+          const panel = document.getElementById('pimJournalLinksPanel');
+          const vis = (e) => e.getClientRects().length > 0 && e.getBoundingClientRect().height > 1;
+          const labels = [...panel.querySelectorAll('.pim-rail-heading, .pim-rail-group')].filter(vis).map((e) => e.textContent.trim().toUpperCase());
+          return { collapsible: panel.querySelectorAll('details, summary').length, labels };
+        });
+        assert.equal(r.collapsible, 0, 'never collapsible');
+        for (const want of ['INFORMATION', 'PEOPLE', 'POLICIES', 'SUBMISSION']) assert.ok(r.labels.includes(want), want + ' in ' + r.labels.join('|'));
+        assert.ok(!r.labels.includes('JOURNAL INFORMATION'), 'wrapper title hidden when groups lead');
+        assert.ok(!r.labels.includes('E-ISSN ONLINE') && !r.labels.includes('SEARCH'), 'no orphan labels');
+      });
+    }
     await check('journal home: latest-article titles in sentence case', async () => {
       await open('mbj-index', 1440);
       const tt = await p.evaluate(() => getComputedStyle(document.querySelector('.pim-article-card .pim-article-title')).textTransform);

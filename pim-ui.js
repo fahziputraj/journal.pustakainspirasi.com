@@ -1034,6 +1034,15 @@ window.PIM.markRailGroups = function (body) {
     if (strong && !para.querySelector(MEDIA) && clean(strong) === clean(para)) cells.push(para);
     else if (link && para.children.length === 1 && !para.querySelector('img') && clean(link) === clean(para)) para.classList.add('pim-rail-link');
   });
+  // Headings written inside the block content ("<h4 class=pim-sidebar-section-title>People</h4>").
+  Array.prototype.forEach.call(body.querySelectorAll('h3, h4, h5, h6, .pim-sidebar-section-title'), function (h) {
+    if (h.hidden || h.closest('td, th') || h.classList.contains('pim-rail-group')) return;
+    var text = clean(h);
+    if (text && !h.querySelector(MEDIA) && text.length <= 40) {
+      h.classList.add('pim-rail-group');
+      groups++;
+    }
+  });
   cells.forEach(function (cell) {
     var text = clean(cell);
     var media = cell.querySelector(MEDIA);
