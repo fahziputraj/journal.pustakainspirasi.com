@@ -28,7 +28,7 @@
       <div class="pim-sidebar-card">
         <h3>Browse Journals</h3>
         <div class="pim-sidebar-search-wrap" style="position:relative; margin-bottom:12px;">
-          <input type="text" id="journalFinder" placeholder="Find journal..." autocomplete="off" style="width:100%; padding:8px 8px 8px 32px; border:1px solid #E2E8F0; border-radius:6px; font-size:12px; font-family:var(--pim-font-sans);">
+          <input type="search" id="journalFinder" aria-label="Find a journal" placeholder="Find journal..." autocomplete="off" style="width:100%; padding:8px 8px 8px 32px; border:1px solid #E2E8F0; border-radius:6px; font-size:12px; font-family:var(--pim-font-sans);">
           <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94A3B8; font-size:12px;"></i>
         </div>
         <div class="pim-sidebar-journal-scroller" style="max-height: 240px; overflow-y: auto; border: 1px solid #F1F5F9; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 4px; background:#FAFAFA;">
@@ -53,15 +53,14 @@
       <div class="pim-sidebar-card" style="margin-top:14px;">
         <h3>Browse by Subject</h3>
         <div class="pim-sidebar-list" id="subjectFilters">
-          <button type="button" class="pim-sidebar-btn" data-subject="health">Medicine &amp; Life Sciences <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-subject="education">Education &amp; Social Sciences <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-subject="technology">Engineering &amp; Physical Sciences <span class="count">0</span></button>
-          <button type="button" class="pim-sidebar-btn" data-subject="humanities">Law, Policy &amp; Humanities <span class="count">0</span></button>
+          <button type="button" class="pim-sidebar-btn" data-subject="life">Life Sciences <span class="count">0</span></button>
+          <button type="button" class="pim-sidebar-btn" data-subject="physical">Chemistry &amp; Physics <span class="count">0</span></button>
+          <button type="button" class="pim-sidebar-btn" data-subject="formal">Mathematics &amp; Computing <span class="count">0</span></button>
         </div>
       </div>
 
-      <!-- Reset and Active Filters -->
-      <div class="pim-sidebar-card" style="margin-top:14px;">
+      <!-- Reset and Active Filters: shown only while a filter, search or Z-A sort is active -->
+      <div class="pim-sidebar-card" id="activeFiltersCard" style="margin-top:14px;" hidden>
         <h3>Active Filters</h3>
         <div class="jl-active-filters" id="activeFilters" data-active-filters style="margin-bottom:12px;"></div>
         <p class="pim-toolbar-summary" id="toolbarSummary" data-toolbar-summary style="margin-bottom:16px;">All journals are visible.</p>
@@ -100,7 +99,6 @@
           {else}
             {foreach from=$journals item=journal}
               {capture assign="journalUrl"}{url journal=$journal->getPath()}{/capture}
-              {assign var="thumb" value=$journal->getLocalizedData('journalThumbnail')}
               {assign var="journalName" value=$journal->getLocalizedName()}
               {assign var="journalDescription" value=$journal->getLocalizedDescription()|strip_tags}
               {assign var="journalAbout" value=$journal->getLocalizedData('about')}
@@ -120,13 +118,17 @@
                 
                 <div class="pim-card-header">
                   <!-- Thumbnail/Logo -->
-                  <div class="pim-card-thumb">
-                    {if $thumb}
-                      <img src="{$journalFilesPath}{$journal->getId()}/{$thumb.uploadName|escape:"url"}" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                  {* pim-card-thumb:start *}
+                  {assign var="cardImage" value=$journal->getLocalizedData('homepageImage')}
+                  {if !$cardImage}{assign var="cardImage" value=$journal->getLocalizedData('journalThumbnail')}{/if}
+                  <div class="pim-card-thumb{if $cardImage} has-image{/if}">
+                    {if $cardImage}
+                      <img src="{$journalFilesPath}{$journal->getId()}/{$cardImage.uploadName|escape:"url"}"{if $cardImage.width && $cardImage.height} width="{$cardImage.width|escape}" height="{$cardImage.height|escape}"{/if} alt="" aria-hidden="true" loading="lazy" decoding="async">
                     {else}
                       <div class="pim-card-thumb-placeholder"><i class="fas fa-book-open"></i></div>
                     {/if}
                   </div>
+                  {* pim-card-thumb:end *}
                   
                   <!-- Title & Badges -->
                   <div class="pim-card-title-group">
@@ -169,7 +171,7 @@
       </section>
 
       <!-- Center Featured Articles Section -->
-      <section class="pim-articles-section" aria-label="Featured publications">
+      <section class="pim-articles-section" id="jlFeaturedSection" aria-label="Featured publications" hidden>
         <div class="jl-insight-card">
           <h2>Featured Articles</h2>
           <div class="jl-mini-list" id="jlFeaturedArticles">
@@ -274,12 +276,15 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   const journalItems = Array.from(document.querySelectorAll('.jl-item'));
   const featured = document.getElementById('jlFeaturedArticles');
+  const featuredSection = document.getElementById('jlFeaturedSection');
   const issues = document.getElementById('jlPopularIssues');
   const sidebarIssues = document.getElementById('jlSidebarPopularIssues');
   if (!featured || !issues || !journalItems.length) return;
 
   const parser = new DOMParser();
-  const maxJournals = 4;
+  const maxJournals = 8;
+  // Values below come from other pages' text content; escape before building markup.
+  const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[c]);
   const baseRecords = journalItems.slice(0, maxJournals).map((item) => {
     const link = item.querySelector('.pim-journal-title a');
     const cover = item.querySelector('.pim-card-thumb img');
@@ -332,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
   async function loadIssue(record) {
     const currentUrl = record.url + '/issue/current';
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1800);
+    const timer = setTimeout(() => controller.abort(), 8000);
     const response = await fetch(currentUrl, { credentials: 'same-origin', signal: controller.signal });
     clearTimeout(timer);
     if (!response.ok) throw new Error('Issue not available');
@@ -369,46 +374,49 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
-  function renderEmpty() {
-    featured.innerHTML = '<p class="jl-control-note">No published issue could be detected from the public OJS pages yet.</p>';
-    issues.innerHTML = '<span class="jl-control-note">No active issue links found.</span>';
+  function renderEmpty(unavailable) {
+    // Featured Articles is omitted entirely until there is something real to feature.
+    if (featuredSection) featuredSection.hidden = true;
+    const message = unavailable ? 'Issue status is temporarily unavailable.' : 'No issues have been published yet.';
+    issues.innerHTML = '<span class="jl-control-note">' + message + '</span>';
     if (sidebarIssues) {
-      sidebarIssues.innerHTML = '<p class="jl-control-note">No public current issue detected.</p>';
+      sidebarIssues.innerHTML = '<p class="jl-control-note">' + message + '</p>';
     }
   }
 
-  function renderPublished(records) {
+  function renderPublished(records, unavailable) {
     const usable = records.filter(Boolean);
     if (!usable.length) {
-      renderEmpty();
+      renderEmpty(unavailable);
       return;
     }
 
+    if (featuredSection) featuredSection.hidden = false;
     featured.innerHTML = usable.slice(0, 3).map((record) => {
       const articleHref = record.article ? record.article.href : record.issueUrl;
       const articleText = record.article ? record.article.text : record.issueTitle;
       return `
-        <a class="jl-dynamic-article" href="${articleHref}">
-          ${record.issueCover ? `<img src="${record.issueCover}" alt="${record.journalTitle} issue cover" loading="lazy" decoding="async">` : ''}
+        <a class="jl-dynamic-article" href="${esc(articleHref)}">
+          ${record.issueCover ? `<img src="${esc(record.issueCover)}" alt="${esc(record.journalTitle)} issue cover" loading="lazy" decoding="async">` : ''}
           <span>
-            <strong>${articleText}</strong>
-            <em>${record.journalTitle}</em>
+            <strong>${esc(articleText)}</strong>
+            <em>${esc(record.journalTitle)}</em>
           </span>
         </a>
       `;
     }).join('');
 
     issues.innerHTML = usable.slice(0, 4).map((record) => `
-      <a class="jl-dynamic-issue" href="${record.issueUrl}">
-        ${record.issueCover ? `<img src="${record.issueCover}" alt="${record.journalTitle} cover" loading="lazy" decoding="async">` : ''}
-        <span>${record.journalTitle}</span>
+      <a class="jl-dynamic-issue" href="${esc(record.issueUrl)}">
+        ${record.issueCover ? `<img src="${esc(record.issueCover)}" alt="${esc(record.journalTitle)} cover" loading="lazy" decoding="async">` : ''}
+        <span>${esc(record.journalTitle)}</span>
       </a>
     `).join('');
 
     if (sidebarIssues) {
       sidebarIssues.innerHTML = usable.slice(0, 5).map((record) => `
-        <a class="jl-tool-btn jl-tool-btn-compact" href="${record.issueUrl}">
-          <span>${record.journalTitle}</span>
+        <a class="jl-tool-btn jl-tool-btn-compact" href="${esc(record.issueUrl)}">
+          <span>${esc(record.journalTitle)}</span>
           <i class="fas fa-arrow-right"></i>
         </a>
       `).join('');
@@ -416,9 +424,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   Promise.allSettled(baseRecords.map(loadIssue)).then((results) => {
-    renderPublished(results.map((result) => result.status === 'fulfilled' ? result.value : null));
+    const unavailable = results.some((result) => result.status === 'rejected');
+    renderPublished(results.map((result) => result.status === 'fulfilled' ? result.value : null), unavailable);
   }).catch(function() {
-    if (!featured.querySelector('a')) renderEmpty();
+    if (!featured.querySelector('a')) renderEmpty(true);
   });
 });
 </script>
@@ -449,12 +458,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (!directory || !list) return;
 
+  /* pim-subjects:start */
+  // PIM disciplines for the five journals. Every keyword is matched as a whole word,
+  // so "biochemistry" does not count as chemistry.
   const subjectKeywords = {
-    health: ['health', 'medicine', 'medical', 'nursing', 'midwifery', 'bidan', 'perawat', 'farmasi', 'pharmacy', 'wellness', 'public health', 'dentistry', 'oral', 'gizi', 'nutrition', 'promkes', 'bioscience', 'biology', 'biological'],
-    education: ['education', 'social', 'community', 'communication', 'teacher', 'learning', 'guru', 'academic', 'economic', 'economics', 'athletics', 'sport', 'olahraga', 'child', 'development', 'kindergarten'],
-    technology: ['engineering', 'technology', 'digital', 'industrial', 'komputer', 'computer', 'computing', 'mining', 'aquaculture', 'aquatic', 'agribusiness', 'agriculture', 'agricultural', 'chemistry', 'chemical', 'kimia', 'physics', 'mathematics', 'math', 'numerical', 'laboratory', 'observation', 'observat', 'experimental', 'experiment'],
-    humanities: ['policy', 'humanities', 'human', 'culture', 'cultural', 'language', 'ethic', 'ethics', 'ethical', 'religion', 'sharia', 'syariah', 'yurisprudence', 'jurisprudence', 'islamic', 'creativity', 'behavioral', 'psychological', 'psychology', 'art', 'arts', 'artistic', 'artwork', 'graphic', 'design', 'desain', 'law', 'laws', 'legal']
+    life: ['bioscience', 'biology', 'biological', 'biodiversity', 'ecology', 'biotechnology'],
+    physical: ['chemistry', 'chemical', 'physics'],
+    formal: ['mathematics', 'mathematical', 'computer science', 'computing', 'informatics']
   };
+
+  function matchesSubjectKeyword(item, groups, key) {
+    if (!key) return true;
+    const text = item.subjectSearch;
+    return (groups[key] || [key]).some((kw) => {
+      const pattern = kw.split(/\s+/).map((part) => part.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('\\s+');
+      return new RegExp('\\b' + pattern + '\\b', 'i').test(text);
+    });
+  }
+  /* pim-subjects:end */
 
   const indexingKeywords = {
     'sinta': ['sinta', 's1', 's2', 's3', 's4', 's5', 's6'],
@@ -501,20 +522,6 @@ document.addEventListener('DOMContentLoaded', function() {
   function matchesIndexingKeyword(item, groups, key) {
     if (!key) return true;
     return (groups[key] || [key]).some((keyword) => item.indexingSearch.includes(keyword));
-  }
-
-  function matchesSubjectKeyword(item, groups, key) {
-    if (!key) return true;
-    const text = item.subjectSearch;
-    const kwList = groups[key] || [key];
-    const strictWords = ['art', 'arts', 'law', 'laws', 'legal'];
-    return kwList.some((kw) => {
-      const escaped = kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      if (strictWords.indexOf(kw) !== -1) {
-        return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
-      }
-      return new RegExp('\\b' + escaped, 'i').test(text);
-    });
   }
 
   function baseMatches(item) {
@@ -618,7 +625,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const chips = [];
     if (state.query) chips.push('Search: ' + state.query);
     if (state.letter) chips.push('Letter: ' + state.letter);
-    if (state.subject) chips.push('Subject: ' + state.subject);
+    if (state.subject) {
+      const subjectButton = document.querySelector('[data-subject="' + state.subject + '"]');
+      const subjectLabel = subjectButton ? subjectButton.firstChild.textContent.trim() : state.subject;
+      chips.push('Subject: ' + subjectLabel);
+    }
     if (state.indexing) chips.push('Indexing: ' + state.indexing);
 
     const filtersHtml = chips.length
@@ -628,6 +639,9 @@ document.addEventListener('DOMContentLoaded', function() {
     activeFilterEls.forEach((el) => {
       el.innerHTML = filtersHtml;
     });
+
+    const activeFiltersCard = document.getElementById('activeFiltersCard');
+    if (activeFiltersCard) activeFiltersCard.hidden = !(chips.length || state.sort === 'za');
 
     const summaryText = count + ' journal' + (count !== 1 ? 's' : '') + ' visible. Sorted ' + (state.sort === 'za' ? 'descending.' : 'ascending.');
     toolbarSummaryEls.forEach((el) => {
@@ -651,13 +665,14 @@ document.addEventListener('DOMContentLoaded', function() {
       grouped[letter].push(item);
     });
 
-    Object.keys(grouped)
-      .sort(compareLetters)
-      .forEach((letter) => {
+    const groupLetters = Object.keys(grouped).sort(compareLetters);
+    groupLetters.forEach((letter) => {
       const header = document.createElement('div');
       header.className = 'jl-letter-header';
       header.id = 'letter-' + letter;
-      header.innerHTML = '<span>' + letter + '</span>';
+      header.textContent = letter;
+      // A single letter group adds no information (all PIM journals start with "M").
+      header.hidden = groupLetters.length < 2;
       list.appendChild(header);
 
       grouped[letter].forEach((item) => {
