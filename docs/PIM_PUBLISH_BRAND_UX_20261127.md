@@ -67,6 +67,20 @@ Not verified locally: there is no local OJS database, so the dashboard redirect,
 - Signed-in backend at 390 px: `pim-backend.css` loads, and the bundle URL is versioned. On MBJ submission 113, Preview, Activity Log, Library and Schedule For Publication are all on-screen, with 0 px document overflow.
 - Rollback: copy the paths back from `/home/pusf3964/pim-backup-20261127/`, then delete the five new files (`styles/pim-v2.css`, `styles/pim-backend.css`, and `images/pim-logo.png`, `favicon-32.png`, `apple-touch-icon.png`).
 
-Pending:
-- A real Section Editor account (and Yeni's) schedules MBJ 113.
-- Task 13 (move the OJS scheduler to cron) needs confirmation.
+Pending: a real Section Editor account (and Yeni's) schedules MBJ 113.
+
+## Scheduler moved to cron (2026-11-27, user-confirmed)
+
+- Backup: `/home/pusf3964/pim-backup-20261127/config.inc.php` (20,905 bytes, identical to live before the edit).
+- Cron (there were no crons before): `* * * * * cd /home/pusf3964/public_html/journal.pustakainspirasi.com && /opt/cpanel/ea-php82/root/usr/bin/php lib/pkp/tools/scheduler.php run > /home/pusf3964/pim-cron-scheduler.log 2>&1`. The first run logged `ProcessQueueJobs … DONE` before any config change.
+- `config.inc.php` (only these three lines changed):
+  - line 549: `job_runner = Off`
+  - line 582: `process_jobs_at_task_scheduler = On`
+  - line 606: `task_runner = Off`
+- Result:
+  - Task logs now appear once per minute at :02 from cron only. Before this, `ProcessQueueJobs` ran inside web requests, which left 6,308 log files.
+  - All pages return 200.
+  - First request after 75 s idle: 0.23 s, 1.12 s and 1.15 s (repeats 0.18-0.25 s). The roughly 1 s first-hit cost is therefore not the OJS runners. It matches a LiteSpeed PHP worker cold start (host-level LSAPI idle settings; ask Rumahweb support if it matters).
+  - The 21-23 s outliers have not reappeared yet. Watch them over the next days.
+- Rollback: restore `config.inc.php` from the backup and delete the cron line (cPanel → Cron Jobs).
+- Optional housekeeping: old files in `ojs_files/scheduledTaskLogs` can be pruned.
