@@ -903,3 +903,212 @@
 :root body[class] #pimJournalLinksPanel .block_make_submission_link:hover {
   background: var(--pim2-accent-hover) !important;
 }
+
+/* ---------------------------------------------------------------- journal identity strip (GPI layout)
+ * Under the main header on journal pages: journal title left, ISSN right (header.tpl pim-journal-strip).
+ */
+:root body[class] .pim-journal-strip {
+  border-bottom: 1px solid var(--pim2-line);
+  background: var(--pim2-bg);
+}
+:root body[class] .pim-journal-strip .pim-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1360px; /* same frame as the journal header and the three-column layout */
+  margin: 0 auto;
+  padding-inline: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pim2-space-5);
+  min-height: 44px;
+  padding-block: 10px;
+}
+:root body[class] .pim-journal-strip__title {
+  min-width: 0;
+  color: var(--pim2-ink) !important;
+  font: 600 14px/1.4 var(--pim2-font);
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-strip__title:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-strip__issn {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--pim2-space-1) var(--pim2-space-5);
+  margin: 0;
+}
+:root body[class] .pim-journal-strip__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pim2-space-2);
+}
+:root body[class] .pim-journal-strip__item dt {
+  margin: 0;
+  font: 600 11px/1.4 var(--pim2-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pim2-muted);
+}
+:root body[class] .pim-journal-strip__item dd {
+  margin: 0;
+  font: 500 13px/1.4 var(--pim2-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--pim2-ink);
+}
+:root body[class] .pim-journal-strip__item dd a {
+  color: var(--pim2-ink) !important;
+  text-decoration: none !important;
+}
+:root body[class] .pim-journal-strip__item dd a:hover {
+  color: var(--pim2-accent) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+:root body[class] .pim-journal-strip__pending {
+  color: var(--pim2-muted);
+}
+@media (max-width: 600px) {
+  :root body[class] .pim-journal-strip .pim-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--pim2-space-1);
+  }
+  :root body[class] .pim-journal-strip__title {
+    font-size: 13px;
+  }
+}
+
+/* ---------------------------------------------------------------- rail widgets (GPI layout) */
+/* Editorial office card: names bold, labels muted, contact links as tinted rows. */
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card {
+  display: grid;
+  gap: var(--pim2-space-1);
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card strong {
+  margin-top: var(--pim2-space-2);
+  color: var(--pim2-ink) !important;
+  font: 600 13.5px/1.4 var(--pim2-font) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card strong:first-child {
+  margin-top: 0;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card span {
+  display: grid;
+  gap: var(--pim2-space-1);
+  color: var(--pim2-muted) !important;
+  font: 400 12px/1.4 var(--pim2-font) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card a {
+  display: block;
+  padding: 7px 10px !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13px/1.4 var(--pim2-font) !important;
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card a:hover {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+/* Template download: dark button with a document mark. */
+:root body[class] #pimJournalLinksPanel a.pim-template-btn {
+  display: flex !important;
+  align-items: center;
+  gap: var(--pim2-space-3);
+  min-height: 52px;
+  padding: 8px 16px !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-ink) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn:hover {
+  background: #33373b !important;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 28px;
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--pim2-accent), var(--pim2-accent)) 5px 8px / 12px 2px no-repeat,
+    linear-gradient(#c9d0da, #c9d0da) 5px 13px / 12px 2px no-repeat,
+    linear-gradient(#c9d0da, #c9d0da) 5px 18px / 8px 2px no-repeat,
+    #fff;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn img {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text {
+  display: grid;
+  line-height: 1.2;
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text small {
+  font: 600 10px/1.3 var(--pim2-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9d0da;
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text strong {
+  font: 700 14px/1.3 var(--pim2-font);
+  color: #fff;
+}
+/* Indexed by / recommended tools: hairline above, intro line, logos centred and stacked.
+ * Logos stay plain links with alt text in the server HTML, so indexers and crawlers can follow them. */
+:root body[class] #pimJournalLinksPanel > :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) {
+  padding-top: var(--pim2-space-4) !important;
+  border-top: 1px solid var(--pim2-line) !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p {
+  display: block !important;
+  margin: 0 !important;
+  text-align: center !important;
+  font-size: 0;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p > strong {
+  display: block;
+  margin: 0 0 var(--pim2-space-3);
+  text-align: left;
+  color: var(--pim2-ink);
+  font: 600 13px/1.45 var(--pim2-font);
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p > br {
+  display: none;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content a {
+  display: block !important;
+  flex: none !important;
+  width: fit-content !important;
+  min-height: 0 !important;
+  margin: 0 auto var(--pim2-space-3) !important;
+  padding: 4px !important;
+  border-radius: 6px;
+  background: none !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content a:hover {
+  background: var(--pim2-bg-alt) !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content img {
+  display: block;
+  width: auto !important;
+  max-width: 140px;
+  height: auto !important;
+  max-height: 48px;
+  padding: 0 !important;
+}

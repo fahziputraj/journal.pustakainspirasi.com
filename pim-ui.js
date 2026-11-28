@@ -1080,6 +1080,25 @@ window.PIM.markRailGroups = function (body) {
       groups--;
     }
   });
+  // Template group: an image-only download link becomes a text button (GPI "Download Article
+  // Template"). The image stays in the link (hidden) and its alt text stays the accessible name.
+  Array.prototype.forEach.call(body.querySelectorAll('.pim-rail-group'), function (cell) {
+    if (!/template/i.test(clean(cell))) return;
+    var row = cell.closest('tr') || cell;
+    var next = row.nextElementSibling;
+    var link = next && next.querySelector('a[href]');
+    if (!link || link.classList.contains('pim-template-btn') || clean(link)) return;
+    link.classList.add('pim-template-btn');
+    var text = document.createElement('span');
+    text.className = 'pim-template-btn__text';
+    var small = document.createElement('small');
+    small.textContent = 'Download';
+    var strong = document.createElement('strong');
+    strong.textContent = 'Article Template';
+    text.appendChild(small);
+    text.appendChild(strong);
+    link.appendChild(text);
+  });
   return groups;
 };
 window.PIM.buildRailSections = function (panel) {

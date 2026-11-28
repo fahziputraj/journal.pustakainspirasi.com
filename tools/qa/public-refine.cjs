@@ -179,6 +179,24 @@ async function check(name, fn) {
         assert.ok(!r.labels.includes('E-ISSN ONLINE') && !r.labels.includes('SEARCH'), 'no orphan labels');
       });
     }
+    await check('rail widgets: template button and crawlable indexing logos (GPI layout)', async () => {
+      await open('mbj-index', 1440);
+      const r = await p.evaluate(() => {
+        const btn = document.querySelector('#pimJournalLinksPanel a.pim-template-btn');
+        const logos = [...document.querySelectorAll('#pimJournalLinksPanel .pim-widget-indexed-by .content a, #pimJournalLinksPanel .pim-widget-recommended-tools .content a')];
+        const tops = logos.map((a) => Math.round(a.getBoundingClientRect().top));
+        return {
+          btnText: btn && btn.textContent.replace(/\s+/g, ' ').trim(), btnAlt: btn && btn.querySelector('img') && btn.querySelector('img').alt, btnHref: btn && btn.getAttribute('href'),
+          logos: logos.map((a) => ({ href: a.getAttribute('href'), alt: a.querySelector('img') ? a.querySelector('img').alt : '', rel: a.rel })),
+          stacked: tops.every((t, i) => i === 0 || t > tops[i - 1]),
+        };
+      });
+      assert.ok(/Download\s*Article Template/.test(r.btnText), 'template button text: ' + r.btnText);
+      assert.ok(r.btnAlt && /^https?:/.test(r.btnHref), 'template keeps its link and image alt');
+      assert.ok(r.logos.length >= 2, 'logos found');
+      assert.ok(r.logos.every((l) => /^https?:/.test(l.href) && l.alt && !/nofollow/.test(l.rel)), 'logos are followable links with alt text');
+      assert.equal(r.stacked, true, 'logos stacked one per row');
+    });
     await check('journal home: latest-article titles in sentence case', async () => {
       await open('mbj-index', 1440);
       const tt = await p.evaluate(() => getComputedStyle(document.querySelector('.pim-article-card .pim-article-title')).textTransform);

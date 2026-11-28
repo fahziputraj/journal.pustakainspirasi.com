@@ -85,6 +85,20 @@
 </header>
 
 {if $gpPublicJournalLayout}
+  {* pim-journal-strip:start  Journal identity strip (GPI layout): title left, ISSN right. Only valid
+     ISSNs are shown and linked to the ISSN Portal; a placeholder such as 0000-0000 reads "In process". *}
+  <div class="pim-journal-strip">
+    <div class="pim-container">
+      <a class="pim-journal-strip__title" href="{url page="index"}">{$currentContext->getLocalizedName()|escape}</a>
+      <dl class="pim-journal-strip__issn">
+        {if $pimIssn.print}
+          <div class="pim-journal-strip__item"><dt>P-ISSN</dt><dd><a href="https://portal.issn.org/resource/ISSN/{$pimIssn.print|escape}" target="_blank" rel="noopener">{$pimIssn.print|escape}</a></dd></div>
+        {/if}
+        <div class="pim-journal-strip__item"><dt>E-ISSN</dt><dd>{if $pimIssn.online}<a href="https://portal.issn.org/resource/ISSN/{$pimIssn.online|escape}" target="_blank" rel="noopener">{$pimIssn.online|escape}</a>{else}<span class="pim-journal-strip__pending">In process</span>{/if}</dd></div>
+      </dl>
+    </div>
+  </div>
+  {* pim-journal-strip:end *}
   <div class="pim-mobile-tools-backdrop" data-pim-tools-close aria-hidden="true"></div>
   {* Journal dock (phones and tablets): two panel buttons open the bottom sheet, two direct actions. *}
   <nav class="pim-mobile-tools-bar pim-dock" aria-label="Journal tools">
