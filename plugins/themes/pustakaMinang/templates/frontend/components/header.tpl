@@ -131,8 +131,19 @@
 
         <div class="pim-journal-tools-group">
           <h2>Journal Issues</h2>
-          <a href="{url page="issue" op="current"}" class="{if $requestedPage == 'issue' && $requestedOp == 'current'}is-active{/if}"><i class="fas fa-file-lines"></i> Current Issue</a>
-          <a href="{url page="issue" op="archive"}" class="{if $requestedPage == 'issue' && $requestedOp == 'archive'}is-active{/if}"><i class="fas fa-box-archive"></i> Archives</a>
+          {* pim-issue-nav:start  /issue/current redirects to /issue/view/{id}: mark Current Issue there too,
+             and Archives for any other issue. pimCurrentIssueId comes from PustakaMinangThemePlugin. *}
+          {assign var="pimIssueNav" value=""}
+          {if $requestedPage == 'issue'}
+            {if $requestedOp == 'current' || ($requestedOp == 'view' && $issue && $pimCurrentIssueId && $issue->getId() == $pimCurrentIssueId)}
+              {assign var="pimIssueNav" value="current"}
+            {elseif $requestedOp == 'archive' || $requestedOp == 'view'}
+              {assign var="pimIssueNav" value="archive"}
+            {/if}
+          {/if}
+          <a href="{url page="issue" op="current"}" class="{if $pimIssueNav == 'current'}is-active{/if}"><i class="fas fa-file-lines"></i> Current Issue</a>
+          <a href="{url page="issue" op="archive"}" class="{if $pimIssueNav == 'archive'}is-active{/if}"><i class="fas fa-box-archive"></i> Archives</a>
+          {* pim-issue-nav:end *}
         </div>
 
         <div class="pim-journal-tools-group">

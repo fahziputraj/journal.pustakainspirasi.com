@@ -42,6 +42,23 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'versionBackendBundle']);
         // ISSN for the journal strip, and no placeholder ISSN in Google Scholar / Dublin Core meta.
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'prepareIssn']);
+        // Current issue id so the journal menu marks Current Issue on /issue/view/{current id}.
+        \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'prepareIssueNav']);
+    }
+
+    /**
+     * PIM 20261128: /issue/current redirects to /issue/view/{id}, so the menu could not tell it was on
+     * the current issue. Assign its id on issue pages only (one query).
+     */
+    public function prepareIssueNav($hookName, $args)
+    {
+        $request = \APP\core\Application::get()->getRequest();
+        $context = $request ? $request->getContext() : null;
+        if ($context && $request->getRequestedPage() === 'issue') {
+            $current = \APP\facades\Repo::issue()->getCurrent($context->getId());
+            $args[0]->assign('pimCurrentIssueId', $current ? $current->getId() : null);
+        }
+        return false;
     }
 
     /**

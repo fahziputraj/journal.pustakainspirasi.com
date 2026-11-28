@@ -17,6 +17,11 @@
  * @uses $issue Issue Current issue
  *}
 {include file="frontend/components/header.tpl" pageTitleTranslated=$currentJournal->getLocalizedName()}
+{* pim-fallback-cover:start  An issue without its own cover shows the journal's homepage image
+   (its cover), not the generic default image. *}
+{assign var="pimJournalCover" value=$currentJournal->getLocalizedData('homepageImage')}
+{capture assign="pimFallbackCover"}{if $pimJournalCover && $pimJournalCover.uploadName}{$publicFilesDir}/{$pimJournalCover.uploadName|escape:"url"}{else}{$baseUrl}/default_journal_issue_cover.png{/if}{/capture}
+{* pim-fallback-cover:end *}
 
 <div class="page_index_journal">
 	{call_hook name="Templates::Index::journal"}
@@ -133,7 +138,7 @@
 						{if $issueCover}
 							<img src="{$issueCover|escape}" alt="{$issue->getLocalizedCoverImageAltText()|escape}" loading="lazy" decoding="async">
 						{else}
-							<img src="{$baseUrl}/default_journal_issue_cover.png" alt="Default issue cover" loading="lazy" decoding="async">
+							<img src="{$pimFallbackCover|escape}" alt="{$currentJournal->getLocalizedName()|escape}" loading="lazy" decoding="async">
 						{/if}
 					</a>
 				</div>
@@ -199,7 +204,7 @@
 
 
 	{* Past issues: rendered by pim-ui.js (window.PIM.renderPastIssues) only when the archive has more than the current issue *}
-	<section class="pim-past-issues" id="pim-popular-issues-container" data-pim-past-issues data-archive-url="{url router=$smarty.const.ROUTE_PAGE page="issue" op="archive"}" data-fallback-cover="{$baseUrl}/default_journal_issue_cover.png" hidden>
+	<section class="pim-past-issues" id="pim-popular-issues-container" data-pim-past-issues data-archive-url="{url router=$smarty.const.ROUTE_PAGE page="issue" op="archive"}" data-fallback-cover="{$pimFallbackCover|escape}" hidden>
 		<h2>Past Issues</h2>
 		<div class="pim-issues-grid"></div>
 	</section>
