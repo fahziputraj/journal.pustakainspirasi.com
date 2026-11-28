@@ -179,6 +179,13 @@ async function check(name, fn) {
         assert.ok(!r.labels.includes('E-ISSN ONLINE') && !r.labels.includes('SEARCH'), 'no orphan labels');
       });
     }
+    for (const part of ['mcj-index', 'mpj-index']) {
+      await check(`template button@${part}: heading-style blocks get the GPI button too`, async () => {
+        await open(part, 1440);
+        const t = await p.evaluate(() => { const b = document.querySelector('#pimJournalLinksPanel a.pim-template-btn'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : null; });
+        assert.ok(t && /Article Template/.test(t), 'button: ' + t);
+      });
+    }
     await check('rail widgets: template button and crawlable indexing logos (GPI layout)', async () => {
       await open('mbj-index', 1440);
       const r = await p.evaluate(() => {

@@ -1086,7 +1086,7 @@ window.PIM.markRailGroups = function (body) {
     if (!/template/i.test(clean(cell))) return;
     var row = cell.closest('tr') || cell;
     var next = row.nextElementSibling;
-    var link = next && next.querySelector('a[href]');
+    var link = next && (next.matches('a[href]') ? next : next.querySelector('a[href]'));
     if (!link || link.classList.contains('pim-template-btn') || clean(link)) return;
     link.classList.add('pim-template-btn');
     var text = document.createElement('span');
