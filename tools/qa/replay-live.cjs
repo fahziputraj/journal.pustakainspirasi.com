@@ -22,6 +22,8 @@ const swaps = [
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-layout\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-layout.css')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/custom\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/custom.css')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-v2\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-v2.css')],
+  [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-refine\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-refine.css')],
+  [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/styles\/pim-hero\.css[^"']*/g, local('plugins/themes/pustakaMinang/styles/pim-hero.css')],
   [/https?:\/\/[^"']*\/pim-ui\.js[^"']*/g, local('pim-ui.js')],
   [/https?:\/\/[^"']*\/plugins\/themes\/pustakaMinang\/images\/([\w.-]+)[^"']*/g, (m, file) => local('plugins/themes/pustakaMinang/images/' + file)],
 ];
@@ -39,6 +41,19 @@ const swaps = [
     if (!html.includes('pim-v2.css')) {
       // The v2 layer is new in this release: inject it right after the swapped layout stylesheet.
       html = html.replace(/(<link[^>]+pim-layout.css[^>]*>)/i, (m) => m + '<link rel="stylesheet" href="' + local('plugins/themes/pustakaMinang/styles/pim-v2.css') + '" type="text/css">');
+    }
+    if (!html.includes('pim-hero.css')) {
+      // Layer v2.2 is new: inject it after the refinement layer (or v2 when that is missing too).
+      html = html.replace(/(<link[^>]+pim-(refine|v2)\.css[^>]*>)(?![\s\S]*pim-refine\.css)/i, (m) => m + '<link rel="stylesheet" href="' + local('plugins/themes/pustakaMinang/styles/pim-hero.css') + '" type="text/css">');
+    }
+    if (!html.includes('pim-refine.css')) {
+      // The refinement layer is new in this release: inject it right after the v2 stylesheet.
+      html = html.replace(/(<link[^>]+pim-v2.css[^>]*>)/i, (m) => m + '<link rel="stylesheet" href="' + local('plugins/themes/pustakaMinang/styles/pim-refine.css') + '" type="text/css">');
+    }
+    const journalPath = new URL(url).pathname.split('/').filter(Boolean)[0];
+    if (journalPath && journalPath !== 'index' && !/<body class="[^"]*pim-journal-/i.test(html)) {
+      // header.tpl now adds pim-journal-{path} to <body>; mirror it for markup deployed before that.
+      html = html.replace(/<body class="([^"]*)"/i, (m, c) => '<body class="' + c + ' pim-journal-' + journalPath + '"');
     }
     html = html.replace(/<head([^>]*)>/i, (m) => m + '<base href="' + url + '">');
     const slug = new URL(url).pathname.replace(/^\/(index\.php\/)?/, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || 'portal';

@@ -24,6 +24,7 @@ Deviation from the plan: the v2 layer lives in its own `pim-v2.css` (loaded afte
 1. `js/build.js`: insert `,pkp.const.ROLE_ID_SUB_EDITOR` after `pkp.const.ROLE_ID_MANAGER` in the `canPublish` condition. Then run `node tools/qa/workflow-publish-permission.cjs` and bump `PustakaMinangThemePlugin::BACKEND_BUNDLE_VERSION`.
 2. `lib/pkp/pages/dashboard/PKPDashboardHandler.php` and `lib/pkp/classes/core/PKPPageRouter.php`: re-apply the two `PIM 20261127` guards if upstream has not fixed the signed-out dashboard.
 3. `styles/pim-backend.css` targets 3.5.0.4 ui-library markup; re-check it on a phone after upgrading.
+4. `classes/issue/IssueAction.php`: keep the `PIM 20261127` subscription-mode guard in `subscribedDomain()` (reverse DNS stall). Run `php tools/qa/issue-action-dns.php`.
 
 ## Data recommendations for journal managers (not changed by code)
 
@@ -133,3 +134,172 @@ Verification:
 ## Final drift check (2026-11-27)
 
 All 18 deployed runtime files match branch HEAD `50566344`. That is 12 text files by SHA-256 (the two header templates by byte size plus the served HTML, for the reason above) and 6 binaries by size. Production equals the branch.
+
+## Speed fix and refinement layer v2.1 (2026-11-27, user-confirmed)
+
+Why:
+- **First visit took ~25 s.** The first visit to a journal home, issue or article page from an IP without a reverse DNS (PTR) record took about 25 s. OJS called `gethostbyaddr()` (`Request::getRemoteDomain()`) for the institutional subscription check on every such page, and most Indonesian ISP addresses return SERVFAIL. The server resolver then cached the answer, so only first hits were slow. This was the recurring "MBJ 21–24 s" observation. All PIM journals are open access, so the lookup never decided anything.
+- **PDF buried below 1440 px.** Below 1440 px the article page's float pair (560 + 300 px inside a 792 px row) wrapped. The PDF button then sat about 5,100 px down at 1280 px and about 6,600 px down on phones.
+
+What changed:
+- `classes/issue/IssueAction.php`: `subscribedDomain()` only checks institutional subscriptions (and so only resolves the visitor's domain) for journals in subscription mode.
+- `styles/pim-refine.css` (new, after `pim-v2.css`; minimal, subtle, light):
+  - **Article page:**
+    - The page is a two-track grid on one left edge, and it stacks below a 720 px container.
+    - The download buttons sit under the authors at every width.
+    - The abstract is flat, and upright when it is fully italic.
+    - References are numbered with a hanging indent.
+    - The details column uses labels over values with accent links.
+  - **Issue table of contents:** the section heading sits on the content edge, cards have a 16 px gap, and the meta has no fill.
+  - **Archive:** a list on the content edge with a muted series.
+  - **Breadcrumb:** 16 px above the title everywhere.
+  - **Account shell (login, register, reset):**
+    - Full-width fields and button.
+    - Left-aligned title.
+    - Legends above a divider.
+    - Checkbox rows that keep their links inline.
+  - **Smaller fixes:**
+    - Neutral notices (outside search).
+    - A single checklist marker.
+    - No stray divider under the footer heading.
+    - Custom-page titles.
+    - Sentence-case card titles on the journal home.
+- `pim-ui.js`: `PIM.enhanceArticlePage()` moves the galley block under the authors, marks an all-italic abstract and adds the reference number column. It only moves DOM nodes; it does not rewrite content.
+
+Release:
+- Commit `ec7e2be9` on `feat/pim-refine-speed-20261127`, payload of 5 files, 25,178 bytes.
+- The previous live copies are in `/home/pusf3964/pim-backup-20261127-refine/`. `pim-refine.css` is new, so it has no backup.
+- After the extract, all 5 live sizes match HEAD. Assets are now `pim-refine.css?v=20261127-1` and `pim-ui.js?v=20261127-4`.
+
+Verification:
+- `tools/qa/public-refine.cjs` (15 cases, on replays of live markup) passes. All 15 fail without the layer.
+- `php tools/qa/issue-action-dns.php` passes and fails on the previous `IssueAction.php`.
+- All earlier harnesses pass.
+- The layout audit finds no blockers on 8 replayed pages. The remaining majors are the fixed phone dock and footer link targets, which are unchanged chrome.
+- Live at 1440, 1280 and 390 px:
+  - The PDF sits at 408, 408 and 556 px.
+  - 33 references are numbered and the abstract is upright.
+  - The login fields fill the form, and the issue heading is on the content edge.
+  - There are no page errors, and every route returns 200.
+- Cold first hit after 40 quiet minutes, from the same IP without PTR that measured 25.7 s on `mbj/index` before the fix (10:56 UTC):
+  - `mmj/index` 1.10 s; this is the known LSAPI cold start.
+  - `mbj/article/view/113` 0.57 s.
+  - `mbj/issue/view/13` 0.25 s.
+  - `mcsj/index` 0.19 s.
+  - `mbj/index` 0.21 s.
+
+## Static right rail, rail fixes and theme log fix (2026-11-27/28, user-confirmed)
+
+What changed:
+- **The right rail is static and never collapsible (GPI layout).**
+  - `PIM.buildRailSections()` builds static sections, each with a small uppercase heading.
+  - `PIM.markRailGroups()` turns label-only cells, bold-only paragraphs and `<h4 class="pim-sidebar-section-title">` (MCJ) into group headings.
+  - It hides empty cells and labels whose next visible item is another label (the empty "SEARCH" on MCSJ and MMJ). It also hides paragraphs with no letters or digits, such as a stray Markdown fence.
+  - A block that brings its own groups keeps its title for screen readers only.
+  - Links are full-width tinted rows, and the rail's Make a Submission is the primary button.
+- **Theme log fix.** `PustakaMinangThemePlugin::registerSmartyModifiers()` registers each modifier only once per request. Before this, a second `display()` threw "Plugin tag 'pim_article_views' already registered", which produced 597 error_log entries since June.
+
+Release:
+- **Rail:** commit `e8413cc4`, 4 files. Backup in `/home/pusf3964/pim-backup-20261127-rail/`.
+- **MCJ groups and theme fix:** commit `112dafb7`, 3 files. Backup in `/home/pusf3964/pim-backup-20261127-fix/`. Uploaded at 08:24 WIB on 28 Nov.
+- **Orphan labels:** commit `5bc1e980`, 2 files. Backup in `/home/pusf3964/pim-backup-20261128-fix2/`. Asset is now `pim-ui.js?v=20261127-7`.
+
+Verification:
+- `tools/qa/journal-tools.cjs` (18 cases) passes. The new rail cases fail on the collapsible version.
+- `tools/qa/public-refine.cjs` passes, including the rail checks on MBJ, MCJ, MCSJ and MMJ.
+- `php tools/qa/theme-modifiers.php` passes and fails on the previous plugin.
+- **Live:**
+  - All 5 journals show Information, People, Policies and Submission with no `details`, no orphan labels and no page errors.
+  - No "already registered" entry appears after the 08:24 upload; the last one is at 07:56.
+
+Bug hunt (28 Nov, read-only):
+- **No active blockers.**
+  - Review forms in all 5 journals have real Yes/No options; MBJ and MMJ each have 10 completed reviews.
+  - Section and Guest editors have stages 1, 3, 4 and 5.
+  - Submissions are open, with 3 new ones in the last 2 days.
+  - The job queue and failed jobs are empty.
+- **Risk:**
+  - PHP `upload_max_filesize` and `post_max_size` are 10M, so manuscripts or galleys over 10 MB fail. Raising them to 50M in cPanel MultiPHP INI needs the owner's approval.
+  - OJS 3.5.0.6 is available; it carries the invitation-payload warnings, 753 in the log.
+
+## Journal ISSN strip, GPI rail widgets and indexer-safe ISSN meta (2026-11-28, user-confirmed)
+
+What changed:
+- **Journal strip** (`header.tpl`, `pim-journal-strip`): sits under the header on journal pages, with the journal title on the left and the ISSN on the right. It shares the 1360 px frame, so its left edge matches the journal menu.
+  - Only valid ISSNs are shown, linked to `portal.issn.org`. A valid ISSN has a correct check digit and is not 0000-0000.
+  - A placeholder reads "In process".
+- **`PustakaMinangThemePlugin::prepareIssn()`**: assigns `pimIssn` and replaces the Google Scholar `citation_issn` and Dublin Core `DC.Source.ISSN` headers with the first valid ISSN, or empties them. All 5 journals still store 0000-0000, which indexers were receiving.
+- **Rail widgets as on GPI:**
+  - Editorial office rows.
+  - A dark "Download Article Template" button. The image stays in the link as its accessible name.
+  - Indexed-by and recommended-tool logos stacked one per row as followable links with alt text.
+- **`robots.txt`**: adds `Sitemap: https://journal.pustakainspirasi.com/index/sitemap`.
+
+Crawl audit (Googlebot UA):
+- 200 on home, article, PDF download, archive, sitemaps and OAI-PMH.
+- No `noindex` or `X-Robots-Tag`.
+- `citation_pdf_url` points to `/article/download/…`.
+- GPI side, reported by the GPI session: no aaPanel WAF, and bots get no 403/444/429.
+
+Release:
+- Commit `f147292e`, 6 files. Backup in `/home/pusf3964/pim-backup-20261128-issn/`.
+- Commit `2cf253e2`, which adds the template button for heading-style blocks (MCJ, MPJ), 2 files. Backup in `/home/pusf3964/pim-backup-20261128-template/`.
+- Assets are now `pim-refine.css?v=20261128-1` and `pim-ui.js?v=20261128-2`.
+
+Verification:
+- `php tools/qa/journal-strip.php` passes and fails without the strip.
+- `php tools/qa/issn-guard.php` passes.
+- `tools/qa/public-refine.cjs` passes, including the template and logo checks on MBJ, MCJ and MPJ.
+- **Live:**
+  - The strip and template button are present on all 5 journals, with no `details` and no page errors.
+  - The ISSN meta is gone from the article page.
+  - `robots.txt` serves the Sitemap line.
+
+## Current Issue cover and menu sync for MBJ and MMJ (2026-11-28, client request, user-confirmed)
+
+Bg Handri, 28 Nov 14:08: "tampilan current issue yang masih nama get press journal, juga tombol menu current issue dan archives belum sinkron".
+
+- **Cover:** issues without their own cover showed `default_journal_issue_cover.png`, which is Get Press branded. `indexJournal.tpl` now falls back to the journal's homepage image (its cover). The site default stays only for journals without one.
+- **Menu:** `/issue/current` redirects to `/issue/view/{id}`, so neither Current Issue nor Archives was active there.
+  - `PustakaMinangThemePlugin::prepareIssueNav()` assigns `pimCurrentIssueId` on issue pages.
+  - `header.tpl` marks Current Issue on that issue and Archives on other issues and on the archive page.
+- **Release:** commit `df009329`, 3 files. Backup in `/home/pusf3964/pim-backup-20261128-issuenav/`.
+- **Verification:** `php tools/qa/issue-nav.php` passes and fails on the previous header.
+- **Live:**
+  - MBJ and MMJ homes show `homepageImage_en.png` (loaded, with the journal name as alt text).
+  - `/issue/current` lands on `/issue/view/13` (MBJ) and `/issue/view/14` (MMJ) with Current Issue active.
+  - The archive page has Archives active.
+  - No page errors.
+
+## Per-journal logo palette and HeroUI-style components, layer v2.2 (2026-11-28, user-confirmed)
+
+The user chose a palette per journal taken from its own logo, and HeroUI's design language rewritten in our own CSS. HeroUI code is licensed and React-only, so none of it is copied.
+
+Palette (`pim-hero.css`, body class `pim-journal-{path}` from `header.tpl`). Ratios are measured on white; white on the accent gives the same ratio.
+
+| Journal | Accent (ratio) | Second colour (text ink, ratio) |
+|---|---|---|
+| Portal | `#a91d22` (7.28) | gold `#d2a758` (ink `#8a6418`) |
+| MBJ | `#0a3f8f` (9.90) | green `#017429` (5.95) |
+| MCJ | `#c70d16` (6.00) | orange `#e8620a` (ink `#c45308`, 4.58) |
+| MCSJ | `#265688` (7.58) | blue `#2574c9` (4.75) |
+| MMJ | `#c50a0a` (6.14) | gold `#f0b400` (ink `#916e00`, 4.74) |
+| MPJ | `#12357e` (11.44) | orange `#e85d05` (ink `#c44f05`, 4.70) |
+
+The first layer's `--pim-crimson` and `--pim-gold` point at the journal palette, so every older rule follows it.
+
+Components:
+- **Buttons:** pill-shaped, in solid, bordered and flat variants.
+- **Fields:** filled, 12 px radius, with a white background and accent ring on focus.
+- **Surfaces:** soft shadow, 16 px radius, no hard border.
+- **Chips and controls:** pill chips, a segmented control for the portal sort, and a 2 px focus ring.
+- **Portal cards:** "Submit manuscript" is a secondary button.
+
+Release:
+- Commit `2e24902d`, 4 files. Backup in `/home/pusf3964/pim-backup-20261128-palette/`. `pim-hero.css` is new.
+
+Verification:
+- `tools/qa/journal-palette.cjs` passes 8 cases; all earlier harnesses pass.
+- **Live:**
+  - Every journal carries its body class and accent, with pill buttons and no page errors.
+  - The portal keeps `#a91d22`.

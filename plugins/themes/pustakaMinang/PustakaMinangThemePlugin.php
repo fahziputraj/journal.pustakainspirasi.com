@@ -29,6 +29,10 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         $this->addStyle('pustaka-minang-style', 'styles/custom.css');
         // Design system v2 for the public shell; must stay after the two layers above.
         $this->addStyle('pustaka-minang-v2', 'styles/pim-v2.css?v=20261127-4');
+        // Refinement layer v2.1 (article, issue, archive, custom pages, account shell); after v2.
+        $this->addStyle('pustaka-minang-refine', 'styles/pim-refine.css?v=20261128-1');
+        // Layer v2.2: per-journal palette from each logo and HeroUI-style components; after refine.
+        $this->addStyle('pustaka-minang-hero', 'styles/pim-hero.css?v=20261128-1');
 
         // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
         $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);
@@ -38,6 +42,83 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
 
         // Serve the patched backend bundle under its own cache key.
         \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'versionBackendBundle']);
+        // ISSN for the journal strip, and no placeholder ISSN in Google Scholar / Dublin Core meta.
+        \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'prepareIssn']);
+        // Current issue id so the journal menu marks Current Issue on /issue/view/{current id}.
+        \PKP\plugins\Hook::add('TemplateManager::display', [$this, 'prepareIssueNav']);
+    }
+
+    /**
+     * PIM 20261128: /issue/current redirects to /issue/view/{id}, so the menu could not tell it was on
+     * the current issue. Assign its id on issue pages only (one query).
+     */
+    public function prepareIssueNav($hookName, $args)
+    {
+        $request = \APP\core\Application::get()->getRequest();
+        $context = $request ? $request->getContext() : null;
+        if ($context && $request->getRequestedPage() === 'issue') {
+            $current = \APP\facades\Repo::issue()->getCurrent($context->getId());
+            $args[0]->assign('pimCurrentIssueId', $current ? $current->getId() : null);
+        }
+        return false;
+    }
+
+    /**
+     * Return a well-formed ISSN ("1234-567X") or null for empty, all-zero placeholders
+     * such as "0000-0000", malformed values and values with a wrong check digit.
+     */
+    public static function validIssn($issn): ?string
+    {
+        $issn = strtoupper(trim((string) $issn));
+        if (!preg_match('/^(\d{4})-?(\d{3})([\dX])$/', $issn, $m)) {
+            return null;
+        }
+        $digits = $m[1] . $m[2];
+        if ($digits === '0000000') {
+            return null;
+        }
+        $sum = 0;
+        for ($i = 0; $i < 7; $i++) {
+            $sum += (int) $digits[$i] * (8 - $i);
+        }
+        $check = (11 - $sum % 11) % 11;
+        $expected = $check === 10 ? 'X' : (string) $check;
+        return $expected === $m[3] ? $m[1] . '-' . $m[2] . $m[3] : null;
+    }
+
+    /**
+     * PIM 20261128: expose valid ISSNs to templates (journal strip) and stop placeholder ISSNs
+     * ("0000-0000") from reaching indexers. The Google Scholar and Dublin Core plugins emit the
+     * first non-empty ISSN as-is; their headers are replaced with the first valid ISSN, or emptied.
+     */
+    public function prepareIssn($hookName, $args)
+    {
+        $templateMgr = $args[0];
+        $request = \APP\core\Application::get()->getRequest();
+        $context = $request ? $request->getContext() : null;
+        if (!$context) {
+            return false;
+        }
+        $online = self::validIssn($context->getData('onlineIssn'));
+        $print = self::validIssn($context->getData('printIssn'));
+        $templateMgr->assign('pimIssn', ['online' => $online, 'print' => $print]);
+
+        $raw = null;
+        foreach (['onlineIssn', 'printIssn', 'issn'] as $key) {
+            $value = trim((string) $context->getData($key));
+            if ($value !== '') {
+                $raw = $value;
+                break;
+            }
+        }
+        $valid = $online ?: ($print ?: self::validIssn($context->getData('issn')));
+        if ($raw !== null && $valid !== $raw) {
+            $page = $request->getRequestedPage();
+            $emit = $valid && in_array($page, ['article', 'issue'], true);
+            $templateMgr->addHeader('googleScholarIssn', $emit ? '<meta name="citation_issn" content="' . htmlspecialchars($valid) . '"/>' : '');
+            $templateMgr->addHeader('dublinCoreIssn', $emit ? '<meta name="DC.Source.ISSN" content="' . htmlspecialchars($valid) . '"/>' : '');
+        }
+        return false;
     }
 
     /**
@@ -64,9 +145,18 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
     public function registerSmartyModifiers($hookName, $args)
     {
         $templateMgr = $args[0];
-        $templateMgr->registerPlugin('modifier', 'pim_article_views', [$this, 'getArticleViews']);
-        $templateMgr->registerPlugin('modifier', 'pim_article_downloads', [$this, 'getArticleDownloads']);
-        $templateMgr->registerPlugin('modifier', 'pim_normalize_editorial_team_urls', [$this, 'normalizeEditorialTeamUrls']);
+        // PIM 20261127: display() can run more than once per request (e.g. a page plus an AJAX
+        // fragment); registering twice threw "Plugin tag ... already registered" (597 log entries).
+        $modifiers = [
+            'pim_article_views' => [$this, 'getArticleViews'],
+            'pim_article_downloads' => [$this, 'getArticleDownloads'],
+            'pim_normalize_editorial_team_urls' => [$this, 'normalizeEditorialTeamUrls'],
+        ];
+        foreach ($modifiers as $name => $callback) {
+            if (empty($templateMgr->registered_plugins['modifier'][$name])) {
+                $templateMgr->registerPlugin('modifier', $name, $callback);
+            }
+        }
         return false;
     }
 

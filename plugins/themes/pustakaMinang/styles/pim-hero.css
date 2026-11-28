@@ -1,0 +1,263 @@
+/*
+ * PIM public shell, layer v2.2: per-journal palette taken from each journal's logo, and components
+ * in the HeroUI v3 design language (pill buttons, filled fields, soft-shadow surfaces, pill chips,
+ * segmented controls, 2px focus ring). Written from scratch for this theme: no HeroUI code or CSS is
+ * copied, and nothing here needs React. Loaded after pim-refine.css.
+ *
+ * Palette: accent = the logo's main colour (darkened where needed for WCAG AA on white and for white
+ * text on it), second = the logo's second colour (the "gold" slot). Contrast ratios are measured in
+ * docs/PIM_PUBLISH_BRAND_UX_20261127.md.
+ */
+
+/* ---------------------------------------------------------------- tokens */
+:root {
+  --pim2-radius-field: 12px;
+  --pim2-radius-surface: 16px;
+  --pim2-field-bg: #f4f4f5;
+  --pim2-field-hover: #ebebee;
+  --pim2-shadow-surface: 0 0 0 1px rgb(15 23 42 / 0.05), 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 14px rgb(15 23 42 / 0.04);
+  --pim2-shadow-raised: 0 0 0 1px rgb(15 23 42 / 0.06), 0 2px 4px rgb(15 23 42 / 0.05), 0 10px 24px rgb(15 23 42 / 0.07);
+  --pim2-selection: #f0d6d7;
+}
+
+/* Per-journal palettes (body class from header.tpl: pim-journal-{path}). The portal keeps PIM red. */
+:root body.pim-journal-mbj {
+  --pim2-accent: #0a3f8f; --pim2-accent-hover: #083475; --pim2-accent-soft: #ebf0f6; --pim2-selection: #d3dceb;
+  --pim2-gold: #017429; --pim2-gold-ink: #017429; --pim2-gold-soft: #e6f1ea;
+}
+:root body.pim-journal-mcj {
+  --pim2-accent: #c70d16; --pim2-accent-hover: #a30b12; --pim2-accent-soft: #fbecec; --pim2-selection: #f5d3d5;
+  --pim2-gold: #e8620a; --pim2-gold-ink: #c45308; --pim2-gold-soft: #fdefe7;
+}
+:root body.pim-journal-mcsj {
+  --pim2-accent: #265688; --pim2-accent-hover: #1f4770; --pim2-accent-soft: #eef1f5; --pim2-selection: #d8e1ea;
+  --pim2-gold: #2574c9; --pim2-gold-ink: #2574c9; --pim2-gold-soft: #e9f1fa;
+}
+:root body.pim-journal-mmj {
+  --pim2-accent: #c50a0a; --pim2-accent-hover: #a20808; --pim2-accent-soft: #faebeb; --pim2-selection: #f5d3d3;
+  --pim2-gold: #f0b400; --pim2-gold-ink: #916e00; --pim2-gold-soft: #fef8e6;
+}
+:root body.pim-journal-mpj {
+  --pim2-accent: #12357e; --pim2-accent-hover: #0f2b67; --pim2-accent-soft: #eceff5; --pim2-selection: #d4dbe8;
+  --pim2-gold: #e85d05; --pim2-gold-ink: #c44f05; --pim2-gold-soft: #fdefe6;
+}
+/* The first layer reads its own names; point them at the journal palette too. */
+:root body[class*="pim-journal-"] {
+  --pim-crimson: var(--pim2-accent);
+  --pim-crimson-hover: var(--pim2-accent-hover);
+  --pim-gold: var(--pim2-gold);
+  --pim-gold-hover: var(--pim2-gold-ink);
+}
+:root body[class] ::selection {
+  background: var(--pim2-selection);
+}
+
+/* ---------------------------------------------------------------- focus ring (all interactive) */
+:root body[class] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--pim2-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* ---------------------------------------------------------------- buttons: solid (primary) */
+:root body[class] :is(
+  .btn-publish,
+  .pim-journal-submit,
+  .pim-home-current-link,
+  #pimJournalLinksPanel .block_make_submission_link,
+  .obj_article_details .pim-article-actions a.obj_galley_link.pdf,
+  .pkp_structure_main .cmp_form .buttons button.submit,
+  .page_search form .submit button,
+  .jl-btn-primary
+) {
+  border-radius: 999px !important;
+  border-color: transparent !important;
+  background: var(--pim2-accent) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08) !important;
+  transition: background-color var(--pim2-fast) var(--pim2-ease), transform var(--pim2-fast) var(--pim2-ease), box-shadow var(--pim2-fast) var(--pim2-ease) !important;
+}
+:root body[class] :is(
+  .btn-publish,
+  .pim-journal-submit,
+  .pim-home-current-link,
+  #pimJournalLinksPanel .block_make_submission_link,
+  .obj_article_details .pim-article-actions a.obj_galley_link.pdf,
+  .pkp_structure_main .cmp_form .buttons button.submit,
+  .page_search form .submit button,
+  .jl-btn-primary
+):hover {
+  background: var(--pim2-accent-hover) !important;
+}
+:root body[class] :is(
+  .btn-publish,
+  .pim-journal-submit,
+  .pim-home-current-link,
+  #pimJournalLinksPanel .block_make_submission_link,
+  .obj_article_details .pim-article-actions a.obj_galley_link,
+  .pkp_structure_main .cmp_form .buttons button.submit,
+  .page_search form .submit button,
+  .jl-btn,
+  .pim-btn-submit,
+  .btn-login,
+  .pim-article-card .pim-article-galleys a.obj_galley_link
+):active {
+  transform: scale(0.98);
+}
+
+/* ---------------------------------------------------------------- buttons: bordered and flat */
+:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit) {
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: 999px !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+  box-shadow: none !important;
+}
+:root body[class] .btn-login {
+  padding-inline: 16px !important;
+  min-height: 40px;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+}
+:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit):hover {
+  border-color: var(--pim2-ink) !important;
+  background: var(--pim2-field-bg) !important;
+}
+/* Flat: tinted with the accent (card PDF, secondary galleys). */
+:root body[class] :is(.pim-article-card .pim-article-galleys a.obj_galley_link, .obj_article_details .pim-article-actions a.obj_galley_link:not(.pdf)) {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-article-card .pim-article-galleys a.obj_galley_link:hover {
+  background: var(--pim2-selection) !important;
+}
+
+/* ---------------------------------------------------------------- fields: filled */
+html:root body[class] .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="url"], input[type="number"], select, textarea),
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) {
+  border: 1px solid transparent !important;
+  border-radius: var(--pim2-radius-field) !important;
+  background: var(--pim2-field-bg) !important;
+  box-shadow: none !important;
+  transition: background-color var(--pim2-fast) var(--pim2-ease), border-color var(--pim2-fast) var(--pim2-ease) !important;
+}
+html:root body[class] .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="url"], input[type="number"], select, textarea):hover,
+:root body[class] :is(.pim-menu-search, .pim-sheet-search):hover {
+  background: var(--pim2-field-hover) !important;
+}
+html:root body[class] .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="url"], input[type="number"], select, textarea):focus,
+:root body[class] :is(.pim-menu-search, .pim-sheet-search):focus-within {
+  border-color: var(--pim2-accent) !important;
+  background: var(--pim2-bg) !important;
+  outline: 2px solid var(--pim2-accent-soft) !important;
+  outline-offset: 0 !important;
+}
+/* Inputs inside the quick-search shell stay transparent: the shell is the field. */
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) input[type="search"] {
+  border: 0 !important;
+  background: transparent !important;
+  outline: none !important;
+}
+:root body[class] :is(.pim-menu-search, .pim-sheet-search) button {
+  background: transparent !important;
+}
+/* The search page wraps its field in a white card: keep the field filled inside it. */
+:root body[class] .page_search form.pim-search-form {
+  border-radius: var(--pim2-radius-surface) !important;
+}
+
+/* ---------------------------------------------------------------- surfaces: soft shadow, no hard border */
+:root body[class] :is(
+  .pim-article-card,
+  .pim-home-current-issue-card,
+  .pim-journal-card,
+  .pim-sidebar-card,
+  .page_search form.pim-search-form,
+  .pim-issue-card
+),
+:root body.pim_account_page .pkp_structure_main {
+  border: 0 !important;
+  border-radius: var(--pim2-radius-surface) !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: var(--pim2-shadow-surface) !important;
+}
+:root body[class] :is(.pim-article-card, .pim-journal-card, .pim-issue-card):hover {
+  border-color: transparent !important;
+  box-shadow: var(--pim2-shadow-raised) !important;
+}
+/* Journal menu panel (left rail): soft surface as well. */
+:root body[class] #pimJournalMenuPanel {
+  border: 0 !important;
+  border-radius: var(--pim2-radius-surface) !important;
+  box-shadow: var(--pim2-shadow-surface) !important;
+}
+:root body[class] .pim-journal-tools-group a:is(.is-active, [aria-current="page"]) {
+  border-radius: 10px !important;
+}
+
+/* ---------------------------------------------------------------- chips */
+:root body[class] .pim-badge {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  font: 600 12px/1 var(--pim2-font) !important;
+  letter-spacing: 0 !important;
+}
+:root body[class] .pim-badge-oa {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-badge-pr {
+  background: var(--pim2-gold-soft) !important;
+  color: var(--pim2-gold-ink) !important;
+}
+:root body[class] .jl-filter-chip {
+  border-radius: 999px !important;
+}
+
+/* ---------------------------------------------------------------- segmented control (portal sort) */
+:root body[class] .pim-sort-btn-group {
+  display: inline-flex !important;
+  gap: 2px;
+  padding: 3px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--pim2-field-bg) !important;
+}
+:root body[class] .pim-sort-btn {
+  min-height: 30px;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--pim2-muted) !important;
+  font: 600 13px/1 var(--pim2-font) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+:root body[class] .pim-sort-btn:hover {
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-sort-btn.is-active {
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12) !important;
+}
+
+/* ---------------------------------------------------------------- rail rows pick up the journal accent */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a) {
+  border-radius: 10px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root body[class] :is(.btn-publish, .pim-journal-submit, .pim-home-current-link, .jl-btn, .btn-login):active {
+    transform: none;
+  }
+}

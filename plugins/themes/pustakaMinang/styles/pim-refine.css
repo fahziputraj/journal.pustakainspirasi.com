@@ -1,0 +1,1114 @@
+/*
+ * PIM public shell, refinement layer (v2.1): article, issue, archive, custom pages, notices and
+ * the account shell (login / register / reset password). Same language as v2: minimal, subtle,
+ * light. One left edge, one link colour (accent), one 4px rhythm, no stacked boxes.
+ * Loaded after pim-v2.css. Selectors use the same `:root body[class]` prefix.
+ */
+
+:root {
+  --pim2-space-1: 4px;
+  --pim2-space-2: 8px;
+  --pim2-space-3: 12px;
+  --pim2-space-4: 16px;
+  --pim2-space-5: 24px;
+  --pim2-space-6: 32px;
+  --pim2-space-7: 40px;
+}
+
+/* ---------------------------------------------------------------- shared atoms */
+/* Eyebrow label: small, uppercase, muted. Used for metadata labels across pages. */
+:root body[class] :is(.obj_article_details .entry_details .label, .pim-article-tag .tag-label) {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--pim2-muted) !important;
+}
+
+/* Notices: neutral panel, hairline border, no thick left bar, accent links. */
+:root body[class] .pkp_structure_main .page:not(.page_search) .cmp_notification {
+  margin: 0 0 var(--pim2-space-5) !important;
+  padding: var(--pim2-space-4) 20px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-left: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  box-shadow: none !important;
+}
+:root body[class] .pkp_structure_main .page:not(.page_search) .cmp_notification a {
+  color: var(--pim2-accent) !important;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+/* Breadcrumb sits 16px above the page title on every page. */
+:root body[class] .pkp_structure_main .cmp_breadcrumbs {
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 !important;
+}
+:root body[class] .pkp_structure_main .cmp_breadcrumbs ol {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Footer headings never carry page-level heading rules (stray divider on About pages). */
+:root body[class] .pkp_structure_footer_wrapper :is(h2, h3, h4) {
+  border: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ---------------------------------------------------------------- custom pages */
+/* Static pages written in the editor start with an <h2>; give it the page-title role. */
+:root body[class] .pkp_structure_main > .page:not(:has(h1)) > h2:first-child {
+  margin: 0 0 var(--pim2-space-5) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 30px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pkp_structure_main > .page:not(:has(h1)) > :is(p, ul, ol) {
+  max-width: 72ch;
+  line-height: 1.75 !important;
+}
+
+/* Submission checklist: one marker per item (the earlier layer adds a check icon). */
+:root body[class] .submission_checklist ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+/* ---------------------------------------------------------------- article page */
+:root body[class] .obj_article_details {
+  container-type: inline-size;
+  gap: 0 !important;
+}
+:root body[class] .obj_article_details > h1.page_title {
+  margin: 0 0 var(--pim2-space-5) !important;
+  font-size: 28px !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.01em;
+  max-width: 34ch;
+}
+:root body[class] .obj_article_details > h1.page_title b {
+  font-weight: inherit;
+}
+/* Two tracks that always fit the main column (the old float pair wrapped below ~1440px). */
+:root body[class] .obj_article_details > .row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  column-gap: var(--pim2-space-7);
+  align-items: start;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+}
+:root body[class] .obj_article_details > .row::before,
+:root body[class] .obj_article_details > .row::after {
+  display: none !important;
+}
+:root body[class] .obj_article_details :is(.main_entry, .entry_details) {
+  float: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+@container (max-width: 720px) {
+  :root body[class] .obj_article_details > .row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--pim2-space-6);
+  }
+  :root body[class] .obj_article_details .entry_details {
+    padding-top: var(--pim2-space-5) !important;
+    border-top: 1px solid var(--pim2-line) !important;
+  }
+}
+
+/* Main column items: one rhythm, no cards. */
+:root body[class] .obj_article_details .main_entry > .item {
+  margin: 0 0 var(--pim2-space-6) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+:root body[class] .obj_article_details .main_entry > .item > h2.label {
+  margin: 0 0 var(--pim2-space-3) !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--pim2-ink) !important;
+}
+
+/* Authors: name first, affiliation quiet, role label quietest. */
+:root body[class] .obj_article_details .item.authors {
+  margin-bottom: var(--pim2-space-5) !important;
+}
+:root body[class] .obj_article_details .item.authors ul.authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pim2-space-3) var(--pim2-space-6);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] .obj_article_details .item.authors li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0;
+}
+:root body[class] .obj_article_details .item.authors .name {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .obj_article_details .item.authors :is(.affiliation, .orcid) {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .obj_article_details .item.authors .userGroup {
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: var(--pim2-muted) !important;
+}
+
+/* Article actions: the download buttons sit right under the authors at every width. */
+:root body[class] .obj_article_details .pim-article-actions {
+  margin: 0 0 var(--pim2-space-6) !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+:root body[class] .obj_article_details .pim-article-actions ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pim2-space-2);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] .obj_article_details .pim-article-actions li {
+  margin: 0 !important;
+}
+:root body[class] .obj_article_details .pim-article-actions a.obj_galley_link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--pim2-space-2);
+  min-height: 40px;
+  margin: 0 !important;
+  padding: 0 18px !important;
+  border: 1px solid var(--pim2-accent) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-accent) !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+:root body[class] .obj_article_details .pim-article-actions a.obj_galley_link:hover {
+  background: var(--pim2-accent-hover) !important;
+  border-color: var(--pim2-accent-hover) !important;
+}
+:root body[class] .obj_article_details .pim-article-actions a.obj_galley_link:active {
+  transform: translateY(1px);
+}
+:root body[class] .obj_article_details .pim-article-actions a.obj_galley_link::before {
+  color: currentColor !important;
+}
+:root body[class] .obj_article_details .pim-article-actions a.obj_galley_link:not(.pdf) {
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-accent) !important;
+}
+
+/* Keywords inline. */
+:root body[class] .obj_article_details .item.keywords > h2.label {
+  display: inline;
+  margin: 0 4px 0 0 !important;
+  font-size: 15px !important;
+}
+:root body[class] .obj_article_details .item.keywords .value {
+  font-size: 15px;
+  color: var(--pim2-text);
+}
+
+/* Abstract: flat, same left edge, comfortable measure. */
+:root body[class] .obj_article_details .item.abstract {
+  font-size: 15.5px !important;
+  line-height: 1.75 !important;
+  color: var(--pim2-text) !important;
+}
+:root body[class] .obj_article_details .item.abstract p {
+  margin: 0 0 var(--pim2-space-3) !important;
+}
+/* When the editor wrapped the whole abstract in <em>, read it upright (set by pim-ui.js). */
+:root body[class] .obj_article_details .item.abstract.pim-abstract-upright :is(em, i) {
+  font-style: normal !important;
+}
+
+/* References: numbered list with a hanging indent and hairline separators. */
+:root body[class] .obj_article_details .item.references .value p {
+  position: relative;
+  margin: 0 !important;
+  padding: var(--pim2-space-3) 0 var(--pim2-space-3) 2.6em !important;
+  border-bottom: 1px solid var(--pim2-line);
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  text-align: left !important;
+  color: var(--pim2-text) !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .obj_article_details .item.references .value p:first-child {
+  padding-top: 0 !important;
+}
+:root body[class] .obj_article_details .item.references .pim-ref-num {
+  position: absolute;
+  left: 0;
+  width: 2.1em;
+  text-align: right;
+  color: var(--pim2-muted);
+  font-variant-numeric: tabular-nums;
+}
+:root body[class] .obj_article_details .item.references a {
+  color: var(--pim2-accent) !important;
+  overflow-wrap: anywhere;
+}
+
+/* Details column: label over value, hairline between groups, accent links. */
+:root body[class] .obj_article_details .entry_details > .item {
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 0 var(--pim2-space-4) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+  background: none !important;
+}
+:root body[class] .obj_article_details .entry_details > .item:last-child {
+  border-bottom: 0 !important;
+}
+:root body[class] .obj_article_details .entry_details .sub_item + .sub_item {
+  margin-top: var(--pim2-space-3) !important;
+}
+:root body[class] .obj_article_details .entry_details .label {
+  margin: 0 0 var(--pim2-space-1) !important;
+}
+:root body[class] .obj_article_details .entry_details .value {
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+  color: var(--pim2-ink) !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .obj_article_details .entry_details a:not(.obj_galley_link) {
+  color: var(--pim2-accent) !important;
+  text-underline-offset: 3px;
+}
+:root body[class] .obj_article_details .entry_details .item.copyright {
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  color: var(--pim2-muted) !important;
+}
+
+/* ---------------------------------------------------------------- issue table of contents */
+:root body[class] .obj_issue_toc .heading .published {
+  margin: var(--pim2-space-2) 0 0 !important;
+  font-size: 14px !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .obj_issue_toc .heading .published .label {
+  font-weight: 600;
+  color: var(--pim2-ink);
+}
+:root body[class] .obj_issue_toc .sections {
+  margin: var(--pim2-space-6) 0 0 !important;
+}
+:root body[class] .obj_issue_toc .section {
+  margin: 0 0 var(--pim2-space-6) !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+:root body[class] .obj_issue_toc .section > h2 {
+  display: block !important;
+  position: static !important;
+  left: auto !important;
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 0 var(--pim2-space-3) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+  background: none !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .obj_issue_toc .section > h2::before,
+:root body[class] .obj_issue_toc .section > h2::after {
+  display: none !important;
+}
+:root body[class] .obj_issue_toc .cmp_article_list {
+  display: grid;
+  gap: var(--pim2-space-4);
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root body[class] .obj_issue_toc .cmp_article_list > li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Article lists elsewhere (journal home "Latest Articles") share the TOC rhythm. */
+:root body[class] .cmp_article_list > li {
+  margin: 0 !important;
+}
+
+/* Article card (issue TOC, journal home, search): title, authors, quiet meta, excerpt, actions. */
+:root body[class] .pim-article-card {
+  margin: 0 !important;
+  padding: var(--pim2-space-5) !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: none !important;
+  transition: border-color var(--pim2-fast) var(--pim2-ease) !important;
+}
+:root body[class] .pim-article-card:hover {
+  border-color: var(--pim2-line-strong) !important;
+}
+:root body[class] .pim-article-card .pim-article-title {
+  margin: 0 0 6px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+:root body[class] .pim-article-card .pim-article-title a {
+  color: var(--pim2-ink) !important;
+  text-decoration: none !important;
+}
+:root body[class] .pim-article-card .pim-article-title a:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-article-card .pim-article-title b {
+  font-weight: inherit;
+}
+:root body[class] .pim-article-card .pim-article-authors {
+  margin: 0 0 var(--pim2-space-3) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: var(--pim2-text) !important;
+}
+:root body[class] .pim-article-card .pim-article-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--pim2-space-1) 0;
+  margin: 0 0 var(--pim2-space-3) !important;
+}
+:root body[class] .pim-article-card .pim-article-tag {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+:root body[class] .pim-article-card .pim-article-tag + .pim-article-tag {
+  margin-left: var(--pim2-space-4) !important;
+  padding-left: var(--pim2-space-4) !important;
+  border-left: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .pim-article-card .pim-article-tag :is(.tag-label, .tag-val) {
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+:root body[class] .pim-article-card .pim-article-tag .tag-val {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--pim2-ink) !important;
+  font-variant-numeric: tabular-nums;
+}
+:root body[class] .pim-article-card .pim-article-tag .tag-val a {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-article-card .pim-article-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0 0 var(--pim2-space-4) !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .pim-article-card .pim-article-footer {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center !important;
+  justify-content: space-between;
+  gap: var(--pim2-space-3);
+  margin: 0 !important;
+  padding: var(--pim2-space-4) 0 0 !important;
+  border-top: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .pim-article-card .pim-article-galleys a.obj_galley_link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-accent) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+:root body[class] .pim-article-card .pim-article-galleys a.obj_galley_link:hover {
+  border-color: var(--pim2-accent) !important;
+  background: var(--pim2-accent-soft) !important;
+}
+:root body[class] .pim-article-card .pim-article-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--pim2-space-4);
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .pim-article-card .pim-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+:root body[class] .pim-article-card .pim-stat-item .stat-count {
+  font-weight: 600;
+  color: var(--pim2-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- archive */
+:root body[class] .page_issue_archive .issues_archive {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  list-style: none !important;
+}
+:root body[class] .page_issue_archive .issues_archive > li {
+  margin: 0 !important;
+  padding: var(--pim2-space-5) 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+}
+:root body[class] .page_issue_archive .issues_archive > li:first-child {
+  padding-top: 0 !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary:has(> .cover) {
+  display: grid !important;
+  grid-template-columns: 96px minmax(0, 1fr);
+  column-gap: var(--pim2-space-5);
+  align-items: start;
+}
+:root body[class] .page_issue_archive .obj_issue_summary::before,
+:root body[class] .page_issue_archive .obj_issue_summary::after {
+  display: none !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary > :not(.cover) {
+  grid-column: 2;
+}
+:root body[class] .page_issue_archive .obj_issue_summary .cover {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  float: none !important;
+  width: 96px !important;
+  margin: 0 !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary .cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--pim2-line);
+  border-radius: 4px;
+}
+:root body[class] .page_issue_archive .obj_issue_summary h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary h2 a.title {
+  color: var(--pim2-ink) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary h2 a.title:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary .series {
+  margin: var(--pim2-space-1) 0 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary .description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: var(--pim2-space-2) 0 0 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] .page_issue_archive .obj_issue_summary .description:empty {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- account shell */
+:root body.pim_account_page .pkp_structure_main {
+  max-width: 440px !important;
+  margin-inline: auto !important;
+  padding: var(--pim2-space-7) 36px !important;
+  border: 1px solid var(--pim2-line) !important;
+  border-radius: 12px !important;
+  background: var(--pim2-bg) !important;
+  box-shadow: none !important;
+}
+:root body.pim_account_page.pkp_page_user .pkp_structure_main {
+  max-width: 520px !important;
+}
+:root body.pim_account_page .pkp_structure_main .page {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main h1 {
+  margin: 0 0 var(--pim2-space-2) !important;
+  text-align: left !important;
+  font-size: 26px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+:root body.pim_account_page .pkp_structure_main .page > p {
+  margin: 0 0 var(--pim2-space-5) !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  color: var(--pim2-muted) !important;
+}
+:root body.pim_account_page .pkp_structure_main form {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main fieldset {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main fieldset + fieldset {
+  margin-top: var(--pim2-space-5) !important;
+}
+/* Legends float so a group divider can sit above them instead of running through them. */
+:root body.pim_account_page .pkp_structure_main fieldset > legend:not(.pkp_screen_reader) {
+  float: left;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pim2-muted) !important;
+}
+:root body.pim_account_page .pkp_structure_main fieldset + fieldset > legend:not(.pkp_screen_reader) {
+  padding-top: var(--pim2-space-5) !important;
+  border-top: 1px solid var(--pim2-line) !important;
+}
+:root body.pim_account_page .pkp_structure_main fieldset > legend + * {
+  clear: both;
+}
+:root body.pim_account_page .pkp_structure_main fieldset .fields {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main .fields > div {
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main .fields label {
+  display: block;
+  margin: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main .fields .label {
+  display: block;
+  margin: 0 0 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--pim2-ink) !important;
+}
+:root body.pim_account_page .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], select) {
+  display: block;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: none !important;
+  height: 44px !important;
+  min-height: 44px;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--pim2-line-strong) !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-ink) !important;
+  font: 400 15px/1.2 var(--pim2-font) !important;
+  box-shadow: none !important;
+  transition: border-color var(--pim2-fast) var(--pim2-ease);
+}
+:root body.pim_account_page .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], select):hover {
+  border-color: var(--pim2-muted) !important;
+}
+:root body.pim_account_page .pkp_structure_main :is(input[type="text"], input[type="email"], input[type="password"], select):focus {
+  border-color: var(--pim2-accent) !important;
+}
+:root body.pim_account_page .pkp_structure_main .password label > a {
+  display: inline-block;
+  margin-top: var(--pim2-space-2) !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+/* Checkbox rows (remember me, consent): box aligned with the first text line. */
+:root body.pim_account_page .pkp_structure_main label:has(> input[type="checkbox"]) {
+  position: relative;
+  display: block !important;
+  padding-left: 28px !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: var(--pim2-text) !important;
+}
+:root body.pim_account_page .pkp_structure_main input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+  accent-color: var(--pim2-accent);
+}
+:root body.pim_account_page .pkp_structure_main label:has(> input[type="checkbox"]) > input[type="checkbox"] {
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+:root body.pim_account_page .pkp_structure_main .buttons {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--pim2-space-3);
+  margin: var(--pim2-space-5) 0 0 !important;
+  padding: 0 !important;
+}
+:root body.pim_account_page .pkp_structure_main .buttons button.submit {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-accent) !important;
+  color: #fff !important;
+  font: 600 15px/1 var(--pim2-font) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+:root body.pim_account_page .pkp_structure_main .buttons button.submit:hover {
+  background: var(--pim2-accent-hover) !important;
+}
+:root body.pim_account_page .pkp_structure_main .buttons button.submit:active {
+  transform: translateY(1px);
+}
+:root body.pim_account_page .pkp_structure_main .buttons > a {
+  align-self: center;
+  margin: 0 !important;
+  padding: 6px 0;
+  font-size: 14px !important;
+  font-weight: 600;
+}
+@media (max-width: 520px) {
+  :root body.pim_account_page .pkp_structure_main {
+    padding: var(--pim2-space-5) 20px !important;
+  }
+}
+
+/* ---------------------------------------------------------------- right rail (GPI layout)
+ * Static sections, never collapsible: flat (no cards), a small uppercase heading per group, links as
+ * full-width tinted rows. Group headings come from the stored custom-block HTML (PIM.markRailGroups).
+ */
+:root body[class] #pimJournalLinksPanel > .pkp_block {
+  margin: 0 0 var(--pim2-space-4) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-heading,
+:root body[class] #pimJournalLinksPanel .pim-rail-group {
+  display: block;
+  margin: 0 0 var(--pim2-space-2) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font: 600 11px/1.4 var(--pim2-font) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+  color: var(--pim2-muted) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-group :is(strong, b, span) {
+  font: inherit !important;
+  color: inherit !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-heading.pkp_screen_reader {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body {
+  padding: 0 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body > .content > p:empty,
+:root body[class] #pimJournalLinksPanel .pim-empty-spacer {
+  display: none !important;
+}
+/* Stored tables become plain stacks. */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(table, tbody, tr) {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body table + table,
+:root body[class] #pimJournalLinksPanel .pim-rail-body tr:has(> .pim-rail-group):not(:first-child) {
+  margin-top: var(--pim2-space-4) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(td, th) {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  text-align: left !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body .pim-rail-empty {
+  display: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body ul {
+  display: grid;
+  gap: var(--pim2-space-1);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body li {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+/* Link rows: Information list items and link cells from custom blocks. */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a) {
+  display: block !important;
+  margin: 0 0 var(--pim2-space-1) !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13.5px/1.4 var(--pim2-font) !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body li > a {
+  margin-bottom: 0 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a):hover {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a):is(.is-active, [aria-current="page"]) {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+  font-weight: 600 !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(li > a, .pim-rail-link > a) :is(span, strong) {
+  color: inherit !important;
+}
+/* Primary action in the rail, as on GPI. */
+:root body[class] #pimJournalLinksPanel > .block_make_submission {
+  margin: var(--pim2-space-2) 0 var(--pim2-space-5) !important;
+}
+:root body[class] #pimJournalLinksPanel .block_make_submission_link {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-accent) !important;
+  color: #fff !important;
+  font: 600 14px/1 var(--pim2-font) !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+:root body[class] #pimJournalLinksPanel .block_make_submission_link:hover {
+  background: var(--pim2-accent-hover) !important;
+}
+
+/* ---------------------------------------------------------------- journal identity strip (GPI layout)
+ * Under the main header on journal pages: journal title left, ISSN right (header.tpl pim-journal-strip).
+ */
+:root body[class] .pim-journal-strip {
+  border-bottom: 1px solid var(--pim2-line);
+  background: var(--pim2-bg);
+}
+:root body[class] .pim-journal-strip .pim-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1360px; /* same frame as the journal header and the three-column layout */
+  margin: 0 auto;
+  padding-inline: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pim2-space-5);
+  min-height: 44px;
+  padding-block: 10px;
+}
+:root body[class] .pim-journal-strip__title {
+  min-width: 0;
+  color: var(--pim2-ink) !important;
+  font: 600 14px/1.4 var(--pim2-font);
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-journal-strip__title:hover {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-journal-strip__issn {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--pim2-space-1) var(--pim2-space-5);
+  margin: 0;
+}
+:root body[class] .pim-journal-strip__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pim2-space-2);
+}
+:root body[class] .pim-journal-strip__item dt {
+  margin: 0;
+  font: 600 11px/1.4 var(--pim2-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pim2-muted);
+}
+:root body[class] .pim-journal-strip__item dd {
+  margin: 0;
+  font: 500 13px/1.4 var(--pim2-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--pim2-ink);
+}
+:root body[class] .pim-journal-strip__item dd a {
+  color: var(--pim2-ink) !important;
+  text-decoration: none !important;
+}
+:root body[class] .pim-journal-strip__item dd a:hover {
+  color: var(--pim2-accent) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+:root body[class] .pim-journal-strip__pending {
+  color: var(--pim2-muted);
+}
+@media (max-width: 600px) {
+  :root body[class] .pim-journal-strip .pim-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--pim2-space-1);
+  }
+  :root body[class] .pim-journal-strip__title {
+    font-size: 13px;
+  }
+}
+
+/* ---------------------------------------------------------------- rail widgets (GPI layout) */
+/* Editorial office card: names bold, labels muted, contact links as tinted rows. */
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card {
+  display: grid;
+  gap: var(--pim2-space-1);
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card strong {
+  margin-top: var(--pim2-space-2);
+  color: var(--pim2-ink) !important;
+  font: 600 13.5px/1.4 var(--pim2-font) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card strong:first-child {
+  margin-top: 0;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card span {
+  display: grid;
+  gap: var(--pim2-space-1);
+  color: var(--pim2-muted) !important;
+  font: 400 12px/1.4 var(--pim2-font) !important;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card a {
+  display: block;
+  padding: 7px 10px !important;
+  border-radius: 6px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13px/1.4 var(--pim2-font) !important;
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+}
+:root body[class] #pimJournalLinksPanel .pim-sidebar-support-card a:hover {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+/* Template download: dark button with a document mark. */
+:root body[class] #pimJournalLinksPanel a.pim-template-btn {
+  display: flex !important;
+  align-items: center;
+  gap: var(--pim2-space-3);
+  min-height: 52px;
+  padding: 8px 16px !important;
+  border-radius: var(--pim2-radius) !important;
+  background: var(--pim2-ink) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn:hover {
+  background: #33373b !important;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 28px;
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--pim2-accent), var(--pim2-accent)) 5px 8px / 12px 2px no-repeat,
+    linear-gradient(#c9d0da, #c9d0da) 5px 13px / 12px 2px no-repeat,
+    linear-gradient(#c9d0da, #c9d0da) 5px 18px / 8px 2px no-repeat,
+    #fff;
+}
+:root body[class] #pimJournalLinksPanel a.pim-template-btn img {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text {
+  display: grid;
+  line-height: 1.2;
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text small {
+  font: 600 10px/1.3 var(--pim2-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9d0da;
+}
+:root body[class] #pimJournalLinksPanel .pim-template-btn__text strong {
+  font: 700 14px/1.3 var(--pim2-font);
+  color: #fff;
+}
+/* Indexed by / recommended tools: hairline above, intro line, logos centred and stacked.
+ * Logos stay plain links with alt text in the server HTML, so indexers and crawlers can follow them. */
+:root body[class] #pimJournalLinksPanel > :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) {
+  padding-top: var(--pim2-space-4) !important;
+  border-top: 1px solid var(--pim2-line) !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p {
+  display: block !important;
+  margin: 0 !important;
+  text-align: center !important;
+  font-size: 0;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p > strong {
+  display: block;
+  margin: 0 0 var(--pim2-space-3);
+  text-align: left;
+  color: var(--pim2-ink);
+  font: 600 13px/1.45 var(--pim2-font);
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content p > br {
+  display: none;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content a {
+  display: block !important;
+  flex: none !important;
+  width: fit-content !important;
+  min-height: 0 !important;
+  margin: 0 auto var(--pim2-space-3) !important;
+  padding: 4px !important;
+  border-radius: 6px;
+  background: none !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content a:hover {
+  background: var(--pim2-bg-alt) !important;
+}
+:root body[class] #pimJournalLinksPanel :is(.pim-widget-indexed-by, .pim-widget-indexing-in-progress, .pim-widget-recommended-tools) .content img {
+  display: block;
+  width: auto !important;
+  max-width: 140px;
+  height: auto !important;
+  max-height: 48px;
+  padding: 0 !important;
+}

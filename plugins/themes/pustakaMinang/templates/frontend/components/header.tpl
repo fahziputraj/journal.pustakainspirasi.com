@@ -29,7 +29,7 @@
 <!-- Load Layout & FontAwesome Overrides -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<body class="pkp_page_{$requestedPage|escape|default:"index"} pkp_op_{$requestedOp|escape|default:"index"}{if $gpPublicJournalLayout} pim_public_journal{elseif $gpAccountLayout} pim_account_page{/if}">
+<body class="pkp_page_{$requestedPage|escape|default:"index"} pkp_op_{$requestedOp|escape|default:"index"}{if $gpPublicJournalLayout} pim_public_journal{elseif $gpAccountLayout} pim_account_page{/if}{if $currentContext} pim-journal-{$currentContext->getPath()|escape}{/if}">
 
 <a class="pim-skip-link" href="#pim-main-content">{translate key="navigation.skip.main"}</a>
 
@@ -85,6 +85,20 @@
 </header>
 
 {if $gpPublicJournalLayout}
+  {* pim-journal-strip:start  Journal identity strip (GPI layout): title left, ISSN right. Only valid
+     ISSNs are shown and linked to the ISSN Portal; a placeholder such as 0000-0000 reads "In process". *}
+  <div class="pim-journal-strip">
+    <div class="pim-container">
+      <a class="pim-journal-strip__title" href="{url page="index"}">{$currentContext->getLocalizedName()|escape}</a>
+      <dl class="pim-journal-strip__issn">
+        {if $pimIssn.print}
+          <div class="pim-journal-strip__item"><dt>P-ISSN</dt><dd><a href="https://portal.issn.org/resource/ISSN/{$pimIssn.print|escape}" target="_blank" rel="noopener">{$pimIssn.print|escape}</a></dd></div>
+        {/if}
+        <div class="pim-journal-strip__item"><dt>E-ISSN</dt><dd>{if $pimIssn.online}<a href="https://portal.issn.org/resource/ISSN/{$pimIssn.online|escape}" target="_blank" rel="noopener">{$pimIssn.online|escape}</a>{else}<span class="pim-journal-strip__pending">In process</span>{/if}</dd></div>
+      </dl>
+    </div>
+  </div>
+  {* pim-journal-strip:end *}
   <div class="pim-mobile-tools-backdrop" data-pim-tools-close aria-hidden="true"></div>
   {* Journal dock (phones and tablets): two panel buttons open the bottom sheet, two direct actions. *}
   <nav class="pim-mobile-tools-bar pim-dock" aria-label="Journal tools">
@@ -117,8 +131,19 @@
 
         <div class="pim-journal-tools-group">
           <h2>Journal Issues</h2>
-          <a href="{url page="issue" op="current"}" class="{if $requestedPage == 'issue' && $requestedOp == 'current'}is-active{/if}"><i class="fas fa-file-lines"></i> Current Issue</a>
-          <a href="{url page="issue" op="archive"}" class="{if $requestedPage == 'issue' && $requestedOp == 'archive'}is-active{/if}"><i class="fas fa-box-archive"></i> Archives</a>
+          {* pim-issue-nav:start  /issue/current redirects to /issue/view/{id}: mark Current Issue there too,
+             and Archives for any other issue. pimCurrentIssueId comes from PustakaMinangThemePlugin. *}
+          {assign var="pimIssueNav" value=""}
+          {if $requestedPage == 'issue'}
+            {if $requestedOp == 'current' || ($requestedOp == 'view' && $issue && $pimCurrentIssueId && $issue->getId() == $pimCurrentIssueId)}
+              {assign var="pimIssueNav" value="current"}
+            {elseif $requestedOp == 'archive' || $requestedOp == 'view'}
+              {assign var="pimIssueNav" value="archive"}
+            {/if}
+          {/if}
+          <a href="{url page="issue" op="current"}" class="{if $pimIssueNav == 'current'}is-active{/if}"><i class="fas fa-file-lines"></i> Current Issue</a>
+          <a href="{url page="issue" op="archive"}" class="{if $pimIssueNav == 'archive'}is-active{/if}"><i class="fas fa-box-archive"></i> Archives</a>
+          {* pim-issue-nav:end *}
         </div>
 
         <div class="pim-journal-tools-group">

@@ -999,7 +999,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /*
- * Journal information rail: each titled OJS block becomes a disclosure section
+ * Journal information rail: each titled OJS block becomes a static section (see below)
  * (spec 2026-11-27-pim-journal-tools-design). Links, order and stored HTML stay intact;
  * only a leading/trailing "::" decoration is removed from visible text.
  */
@@ -1014,14 +1014,99 @@ window.PIM.stripRailDecoration = function (root) {
     }
   }
 };
-window.PIM.buildRailSections = function (panel, options) {
+/*
+ * Static rail (GPI layout, 2026-11-27 follow-up): sections are always open, never collapsible.
+ * Inside custom blocks, label-only cells (":: PEOPLE ::", "E-ISSN ONLINE") become group headings
+ * and empty cells are hidden. A block that brings its own group headings keeps its title for
+ * screen readers only, so the groups read as peers (Information, People, Policies, Submission).
+ */
+window.PIM.markRailGroups = function (body) {
+  var groups = 0;
+  var MEDIA = 'a, img, iframe, svg, input, button, form';
+  var clean = function (el) { return el.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim(); };
+  // Text with no letters or digits (e.g. a stray "```" pasted from Markdown) counts as empty.
+  var hasWords = function (el) { return /[\p{L}\p{N}]/u.test(clean(el)); };
+  var hasVisible = function (el) { return !!el && (!!el.querySelector(MEDIA) || hasWords(el)); };
+  Array.prototype.forEach.call(body.querySelectorAll('p'), function (para) {
+    if (!para.closest('td, th') && clean(para) && !hasWords(para) && !para.querySelector(MEDIA)) para.classList.add('pim-rail-empty');
+  });
+  // Table cells (stored custom blocks) and bold-only paragraphs ("<p><strong>PEOPLE</strong></p>").
+  var cells = Array.prototype.slice.call(body.querySelectorAll('td, th'));
+  Array.prototype.forEach.call(body.querySelectorAll('p'), function (para) {
+    if (para.closest('td, th')) return;
+    var strong = para.querySelector(':scope > strong, :scope > b');
+    var link = para.querySelector(':scope > a');
+    if (strong && !para.querySelector(MEDIA) && clean(strong) === clean(para)) cells.push(para);
+    else if (link && para.children.length === 1 && !para.querySelector('img') && clean(link) === clean(para)) para.classList.add('pim-rail-link');
+  });
+  // Headings written inside the block content ("<h4 class=pim-sidebar-section-title>People</h4>").
+  Array.prototype.forEach.call(body.querySelectorAll('h3, h4, h5, h6, .pim-sidebar-section-title'), function (h) {
+    if (h.hidden || h.closest('td, th') || h.classList.contains('pim-rail-group')) return;
+    var text = clean(h);
+    if (text && !h.querySelector(MEDIA) && text.length <= 40) {
+      h.classList.add('pim-rail-group');
+      groups++;
+    }
+  });
+  cells.forEach(function (cell) {
+    var text = clean(cell);
+    var media = cell.querySelector(MEDIA);
+    if (!text && !media) {
+      cell.classList.add('pim-rail-empty');
+    } else if (text && !media && text.length <= 40) {
+      cell.classList.add('pim-rail-group');
+      groups++;
+    } else if (cell.querySelector('a') && !cell.querySelector('img')) {
+      cell.classList.add('pim-rail-link');
+    }
+  });
+  // A group heading with nothing visible after it (e.g. an empty "E-ISSN ONLINE" slot) is hidden.
+  Array.prototype.forEach.call(body.querySelectorAll('.pim-rail-group'), function (cell) {
+    var row = cell.closest('tr') || cell;
+    var next = row.nextElementSibling;
+    if (!next && row.tagName === 'TR') {
+      var table = row.closest('table');
+      next = table && table.nextElementSibling;
+    }
+    while (next && next.tagName === 'P' && !hasVisible(next)) next = next.nextElementSibling;
+    var nextIsLabelOnly = next && next.querySelector('.pim-rail-group') && !next.querySelector(MEDIA);
+    // The next thing that shows is another group heading (e.g. "SEARCH" with its widget removed).
+    var firstShown = next && (next.matches('.pim-rail-group, .pim-rail-link') ? next
+      : next.querySelector('.pim-rail-group, .pim-rail-link, a, img, iframe, form, li'));
+    var nextStartsWithGroup = !!(firstShown && firstShown.classList.contains('pim-rail-group'));
+    if (!hasVisible(next) || nextIsLabelOnly || nextStartsWithGroup) {
+      cell.classList.add('pim-rail-empty');
+      cell.classList.remove('pim-rail-group');
+      groups--;
+    }
+  });
+  // Template group: an image-only download link becomes a text button (GPI "Download Article
+  // Template"). The image stays in the link (hidden) and its alt text stays the accessible name.
+  Array.prototype.forEach.call(body.querySelectorAll('.pim-rail-group'), function (cell) {
+    if (!/template/i.test(clean(cell))) return;
+    var row = cell.closest('tr') || cell;
+    var next = row.nextElementSibling;
+    var link = next && (next.matches('a[href]') ? next : next.querySelector('a[href]'));
+    if (!link || link.classList.contains('pim-template-btn') || clean(link)) return;
+    link.classList.add('pim-template-btn');
+    var text = document.createElement('span');
+    text.className = 'pim-template-btn__text';
+    var small = document.createElement('small');
+    small.textContent = 'Download';
+    var strong = document.createElement('strong');
+    strong.textContent = 'Article Template';
+    text.appendChild(small);
+    text.appendChild(strong);
+    link.appendChild(text);
+  });
+  return groups;
+};
+window.PIM.buildRailSections = function (panel) {
   if (!panel) return 0;
-  var openCount = options && typeof options.open === 'number' ? options.open : 2;
   window.PIM.stripRailDecoration(panel);
   var blocks = Array.prototype.filter.call(panel.children, function (el) { return el.classList.contains('pkp_block'); });
-  var index = 0;
   blocks.forEach(function (block) {
-    if (block.querySelector(':scope > details.pim-rail-section')) { index++; return; }
+    if (block.querySelector(':scope > .pim-rail-section')) return;
     var title = block.querySelector(':scope > .title');
     var label = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
     var heading = null;
@@ -1030,30 +1115,27 @@ window.PIM.buildRailSections = function (panel, options) {
       label = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : '';
     }
     if (!label) return;
-    var details = document.createElement('details');
-    details.className = 'pim-rail-section';
-    if (index < openCount) details.open = true;
-    var summary = document.createElement('summary');
-    summary.className = 'pim-rail-summary';
-    if (heading) {
-      summary.appendChild(heading);
-    } else {
-      var text = document.createElement('span');
-      text.textContent = label;
-      summary.appendChild(text);
-      title.hidden = true;
-    }
+    var section = document.createElement('section');
+    section.className = 'pim-rail-section';
+    var head = document.createElement('h2');
+    head.className = 'pim-rail-heading';
+    head.textContent = label;
+    if (heading) heading.hidden = true;
+    if (title) title.hidden = true;
     var body = document.createElement('div');
     body.className = 'pim-rail-body';
     Array.prototype.slice.call(block.childNodes).forEach(function (child) {
       if (child !== title) body.appendChild(child);
     });
-    details.appendChild(summary);
-    details.appendChild(body);
-    block.appendChild(details);
-    index++;
+    if (window.PIM.markRailGroups(body) > 0) {
+      head.classList.add('pkp_screen_reader');
+      section.classList.add('pim-rail-section--grouped');
+    }
+    section.appendChild(head);
+    section.appendChild(body);
+    block.appendChild(section);
   });
-  return panel.querySelectorAll('details.pim-rail-section').length;
+  return panel.querySelectorAll('.pim-rail-section').length;
 };
 document.addEventListener('DOMContentLoaded', function () {
   window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
@@ -1120,4 +1202,55 @@ window.PIM.enhanceSearchPage = function (root) {
 };
 document.addEventListener('DOMContentLoaded', function () {
   if (document.body.classList.contains('pkp_page_search')) window.PIM.enhanceSearchPage(document);
+});
+
+/*
+ * Article page (refinement layer v2.1): download buttons right under the authors at every width,
+ * an upright abstract when the editor italicised all of it, and numbered references with a
+ * separate number column for the hanging indent. DOM moves only; no content is rewritten.
+ */
+window.PIM.enhanceArticlePage = function (root) {
+  var article = root.querySelector('.obj_article_details');
+  if (!article) return;
+  var main = article.querySelector('.main_entry');
+  var galleys = article.querySelector('.entry_details > .item.galleys');
+  if (main && galleys && !article.querySelector('.pim-article-actions')) {
+    galleys.classList.add('pim-article-actions');
+    var authors = main.querySelector(':scope > .item.authors');
+    main.insertBefore(galleys, authors ? authors.nextSibling : main.firstChild);
+  }
+
+  var abstract = article.querySelector('.item.abstract');
+  if (abstract) {
+    var total = 0;
+    var slanted = 0;
+    Array.prototype.forEach.call(abstract.childNodes, function (node) {
+      if (node.nodeType === 1 && node.classList.contains('label')) return;
+      total += (node.textContent || '').replace(/\s+/g, '').length;
+    });
+    Array.prototype.forEach.call(abstract.querySelectorAll('em, i'), function (node) {
+      var outer = node.parentElement && node.parentElement.closest('em, i');
+      if (outer && abstract.contains(outer)) return; // counted with its outermost italic ancestor
+      slanted += (node.textContent || '').replace(/\s+/g, '').length;
+    });
+    if (total > 0 && slanted / total > 0.6) abstract.classList.add('pim-abstract-upright');
+  }
+
+  Array.prototype.forEach.call(article.querySelectorAll('.item.references .value p'), function (p) {
+    if (p.querySelector('.pim-ref-num')) return;
+    var first = p.firstChild;
+    while (first && first.nodeType === 3 && !first.nodeValue.trim()) first = first.nextSibling;
+    if (!first || first.nodeType !== 3) return;
+    var match = first.nodeValue.match(/^\s*(\[\d{1,3}\]|\d{1,3}\.)\s*/);
+    if (!match) return;
+    var num = document.createElement('span');
+    num.className = 'pim-ref-num';
+    num.textContent = match[1];
+    first.nodeValue = first.nodeValue.slice(match[0].length);
+    p.insertBefore(num, first);
+    p.insertBefore(document.createTextNode(' '), first);
+  });
+};
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.querySelector('.obj_article_details')) window.PIM.enhanceArticlePage(document);
 });

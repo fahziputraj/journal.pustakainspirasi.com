@@ -2,7 +2,7 @@
  * Journal dock, bottom sheet and rail sections (spec 2026-11-27-pim-journal-tools-design).
  * Usage: PLAYWRIGHT_MODULE=D:/SA/aapm-prod-portal/node_modules/playwright node tools/qa/journal-tools.cjs
  * Uses the installed Chrome (PLAYWRIGHT_CHANNEL overrides). The fixture uses the real dock markup from
- * header.tpl and the working-tree pim-layout.css, custom.css, pim-v2.css and pim-ui.js.
+ * header.tpl and the working-tree pim-layout.css, custom.css, pim-v2.css, pim-refine.css and pim-ui.js.
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -33,7 +33,8 @@ function page(withSidebar) {
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-layout.css">
   <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/custom.css">
-  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-v2.css"></head>
+  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-v2.css">
+  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-refine.css"></head>
   <body class="pkp_page_index pkp_op_index pim_public_journal"><div class="pkp_structure_page">
   <div class="pim-mobile-tools-backdrop" data-pim-tools-close aria-hidden="true"></div>${dock}
   <div class="pkp_structure_content pkp_has_sidebar pim-layout-journal-public">${menuPanel}
@@ -146,16 +147,34 @@ async function check(name, fn) {
       const s = await p.evaluate(() => {
         const panel = document.getElementById('pimJournalLinksPanel');
         return {
-          sections: [...panel.querySelectorAll('details.pim-rail-section')].map((d) => ({ open: d.open, title: d.querySelector('summary').textContent.trim() })),
+          headings: [...panel.querySelectorAll('.pim-rail-section > .pim-rail-heading')].map((h) => h.textContent.trim()),
+          collapsible: panel.querySelectorAll('details, summary').length,
+          hiddenBodies: [...panel.querySelectorAll('.pim-rail-body')].filter((b) => !b.getClientRects().length).length,
           links: [...panel.querySelectorAll('a')].map((a) => a.getAttribute('href')),
-          nested: panel.querySelectorAll('details details').length,
           again: window.PIM.buildRailSections(panel),
         };
       });
-      assert.deepEqual(s.sections.map((x) => x.open), [true, true, false]);
+      assert.equal(s.collapsible, 0, 'rail is never collapsible');
+      assert.equal(s.hiddenBodies, 0, 'every section body is visible');
       assert.deepEqual(s.links, ['/r', '/a', '/team', '/rev', 'https://scholar.google.com'], 'links kept in order');
-      assert.equal(s.nested, 0); assert.equal(s.again, 3, 'idempotent');
-      assert.deepEqual(s.sections.map((x) => x.title), ['Information', 'Journal Information', 'Indexed By']);
+      assert.equal(s.again, 3, 'idempotent');
+      assert.deepEqual(s.headings, ['Information', 'Journal Information', 'Indexed By']);
+    });
+    await check('groups', async () => {
+      const g = await p.evaluate(() => {
+        const block = document.querySelectorAll('#pimJournalLinksPanel .pkp_block')[1];
+        const group = block.querySelector('.pim-rail-group');
+        return {
+          group: group ? group.textContent.trim() : null,
+          blockHeadingVisible: block.querySelector('.pim-rail-heading').getBoundingClientRect().width > 1,
+          linkRows: block.querySelectorAll('.pim-rail-link').length,
+          rowBg: getComputedStyle(block.querySelector('.pim-rail-link > a')).backgroundColor,
+        };
+      });
+      assert.equal(g.group, 'PEOPLE', 'label-only paragraph becomes a group heading');
+      assert.equal(g.blockHeadingVisible, false, 'block title kept for screen readers only when groups lead');
+      assert.equal(g.linkRows, 2);
+      assert.notEqual(g.rowBg, 'rgba(0, 0, 0, 0)', 'links render as tinted rows');
     });
     await check('decoration', async () => {
       const text = await p.evaluate(() => [...document.querySelectorAll('#pimJournalLinksPanel strong')].map((n) => n.textContent));
@@ -164,9 +183,9 @@ async function check(name, fn) {
     await check('customHeading', async () => {
       const count = await p.evaluate(() => {
         const block = document.querySelectorAll('#pimJournalLinksPanel .pkp_block')[2];
-        return { headings: block.querySelectorAll('h3').length, inSummary: !!block.querySelector('summary h3') };
+        return { hidden: block.querySelector('h3').hidden, label: block.querySelector('.pim-rail-heading').textContent.trim() };
       });
-      assert.equal(count.headings, 1); assert.equal(count.inSummary, true);
+      assert.equal(count.hidden, true); assert.equal(count.label, 'Indexed By');
     });
     await check('menuSearch', async () => {
       await load(p, true, 1280);
