@@ -1137,8 +1137,71 @@ window.PIM.buildRailSections = function (panel) {
   });
   return panel.querySelectorAll('.pim-rail-section').length;
 };
+/*
+ * Policies live on the About page (critique 28 Nov): the rail's POLICIES group (11 links) is replaced by
+ * one "Journal policies" row that points to About, and About lists every policy link. Links keep their
+ * href and text; nothing is removed from the stored block HTML.
+ */
+window.PIM.movePoliciesToAbout = function (panel, root) {
+  if (!panel || panel.querySelector('.pim-rail-policies-link')) return 0;
+  var group = Array.prototype.find.call(panel.querySelectorAll('.pim-rail-group'), function (g) {
+    return /^policies$/i.test(g.textContent.replace(/\s+/g, ' ').trim());
+  });
+  if (!group) return 0;
+  var start = group.closest('tr') || group;
+  if (start.tagName === 'TR' && start.parentElement && start.parentElement.children.length === 1) start = start.closest('table');
+  var moved = [start];
+  var node = start.nextElementSibling;
+  if (!node && start.tagName === 'TR') node = start.closest('table').nextElementSibling;
+  while (node && !node.querySelector('.pim-rail-group') && !node.classList.contains('pim-rail-group')) {
+    moved.push(node);
+    node = node.nextElementSibling;
+  }
+  var links = [];
+  moved.forEach(function (el) {
+    Array.prototype.forEach.call(el.querySelectorAll('a[href]'), function (a) {
+      var text = a.textContent.replace(/\s+/g, ' ').trim();
+      if (text) links.push({ href: a.getAttribute('href'), text: text });
+    });
+  });
+  if (!links.length) return 0;
+  var aboutLink = root.querySelector('.pim-journal-tools-panel a[href$="/about"], #pimJournalMenuPanel a[href$="/about"]');
+  var aboutUrl = aboutLink ? aboutLink.getAttribute('href') : 'about';
+  moved.forEach(function (el) { el.classList.add('pim-rail-moved'); });
+  var row = document.createElement('p');
+  row.className = 'pim-rail-link pim-rail-policies-link';
+  var go = document.createElement('a');
+  go.href = aboutUrl + '#pim-policies';
+  go.textContent = 'Journal policies';
+  row.appendChild(go);
+  start.parentNode.insertBefore(row, start);
+
+  var about = root.querySelector('body.pkp_page_about.pkp_op_index .page_about, body.pkp_page_about.pkp_op_index .pkp_structure_main > .page');
+  if (about && !about.querySelector('#pim-policies')) {
+    var section = document.createElement('section');
+    section.className = 'pim-about-policies';
+    section.id = 'pim-policies';
+    var h = document.createElement('h2');
+    h.textContent = 'Journal policies';
+    var list = document.createElement('ul');
+    links.forEach(function (l) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = l.href;
+      a.textContent = l.text;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    section.appendChild(h);
+    section.appendChild(list);
+    about.appendChild(section);
+  }
+  return links.length;
+};
 document.addEventListener('DOMContentLoaded', function () {
-  window.PIM.buildRailSections(document.getElementById('pimJournalLinksPanel'));
+  var panel = document.getElementById('pimJournalLinksPanel');
+  window.PIM.buildRailSections(panel);
+  window.PIM.movePoliciesToAbout(panel, document);
 });
 
 /*

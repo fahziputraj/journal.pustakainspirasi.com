@@ -97,7 +97,7 @@
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js?v=20261128-3"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20261128-4"></script>
 
 {load_script context="frontend"}
 

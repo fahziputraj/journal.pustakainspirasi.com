@@ -174,7 +174,8 @@ async function check(name, fn) {
           return { collapsible: panel.querySelectorAll('details, summary').length, labels };
         });
         assert.equal(r.collapsible, 0, 'never collapsible');
-        for (const want of ['INFORMATION', 'PEOPLE', 'POLICIES', 'SUBMISSION']) assert.ok(r.labels.includes(want), want + ' in ' + r.labels.join('|'));
+        for (const want of ['INFORMATION', 'PEOPLE', 'SUBMISSION']) assert.ok(r.labels.includes(want), want + ' in ' + r.labels.join('|'));
+        assert.ok(!r.labels.includes('POLICIES'), 'policies moved to About');
         assert.ok(!r.labels.includes('JOURNAL INFORMATION'), 'wrapper title hidden when groups lead');
         assert.ok(!r.labels.includes('E-ISSN ONLINE') && !r.labels.includes('SEARCH'), 'no orphan labels');
       });
@@ -214,6 +215,27 @@ async function check(name, fn) {
       const r = await p.evaluate(() => { const h = document.querySelector('.pkp_structure_main > .page > h2'); return { role: h.getAttribute('role'), level: h.getAttribute('aria-level') }; });
       assert.deepEqual(r, { role: 'heading', level: '1' });
     });
+    for (const part of ['mbj-about.html', 'mcj-about.html']) {
+      await check(`policies@${part}: About lists them, the rail keeps one link, rail CTA is secondary`, async () => {
+        await open(part, 1440);
+        const r = await p.evaluate(() => {
+          const panel = document.getElementById('pimJournalLinksPanel');
+          const vis = (e) => e.getClientRects().length > 0;
+          const go = panel.querySelector('.pim-rail-policies-link a');
+          const cta = panel.querySelector('.block_make_submission_link');
+          return {
+            about: [...document.querySelectorAll('#pim-policies a')].map((a) => a.textContent.trim()),
+            railPolicyLinks: [...panel.querySelectorAll('a')].filter(vis).filter((a) => /Focus and Scope|Peer Review Process|Publication Ethics/.test(a.textContent)).length,
+            go: go ? go.getAttribute('href') : null,
+            cta: cta ? getComputedStyle(cta).backgroundColor : null,
+          };
+        });
+        assert.ok(r.about.length >= 8 && r.about.includes('Focus and Scope') && r.about.includes('Publication Ethics'), 'About policies: ' + r.about.join('|'));
+        assert.equal(r.railPolicyLinks, 0, 'policy links hidden from the rail');
+        assert.ok(r.go && /\/about#pim-policies$/.test(r.go), 'rail link to About: ' + r.go);
+        assert.equal(r.cta, 'rgb(255, 255, 255)', 'rail Make a Submission is secondary');
+      });
+    }
     await check('journal home: latest-article titles in sentence case', async () => {
       await open('mbj-index', 1440);
       const tt = await p.evaluate(() => getComputedStyle(document.querySelector('.pim-article-card .pim-article-title')).textTransform);

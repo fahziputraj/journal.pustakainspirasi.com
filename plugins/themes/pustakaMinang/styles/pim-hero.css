@@ -63,7 +63,6 @@
   .btn-publish,
   .pim-journal-submit,
   .pim-home-current-link,
-  #pimJournalLinksPanel .block_make_submission_link,
   .obj_article_details .pim-article-actions a.obj_galley_link.pdf,
   .pkp_structure_main .cmp_form .buttons button.submit,
   .page_search form .submit button,
@@ -81,7 +80,6 @@
   .btn-publish,
   .pim-journal-submit,
   .pim-home-current-link,
-  #pimJournalLinksPanel .block_make_submission_link,
   .obj_article_details .pim-article-actions a.obj_galley_link.pdf,
   .pkp_structure_main .cmp_form .buttons button.submit,
   .page_search form .submit button,
@@ -106,7 +104,7 @@
 }
 
 /* ---------------------------------------------------------------- buttons: bordered and flat */
-:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit) {
+:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit, #pimJournalLinksPanel .block_make_submission_link) {
   border: 1px solid var(--pim2-line-strong) !important;
   border-radius: 999px !important;
   background: var(--pim2-bg) !important;
@@ -120,7 +118,7 @@
   align-items: center;
   gap: 8px;
 }
-:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit):hover {
+:root body[class] :is(.btn-login, .jl-btn-outline, .pim-btn-submit, #pimJournalLinksPanel .block_make_submission_link):hover {
   border-color: var(--pim2-ink) !important;
   background: var(--pim2-field-bg) !important;
 }
@@ -329,4 +327,47 @@ html:root body[class] .page_search .search_advanced .author {
   html:root body[class] .page_search .search_advanced .author {
     max-width: none;
   }
+}
+
+/* ---------------------------------------------------------------- policies moved to About (pim-ui.js) */
+:root body[class] #pimJournalLinksPanel .pim-rail-body :is(table, tbody, tr, td, th, p, ul, div, h3, h4, h5).pim-rail-moved {
+  display: none !important;
+}
+:root body[class] .pim-about-policies {
+  margin-top: var(--pim2-space-7);
+  padding-top: var(--pim2-space-5);
+  border-top: 1px solid var(--pim2-line);
+  scroll-margin-top: 96px;
+}
+:root body[class] .pim-about-policies h2 {
+  margin: 0 0 var(--pim2-space-4) !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-about-policies ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: var(--pim2-space-2);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] .pim-about-policies li {
+  margin: 0 !important;
+}
+:root body[class] .pim-about-policies a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--pim2-radius-field);
+  background: var(--pim2-field-bg);
+  color: var(--pim2-ink) !important;
+  font: 500 14px/1.35 var(--pim2-font);
+  text-decoration: none !important;
+}
+:root body[class] .pim-about-policies a:hover {
+  background: var(--pim2-accent-soft);
+  color: var(--pim2-accent) !important;
 }
