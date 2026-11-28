@@ -187,3 +187,37 @@ Verification:
   - `mbj/issue/view/13` 0.25 s.
   - `mcsj/index` 0.19 s.
   - `mbj/index` 0.21 s.
+
+## Static right rail, rail fixes and theme log fix (2026-11-27/28, user-confirmed)
+
+What changed:
+- **The right rail is static and never collapsible (GPI layout).**
+  - `PIM.buildRailSections()` builds static sections, each with a small uppercase heading.
+  - `PIM.markRailGroups()` turns label-only cells, bold-only paragraphs and `<h4 class="pim-sidebar-section-title">` (MCJ) into group headings.
+  - It hides empty cells and labels whose next visible item is another label (the empty "SEARCH" on MCSJ and MMJ). It also hides paragraphs with no letters or digits, such as a stray Markdown fence.
+  - A block that brings its own groups keeps its title for screen readers only.
+  - Links are full-width tinted rows, and the rail's Make a Submission is the primary button.
+- **Theme log fix.** `PustakaMinangThemePlugin::registerSmartyModifiers()` registers each modifier only once per request. Before this, a second `display()` threw "Plugin tag 'pim_article_views' already registered", which produced 597 error_log entries since June.
+
+Release:
+- **Rail:** commit `e8413cc4`, 4 files. Backup in `/home/pusf3964/pim-backup-20261127-rail/`.
+- **MCJ groups and theme fix:** commit `112dafb7`, 3 files. Backup in `/home/pusf3964/pim-backup-20261127-fix/`. Uploaded at 08:24 WIB on 28 Nov.
+- **Orphan labels:** commit `5bc1e980`, 2 files. Backup in `/home/pusf3964/pim-backup-20261128-fix2/`. Asset is now `pim-ui.js?v=20261127-7`.
+
+Verification:
+- `tools/qa/journal-tools.cjs` (18 cases) passes. The new rail cases fail on the collapsible version.
+- `tools/qa/public-refine.cjs` passes, including the rail checks on MBJ, MCJ, MCSJ and MMJ.
+- `php tools/qa/theme-modifiers.php` passes and fails on the previous plugin.
+- **Live:**
+  - All 5 journals show Information, People, Policies and Submission with no `details`, no orphan labels and no page errors.
+  - No "already registered" entry appears after the 08:24 upload; the last one is at 07:56.
+
+Bug hunt (28 Nov, read-only):
+- **No active blockers.**
+  - Review forms in all 5 journals have real Yes/No options; MBJ and MMJ each have 10 completed reviews.
+  - Section and Guest editors have stages 1, 3, 4 and 5.
+  - Submissions are open, with 3 new ones in the last 2 days.
+  - The job queue and failed jobs are empty.
+- **Risk:**
+  - PHP `upload_max_filesize` and `post_max_size` are 10M, so manuscripts or galleys over 10 MB fail. Raising them to 50M in cPanel MultiPHP INI needs the owner's approval.
+  - OJS 3.5.0.6 is available; it carries the invitation-payload warnings, 753 in the log.
