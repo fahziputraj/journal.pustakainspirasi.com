@@ -1024,7 +1024,12 @@ window.PIM.markRailGroups = function (body) {
   var groups = 0;
   var MEDIA = 'a, img, iframe, svg, input, button, form';
   var clean = function (el) { return el.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim(); };
-  var hasVisible = function (el) { return !!el && (!!el.querySelector(MEDIA) || clean(el).length > 0); };
+  // Text with no letters or digits (e.g. a stray "```" pasted from Markdown) counts as empty.
+  var hasWords = function (el) { return /[\p{L}\p{N}]/u.test(clean(el)); };
+  var hasVisible = function (el) { return !!el && (!!el.querySelector(MEDIA) || hasWords(el)); };
+  Array.prototype.forEach.call(body.querySelectorAll('p'), function (para) {
+    if (!para.closest('td, th') && clean(para) && !hasWords(para) && !para.querySelector(MEDIA)) para.classList.add('pim-rail-empty');
+  });
   // Table cells (stored custom blocks) and bold-only paragraphs ("<p><strong>PEOPLE</strong></p>").
   var cells = Array.prototype.slice.call(body.querySelectorAll('td, th'));
   Array.prototype.forEach.call(body.querySelectorAll('p'), function (para) {
@@ -1065,7 +1070,11 @@ window.PIM.markRailGroups = function (body) {
     }
     while (next && next.tagName === 'P' && !hasVisible(next)) next = next.nextElementSibling;
     var nextIsLabelOnly = next && next.querySelector('.pim-rail-group') && !next.querySelector(MEDIA);
-    if (!hasVisible(next) || nextIsLabelOnly || (next.classList && next.classList.contains('pim-rail-group'))) {
+    // The next thing that shows is another group heading (e.g. "SEARCH" with its widget removed).
+    var firstShown = next && (next.matches('.pim-rail-group, .pim-rail-link') ? next
+      : next.querySelector('.pim-rail-group, .pim-rail-link, a, img, iframe, form, li'));
+    var nextStartsWithGroup = !!(firstShown && firstShown.classList.contains('pim-rail-group'));
+    if (!hasVisible(next) || nextIsLabelOnly || nextStartsWithGroup) {
       cell.classList.add('pim-rail-empty');
       cell.classList.remove('pim-rail-group');
       groups--;

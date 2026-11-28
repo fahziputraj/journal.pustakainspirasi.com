@@ -88,7 +88,7 @@
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js?v=20261127-6"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20261127-7"></script>
 
 {load_script context="frontend"}
 

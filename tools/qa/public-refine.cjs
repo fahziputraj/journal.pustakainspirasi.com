@@ -164,7 +164,7 @@ async function check(name, fn) {
       assert.equal(r.list, 'none');
       assert.ok(r.fh.every((w) => w === '0px'), 'footer heading borders ' + r.fh);
     });
-    for (const part of ['mbj-index', 'mcj-index']) {
+    for (const part of ['mbj-index', 'mcj-index', 'mcsj-index', 'mmj-index']) {
       await check(`rail@${part}: static sections, groups as peers, no orphan labels`, async () => {
         await open(part, 1440);
         const r = await p.evaluate(() => {
