@@ -254,3 +254,19 @@ Verification:
   - The strip and template button are present on all 5 journals, with no `details` and no page errors.
   - The ISSN meta is gone from the article page.
   - `robots.txt` serves the Sitemap line.
+
+## Current Issue cover and menu sync for MBJ and MMJ (2026-11-28, client request, user-confirmed)
+
+Bg Handri, 28 Nov 14:08: "tampilan current issue yang masih nama get press journal, juga tombol menu current issue dan archives belum sinkron".
+
+- **Cover:** issues without their own cover showed `default_journal_issue_cover.png`, which is Get Press branded. `indexJournal.tpl` now falls back to the journal's homepage image (its cover). The site default stays only for journals without one.
+- **Menu:** `/issue/current` redirects to `/issue/view/{id}`, so neither Current Issue nor Archives was active there.
+  - `PustakaMinangThemePlugin::prepareIssueNav()` assigns `pimCurrentIssueId` on issue pages.
+  - `header.tpl` marks Current Issue on that issue and Archives on other issues and on the archive page.
+- **Release:** commit `df009329`, 3 files. Backup in `/home/pusf3964/pim-backup-20261128-issuenav/`.
+- **Verification:** `php tools/qa/issue-nav.php` passes and fails on the previous header.
+- **Live:**
+  - MBJ and MMJ homes show `homepageImage_en.png` (loaded, with the journal name as alt text).
+  - `/issue/current` lands on `/issue/view/13` (MBJ) and `/issue/view/14` (MMJ) with Current Issue active.
+  - The archive page has Archives active.
+  - No page errors.
