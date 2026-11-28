@@ -18,7 +18,9 @@ function page({ query = '', fromYear = '' } = {}) {
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-layout.css">
   <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/custom.css">
-  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-v2.css"></head>
+  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-v2.css">
+  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-refine.css">
+  <link rel="stylesheet" href="https://fixture.test/plugins/themes/pustakaMinang/styles/pim-hero.css"></head>
   <body class="pkp_page_search pkp_op_search pim_public_journal"><div class="pkp_structure_page">
   <div class="pkp_structure_content pkp_has_sidebar pim-layout-journal-public">
   <div class="pkp_structure_main" id="pim-main-content" role="main">${body}</div></div></div>
@@ -66,6 +68,11 @@ async function check(name, fn) {
     await check('filtersOpen', async () => {
       await load(p, { query: 'betel', fromYear: '2026' });
       assert.equal(await p.evaluate(() => document.querySelector('details.pim-search-filters')?.open), true);
+    });
+    await check('dateSelectsReadable', async () => {
+      await load(p, { query: 'betel', fromYear: '2026' });
+      const r = await p.evaluate(() => ({ sel: [...document.querySelectorAll('.date_range select')].map((s) => Math.round(s.getBoundingClientRect().width)), over: document.documentElement.scrollWidth > innerWidth }));
+      assert.ok(r.sel.length === 6 && r.sel.every((w) => w >= 72), 'date selects wide enough: ' + r.sel.join(','));
     });
     await check('emptyBefore', async () => {
       await load(p, { query: '' });

@@ -261,3 +261,72 @@ html:root body[class] .pkp_structure_main :is(input[type="text"], input[type="em
     transform: none;
   }
 }
+
+/* ---------------------------------------------------------------- search page: field + button, refine panel
+ * The first layer forced `.search_advanced` to two equal columns with !important, which squeezed the date
+ * selects to 26px. Re-state the layout with enough weight: dates in one row of two groups (Year, Month,
+ * Day each), author below; one column on phones. The keyword field and the Search button sit apart.
+ */
+html:root body[class] .page_search form.pim-search-form {
+  column-gap: var(--pim2-space-2) !important;
+}
+html:root body[class] .page_search .pim-search-form .search_input input.query {
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+}
+html:root body[class] .page_search .pim-search-form .search_input input.query:focus {
+  border-color: var(--pim2-accent) !important;
+}
+html:root body[class] .page_search .pim-search-form > .submit button {
+  border-radius: 999px !important;
+}
+html:root body[class] .page_search .pim-search-filters fieldset.search_advanced {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: var(--pim2-space-5) !important;
+}
+html:root body[class] .page_search .search_advanced .date_range {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: var(--pim2-space-6) !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+}
+html:root body[class] .page_search .search_advanced .date_range > div {
+  width: auto !important;
+  min-width: 0;
+  margin: 0 !important;
+  float: none !important;
+}
+html:root body[class].pkp_page_search .pkp_structure_main .date_range fieldset {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.25fr) minmax(0, 1fr) !important;
+  width: 100% !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+html:root body[class] .page_search .search_advanced .date_range select {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding-inline: 10px 26px !important;
+}
+html:root body[class] .page_search .search_advanced .date_range label {
+  white-space: nowrap !important;
+}
+html:root body[class] .page_search .search_advanced .author {
+  display: flex !important;
+  flex-direction: column;
+  width: 100% !important;
+  max-width: 440px;
+}
+@media (max-width: 600px) {
+  html:root body[class] .page_search .search_advanced .date_range {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--pim2-space-4) !important;
+  }
+  html:root body[class] .page_search .search_advanced .author {
+    max-width: none;
+  }
+}
