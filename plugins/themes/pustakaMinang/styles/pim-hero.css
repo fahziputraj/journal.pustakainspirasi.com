@@ -371,3 +371,300 @@ html:root body[class] .page_search .search_advanced .author {
   background: var(--pim2-accent-soft);
   color: var(--pim2-accent) !important;
 }
+
+/* ---------------------------------------------------------------- portal hub (indexSite.tpl, pim-hub-*) */
+:root body[class] .pim-hub-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: var(--pim2-space-7);
+  padding: var(--pim2-space-6) 0 var(--pim2-space-5);
+}
+:root body[class] .pim-hub-eyebrow {
+  margin: 0 0 var(--pim2-space-3) !important;
+  font: 600 12px/1.4 var(--pim2-font) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-hub-title {
+  max-width: 17ch;
+  margin: 0 0 var(--pim2-space-4) !important;
+  font: 800 clamp(32px, 4vw, 48px)/1.08 var(--pim2-font) !important;
+  letter-spacing: -0.025em;
+  color: var(--pim2-ink) !important;
+  text-wrap: balance;
+}
+:root body[class] .pim-hub-lead {
+  max-width: 54ch;
+  margin: 0 0 var(--pim2-space-5) !important;
+  font-size: 17px !important;
+  line-height: 1.6 !important;
+  color: var(--pim2-text) !important;
+}
+:root body[class] .pim-hub-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--pim2-space-2);
+  max-width: 560px;
+  min-height: 56px;
+  margin: 0 0 var(--pim2-space-4);
+  padding: 6px 6px 6px 48px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--pim2-field-bg);
+  transition: background-color var(--pim2-fast) var(--pim2-ease), border-color var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .pim-hub-search:hover {
+  background: var(--pim2-field-hover);
+}
+:root body[class] .pim-hub-search:focus-within {
+  border-color: var(--pim2-accent);
+  background: var(--pim2-bg);
+  outline: 3px solid var(--pim2-accent-soft);
+}
+:root body[class] .pim-hub-search > i {
+  position: absolute;
+  left: 20px;
+  color: var(--pim2-muted);
+}
+html:root body[class] .pim-hub-search input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--pim2-ink) !important;
+  font: 400 16px/1.2 var(--pim2-font) !important;
+}
+:root body[class] .pim-hub-search button {
+  flex: none;
+  height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pim2-accent);
+  color: #fff;
+  font: 600 15px/1 var(--pim2-font);
+  cursor: pointer;
+}
+:root body[class] .pim-hub-search button:hover {
+  background: var(--pim2-accent-hover);
+}
+:root body[class] .pim-hub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pim2-space-3);
+}
+:root body[class] .pim-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pim2-space-2);
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--pim2-line-strong);
+  border-radius: 999px;
+  background: var(--pim2-bg);
+  color: var(--pim2-ink) !important;
+  font: 600 15px/1 var(--pim2-font);
+  text-decoration: none !important;
+  transition: background-color var(--pim2-fast) var(--pim2-ease), border-color var(--pim2-fast) var(--pim2-ease);
+}
+:root body[class] .pim-hub-btn:hover {
+  border-color: var(--pim2-ink);
+  background: var(--pim2-field-bg);
+}
+:root body[class] .pim-hub-btn--primary {
+  border-color: transparent;
+  background: var(--pim2-accent);
+  color: #fff !important;
+}
+:root body[class] .pim-hub-btn--primary:hover {
+  border-color: transparent;
+  background: var(--pim2-accent-hover);
+}
+/* Five journal covers, staggered: the journals themselves are the hero image. */
+:root body[class] .pim-hub-covers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pim2-space-3);
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+:root body[class] .pim-hub-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1414 / 2000;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--pim2-field-bg);
+  box-shadow: var(--pim2-shadow-raised);
+}
+:root body[class] .pim-hub-cover:nth-child(2) { transform: translateY(-18px); }
+:root body[class] .pim-hub-cover:nth-child(4) { margin-left: 50%; transform: translateY(-6px); }
+:root body[class] .pim-hub-cover:nth-child(5) { margin-left: 50%; transform: translateY(-24px); }
+:root body[class] .pim-hub-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 var(--pim2-space-6) !important;
+  padding: var(--pim2-space-4) 0 !important;
+  border-top: 1px solid var(--pim2-line);
+  border-bottom: 1px solid var(--pim2-line);
+  list-style: none !important;
+}
+:root body[class] .pim-hub-facts li {
+  display: grid;
+  gap: 2px;
+  margin: 0 !important;
+  padding: 0 var(--pim2-space-5) !important;
+}
+:root body[class] .pim-hub-facts li + li {
+  border-left: 1px solid var(--pim2-line);
+}
+:root body[class] .pim-hub-facts strong {
+  font: 700 20px/1.2 var(--pim2-font);
+  color: var(--pim2-ink);
+}
+:root body[class] .pim-hub-facts span {
+  font-size: 13px;
+  color: var(--pim2-muted);
+}
+/* Journal cards wear their journal's palette (same values as the journal pages). */
+:root body[class] .pim-card--mbj { --pim2-accent: #0a3f8f; --pim2-accent-hover: #083475; --pim2-accent-soft: #ebf0f6; --pim2-gold-ink: #017429; --pim2-gold-soft: #e6f1ea; }
+:root body[class] .pim-card--mcj { --pim2-accent: #c70d16; --pim2-accent-hover: #a30b12; --pim2-accent-soft: #fbecec; --pim2-gold-ink: #c45308; --pim2-gold-soft: #fdefe7; }
+:root body[class] .pim-card--mcsj { --pim2-accent: #265688; --pim2-accent-hover: #1f4770; --pim2-accent-soft: #eef1f5; --pim2-gold-ink: #2574c9; --pim2-gold-soft: #e9f1fa; }
+:root body[class] .pim-card--mmj { --pim2-accent: #c50a0a; --pim2-accent-hover: #a20808; --pim2-accent-soft: #faebeb; --pim2-gold-ink: #916e00; --pim2-gold-soft: #fef8e6; }
+:root body[class] .pim-card--mpj { --pim2-accent: #12357e; --pim2-accent-hover: #0f2b67; --pim2-accent-soft: #eceff5; --pim2-gold-ink: #c44f05; --pim2-gold-soft: #fdefe6; }
+:root body[class] .pim-journal-card {
+  box-shadow: inset 0 3px 0 var(--pim2-accent), var(--pim2-shadow-surface) !important;
+}
+:root body[class] .pim-journal-card:hover {
+  box-shadow: inset 0 3px 0 var(--pim2-accent), var(--pim2-shadow-raised) !important;
+}
+:root body[class] .pim-journal-card :is(.pim-journal-title a:hover, .pim-view-link) {
+  color: var(--pim2-accent) !important;
+}
+/* About and contact */
+:root body[class] .pim-hub-about {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--pim2-space-6);
+  margin: var(--pim2-space-7) 0 var(--pim2-space-4);
+  padding: var(--pim2-space-6);
+  border-radius: var(--pim2-radius-surface);
+  background: var(--pim2-bg);
+  box-shadow: var(--pim2-shadow-surface);
+  scroll-margin-top: 24px;
+}
+:root body[class] .pim-hub-about h2 {
+  margin: 0 0 var(--pim2-space-3) !important;
+  font: 700 26px/1.2 var(--pim2-font) !important;
+  letter-spacing: -0.01em;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-hub-about p {
+  margin: 0 0 var(--pim2-space-4) !important;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--pim2-text);
+}
+:root body[class] .pim-hub-points {
+  display: grid;
+  gap: var(--pim2-space-3);
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+:root body[class] .pim-hub-points li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--pim2-space-3);
+  margin: 0 !important;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--pim2-text);
+}
+:root body[class] .pim-hub-points i {
+  margin-top: 3px;
+  color: var(--pim2-accent);
+}
+:root body[class] .pim-hub-contact {
+  align-self: start;
+  padding: var(--pim2-space-5);
+  border-radius: var(--pim2-radius-field);
+  background: var(--pim2-bg-alt);
+  scroll-margin-top: 24px;
+}
+:root body[class] .pim-hub-contact h3 {
+  margin: 0 0 var(--pim2-space-4) !important;
+  font: 700 17px/1.3 var(--pim2-font) !important;
+  color: var(--pim2-ink) !important;
+}
+:root body[class] .pim-hub-contact p {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: var(--pim2-space-3);
+  margin: 0 0 var(--pim2-space-3) !important;
+  font-size: 14.5px;
+  overflow-wrap: anywhere;
+}
+:root body[class] .pim-hub-contact p i {
+  margin-top: 4px;
+  color: var(--pim2-muted);
+}
+:root body[class] .pim-hub-contact a:not(.pim-hub-btn) {
+  color: var(--pim2-accent) !important;
+}
+:root body[class] .pim-hub-contact .pim-hub-btn {
+  margin-top: var(--pim2-space-2);
+}
+@media (max-width: 900px) {
+  :root body[class] .pim-hub-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: var(--pim2-space-4);
+  }
+  :root body[class] .pim-hub-covers {
+    display: none;
+  }
+  :root body[class] .pim-hub-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--pim2-space-4);
+  }
+  :root body[class] .pim-hub-facts li:nth-child(3) {
+    border-left: 0;
+  }
+  :root body[class] .pim-hub-about {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--pim2-space-5);
+  }
+}
+@media (max-width: 480px) {
+  :root body[class] .pim-hub-search {
+    padding-left: 44px;
+  }
+  :root body[class] .pim-hub-search button {
+    padding: 0 16px;
+  }
+  :root body[class] .pim-hub-facts li {
+    padding: 0 var(--pim2-space-3) !important;
+  }
+}
+/* A journal without a homepage image shows its logo, centred on a light tile, instead of a blank box. */
+:root body[class] .pim-card-thumb.is-logo {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  background: var(--pim2-bg-alt) !important;
+}
+:root body[class] .pim-card-thumb.is-logo img {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+}

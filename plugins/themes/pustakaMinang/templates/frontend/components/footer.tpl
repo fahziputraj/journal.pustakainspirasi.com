@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="footer-grid">
-      <div class="footer-brand" id="pim-about">
+      <div class="footer-brand">
         <div class="footer-logo-mark">
           <img src="{$baseUrl}/plugins/themes/pustakaMinang/images/pim-logo.png?v=20261127" alt="Pustaka Inspirasi Minang" width="69" height="48" loading="lazy" decoding="async">
         </div>
@@ -65,7 +65,7 @@
         </ul>
       </div>
       <div>
-        <h4 id="pim-contact">Contact Info</h4>
+        <h4>Contact Info</h4>
         <div class="footer-contact-item footer-contact-item--address">
           <i class="fas fa-map-marker-alt"></i>
           <span>Padang, West Sumatra, Indonesia</span>

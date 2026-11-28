@@ -12,6 +12,41 @@
 
 
 
+  {* pim-hub-hero:start  Portal hub (28 Nov): headline, article search across all journals, journal covers. *}
+  <div class="pim-hub-hero">
+    <div class="pim-hub-hero__text">
+      <p class="pim-hub-eyebrow">Pustaka Inspirasi Minang &middot; Open access journals</p>
+      <h1 class="pim-hub-title">Peer-reviewed science, open to every reader.</h1>
+      <p class="pim-hub-lead">{if !empty($journals)}{$journals|@count}{else}Our{/if} journals in biology, chemistry, computer science, mathematics and physics, published by CV. Pustaka Inspirasi Minang in Padang, West Sumatra.</p>
+      <form class="pim-hub-search" id="pimHeroSearchForm" action="{url page="search" op="search"}" method="get" role="search">
+        <label class="pkp_screen_reader" for="pimHeroSearchInput">Search articles in all journals</label>
+        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" id="pimHeroSearchInput" name="query" placeholder="Search articles in all journals" autocomplete="off">
+        <button type="submit">Search</button>
+      </form>
+      <div class="pim-hub-actions">
+        <a href="#directoryResultsHeader" class="pim-hub-btn pim-hub-btn--primary">Browse journals <i class="fas fa-arrow-down" aria-hidden="true"></i></a>
+        <a href="#pim-about" class="pim-hub-btn">About PIM</a>
+      </div>
+    </div>
+    <div class="pim-hub-covers" aria-hidden="true">
+      {foreach from=$journals item=journal name=heroCovers}
+        {if $smarty.foreach.heroCovers.iteration > 5}{break}{/if}
+        {assign var="heroCover" value=$journal->getLocalizedData('homepageImage')}
+        {if $heroCover && $heroCover.uploadName}
+          <img class="pim-hub-cover" src="{$journalFilesPath}{$journal->getId()}/{$heroCover.uploadName|escape:"url"}" alt="" width="160" height="226" loading="eager" decoding="async">
+        {/if}
+      {/foreach}
+    </div>
+  </div>
+  <ul class="pim-hub-facts" aria-label="At a glance">
+    <li><strong>{if !empty($journals)}{$journals|@count}{else}0{/if}</strong><span>journals</span></li>
+    <li><strong>Open access</strong><span>free to read and share</span></li>
+    <li><strong>Peer reviewed</strong><span>every submission</span></li>
+    <li><strong>Twice a year</strong><span>regular issues</span></li>
+  </ul>
+  {* pim-hub-hero:end *}
+
   <div class="pim-portal-layout" id="journalDirectory">
     
     <!-- Left Column: Search Journal list & Filters -->
@@ -75,7 +110,7 @@
       <!-- Main Toolbar (Results count and sort) -->
       <div class="pim-main-toolbar" id="directoryResultsHeader">
         <div class="pim-main-toolbar-left">
-          <h1 class="pim-toolbar-title">Journal Directory</h1>
+          <h2 class="pim-toolbar-title">Our journals</h2>
           <span class="pim-toolbar-summary" id="resultSummary">{if !empty($journals)}{$journals|@count}{else}0{/if} journals found</span>
         </div>
         <div class="pim-main-toolbar-right">
@@ -114,14 +149,15 @@
               {/if}
               
               <!-- Individual Journal Card -->
-              <div class="pim-journal-card jl-item" data-journal-id="{$journal->getId()|escape}" data-name="{$journalName|escape}" data-desc="{$journalSearchData|escape}" data-short-desc="{$journalDescription|escape}">
+              <div class="pim-journal-card jl-item pim-card--{$journal->getPath()|escape}" data-journal-id="{$journal->getId()|escape}" data-name="{$journalName|escape}" data-desc="{$journalSearchData|escape}" data-short-desc="{$journalDescription|escape}">
                 
                 <div class="pim-card-header">
                   <!-- Thumbnail/Logo -->
                   {* pim-card-thumb:start *}
                   {assign var="cardImage" value=$journal->getLocalizedData('homepageImage')}
                   {if !$cardImage}{assign var="cardImage" value=$journal->getLocalizedData('journalThumbnail')}{/if}
-                  <div class="pim-card-thumb{if $cardImage} has-image{/if}">
+                  {if !$cardImage}{assign var="cardImage" value=$journal->getLocalizedData('pageHeaderLogoImage')}{assign var="cardIsLogo" value=true}{else}{assign var="cardIsLogo" value=false}{/if}
+                  <div class="pim-card-thumb{if $cardImage} has-image{/if}{if $cardIsLogo} is-logo{/if}">
                     {if $cardImage}
                       <img src="{$journalFilesPath}{$journal->getId()}/{$cardImage.uploadName|escape:"url"}"{if $cardImage.width && $cardImage.height} width="{$cardImage.width|escape}" height="{$cardImage.height|escape}"{/if} alt="" aria-hidden="true" loading="lazy" decoding="async">
                     {else}
@@ -214,6 +250,28 @@
     </aside>
 
   </div>
+
+  {* pim-hub-about:start  Real About and Contact sections: the portal has no OJS About page (/index/about redirects to Login). *}
+  <section class="pim-hub-about" id="pim-about" aria-labelledby="pimAboutTitle">
+    <div class="pim-hub-about__text">
+      <p class="pim-hub-eyebrow">About PIM</p>
+      <h2 id="pimAboutTitle">Pustaka Inspirasi Minang</h2>
+      <p>Pustaka Inspirasi Minang supports open access journals, rigorous peer review, and long-term scholarly archiving across biological, chemical, computer, mathematical, and physical sciences. Every journal is published by CV. Pustaka Inspirasi Minang and run by its own editorial team.</p>
+      <ul class="pim-hub-points">
+        <li><i class="fas fa-lock-open" aria-hidden="true"></i> Open access: every article is free to read, with its licence shown on the article page.</li>
+        <li><i class="fas fa-user-check" aria-hidden="true"></i> Peer review: submissions are assessed by editors and reviewers before publication.</li>
+        <li><i class="fas fa-satellite-dish" aria-hidden="true"></i> Discoverable: Google Scholar metadata and OAI-PMH feeds for indexers.</li>
+      </ul>
+    </div>
+    <div class="pim-hub-contact" id="pim-contact">
+      <h3>Contact</h3>
+      <p><i class="fas fa-location-dot" aria-hidden="true"></i> Padang, West Sumatra, Indonesia</p>
+      <p><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:admin@pustakainspirasi.com">admin@pustakainspirasi.com</a></p>
+      <p><i class="fas fa-headset" aria-hidden="true"></i> <a href="https://wa.me/6285365202765" target="_blank" rel="noopener">Technical support (WhatsApp)</a></p>
+      <a class="pim-hub-btn pim-hub-btn--primary" href="#directoryResultsHeader">Choose a journal to submit</a>
+    </div>
+  </section>
+  {* pim-hub-about:end *}
 </section>
 {literal}
 <script>

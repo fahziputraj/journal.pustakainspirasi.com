@@ -23,8 +23,9 @@ if (preg_match('#/index/about#', $portal)) $fail('portal footer links to /index/
 foreach (['href="#pim-about"', 'href="#pim-contact"', '#directoryResultsHeader'] as $want) if (!str_contains($portal, $want)) $fail("portal missing $want");
 $journal = $render(true);
 foreach (['/mbj/about"', '/mbj/about/submissions"', '/mbj/about/contact"'] as $want) if (!str_contains($journal, $want)) $fail("journal footer missing $want");
-$footer = $src;
-if (!str_contains($footer, 'id="pim-about"') || !str_contains($footer, 'id="pim-contact"')) $fail('anchor targets missing');
+$portal = file_get_contents($root . '/plugins/themes/pustakaMinang/templates/frontend/pages/indexSite.tpl');
+if (!str_contains($portal, 'id="pim-about"') || !str_contains($portal, 'id="pim-contact"')) $fail('portal About/Contact sections (anchor targets) missing');
+if (str_contains($src, 'id="pim-about"') || str_contains($src, 'id="pim-contact"')) $fail('footer must not repeat the portal section ids');
 $header = file_get_contents($root . '/plugins/themes/pustakaMinang/templates/frontend/components/header.tpl');
 if (str_contains($header, '<a href="{url page="about"}">About PIM</a>')) $fail('header About PIM still points at /index/about');
 echo "PASS: portal links reach real sections; journal footers keep their About, Guidelines and Contact pages.\n";
