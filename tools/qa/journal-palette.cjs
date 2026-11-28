@@ -54,6 +54,17 @@ async function check(name, fn) { try { await fn(); results.push('ok   ' + name);
       const r = await p.evaluate(() => ({ card: getComputedStyle(document.querySelector('.pim-btn-submit')).backgroundColor, header: getComputedStyle(document.querySelector('.btn-publish')).backgroundColor }));
       assert.equal(r.card, 'rgb(255, 255, 255)'); assert.equal(r.header, 'rgb(169, 29, 34)');
     });
+    await check('portal catalogue: sticky rail + two-column grid, latest issues under it, no hero', async () => {
+      await p.goto(pathToFileURL(path.join(dir, 'index.html')).href, { waitUntil: 'load' });
+      await p.waitForTimeout(500);
+      const r = await p.evaluate(() => {
+        const cols = (s) => getComputedStyle(document.querySelector(s)).gridTemplateColumns.split(' ').length;
+        const right = document.querySelector('.pim-portal-right-col').getBoundingClientRect();
+        const grid = document.querySelector('.pim-journals-grid').getBoundingClientRect();
+        return { layout: cols('.pim-portal-layout'), grid: cols('.pim-journals-grid'), rail: getComputedStyle(document.querySelector('.pim-portal-left-col')).position, below: right.top >= grid.bottom - 1, hero: !!document.querySelector('.pim-hub-hero'), h1: document.querySelectorAll('h1').length };
+      });
+      assert.deepEqual(r, { layout: 2, grid: 2, rail: 'sticky', below: true, hero: false, h1: 1 });
+    });
   } finally { await b.close(); }
   console.log(results.join('\n'));
   if (results.some((r) => r.startsWith('FAIL'))) process.exit(1);

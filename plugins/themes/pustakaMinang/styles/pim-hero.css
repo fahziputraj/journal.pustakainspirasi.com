@@ -668,3 +668,161 @@ html:root body[class] .pim-hub-search input[type="search"] {
   height: auto !important;
   object-fit: contain !important;
 }
+
+/* ---------------------------------------------------------------- portal catalog layout and navigation (28 Nov)
+ * Two tracks on desktop: a sticky navigation rail (find, journals, subjects) and the catalogue
+ * (toolbar + two-column card grid). Latest issues move under the grid, so no third column stands
+ * half empty. Phones and tablets keep the existing drawer (pim-layout.css, max-width 992px).
+ */
+@media (min-width: 993px) {
+  html:root body[class] .pim-portal-layout {
+    grid-template-columns: 252px minmax(0, 1fr) !important;
+    gap: var(--pim2-space-6) !important;
+  }
+  html:root body[class] .pim-portal-left-col {
+    position: sticky !important;
+    top: 24px !important;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    gap: var(--pim2-space-5) !important;
+    padding: 0 4px 0 0 !important;
+    scrollbar-width: thin;
+  }
+  html:root body[class] .pim-portal-mid-col {
+    grid-column: 2;
+  }
+  html:root body[class] .pim-portal-right-col {
+    grid-column: 2 !important;
+    position: static !important;
+    width: auto !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: var(--pim2-space-4) !important;
+  }
+  html:root body[class] .pim-portal-right-col > .pim-sidebar-card {
+    flex: 1 1 320px;
+  }
+  html:root body[class] .pim-journals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: var(--pim2-space-5) !important;
+  }
+}
+
+/* Navigation rail: flat sections, small uppercase headings, rows like the journal rail. */
+html:root body[class] .pim-portal-left-col .pim-sidebar-card {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-card > h3 {
+  margin: 0 0 var(--pim2-space-2) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font: 600 11px/1.4 var(--pim2-font) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--pim2-muted) !important;
+}
+html:root body[class] .pim-portal-left-col #journalFinder {
+  height: 40px !important;
+  padding: 0 12px 0 34px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--pim2-radius-field) !important;
+  background: var(--pim2-field-bg) !important;
+  font: 400 14px/1.2 var(--pim2-font) !important;
+}
+html:root body[class] .pim-portal-left-col #journalFinder:focus {
+  border-color: var(--pim2-accent) !important;
+  background: var(--pim2-bg) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-journal-scroller {
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  gap: var(--pim2-space-1) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-journal-link {
+  min-height: 36px;
+  padding: 6px 10px !important;
+  border-radius: 10px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13px/1.35 var(--pim2-font) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-journal-link:hover {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-journal-link span,
+html:root body[class] .pim-portal-left-col .pim-sidebar-journal-link :not(img) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+html:root body[class] .pim-portal-left-col #subjectFilters {
+  display: grid !important;
+  gap: var(--pim2-space-1) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 6px 10px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: var(--pim2-bg-alt) !important;
+  color: var(--pim2-text) !important;
+  font: 500 13px/1.35 var(--pim2-font) !important;
+  text-align: left;
+  cursor: pointer;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-btn:hover,
+html:root body[class] .pim-portal-left-col .pim-sidebar-btn:is(.is-active, [aria-pressed="true"]) {
+  background: var(--pim2-accent-soft) !important;
+  color: var(--pim2-accent) !important;
+}
+html:root body[class] .pim-portal-left-col .pim-sidebar-btn .count {
+  min-width: 22px;
+  padding: 1px 7px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--pim2-bg) !important;
+  color: var(--pim2-muted) !important;
+  font: 600 11px/1.6 var(--pim2-font) !important;
+  text-align: center;
+}
+
+/* Catalogue toolbar: title and count on the left, sort on the right, one hairline under it. */
+html:root body[class] #directoryResultsHeader {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: var(--pim2-space-4) !important;
+  margin: 0 0 var(--pim2-space-2) !important;
+  padding: 0 0 var(--pim2-space-4) !important;
+  border-bottom: 1px solid var(--pim2-line) !important;
+}
+html:root body[class] #directoryResultsHeader .pim-toolbar-title {
+  margin: 0 0 4px !important;
+  font: 700 28px/1.2 var(--pim2-font) !important;
+  letter-spacing: -0.01em;
+  color: var(--pim2-ink) !important;
+}
+html:root body[class] #directoryResultsHeader .pim-toolbar-summary {
+  font-size: 13px !important;
+  color: var(--pim2-muted) !important;
+}
+/* Cards in the two-column catalogue: cover beside title, body and actions below. */
+html:root body[class] .pim-journals-grid .pim-journal-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100%;
+}
+html:root body[class] .pim-journals-grid .pim-card-actions {
+  margin-top: auto !important;
+}

@@ -12,41 +12,6 @@
 
 
 
-  {* pim-hub-hero:start  Portal hub (28 Nov): headline, article search across all journals, journal covers. *}
-  <div class="pim-hub-hero">
-    <div class="pim-hub-hero__text">
-      <p class="pim-hub-eyebrow">Pustaka Inspirasi Minang &middot; Open access journals</p>
-      <h1 class="pim-hub-title">Peer-reviewed science, open to every reader.</h1>
-      <p class="pim-hub-lead">{if !empty($journals)}{$journals|@count}{else}Our{/if} journals in biology, chemistry, computer science, mathematics and physics, published by CV. Pustaka Inspirasi Minang in Padang, West Sumatra.</p>
-      <form class="pim-hub-search" id="pimHeroSearchForm" action="{url page="search" op="search"}" method="get" role="search">
-        <label class="pkp_screen_reader" for="pimHeroSearchInput">Search articles in all journals</label>
-        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-        <input type="search" id="pimHeroSearchInput" name="query" placeholder="Search articles in all journals" autocomplete="off">
-        <button type="submit">Search</button>
-      </form>
-      <div class="pim-hub-actions">
-        <a href="#directoryResultsHeader" class="pim-hub-btn pim-hub-btn--primary">Browse journals <i class="fas fa-arrow-down" aria-hidden="true"></i></a>
-        <a href="#pim-about" class="pim-hub-btn">About PIM</a>
-      </div>
-    </div>
-    <div class="pim-hub-covers" aria-hidden="true">
-      {foreach from=$journals item=journal name=heroCovers}
-        {if $smarty.foreach.heroCovers.iteration > 5}{break}{/if}
-        {assign var="heroCover" value=$journal->getLocalizedData('homepageImage')}
-        {if $heroCover && $heroCover.uploadName}
-          <img class="pim-hub-cover" src="{$journalFilesPath}{$journal->getId()}/{$heroCover.uploadName|escape:"url"}" alt="" width="160" height="226" loading="eager" decoding="async">
-        {/if}
-      {/foreach}
-    </div>
-  </div>
-  <ul class="pim-hub-facts" aria-label="At a glance">
-    <li><strong>{if !empty($journals)}{$journals|@count}{else}0{/if}</strong><span>journals</span></li>
-    <li><strong>Open access</strong><span>free to read and share</span></li>
-    <li><strong>Peer reviewed</strong><span>every submission</span></li>
-    <li><strong>Twice a year</strong><span>regular issues</span></li>
-  </ul>
-  {* pim-hub-hero:end *}
-
   <div class="pim-portal-layout" id="journalDirectory">
     
     <!-- Left Column: Search Journal list & Filters -->
@@ -110,7 +75,7 @@
       <!-- Main Toolbar (Results count and sort) -->
       <div class="pim-main-toolbar" id="directoryResultsHeader">
         <div class="pim-main-toolbar-left">
-          <h2 class="pim-toolbar-title">Our journals</h2>
+          <h1 class="pim-toolbar-title">Journal Directory</h1>
           <span class="pim-toolbar-summary" id="resultSummary">{if !empty($journals)}{$journals|@count}{else}0{/if} journals found</span>
         </div>
         <div class="pim-main-toolbar-right">

@@ -32,7 +32,7 @@ class PustakaMinangThemePlugin extends \PKP\plugins\ThemePlugin
         // Refinement layer v2.1 (article, issue, archive, custom pages, account shell); after v2.
         $this->addStyle('pustaka-minang-refine', 'styles/pim-refine.css?v=20261128-1');
         // Layer v2.2: per-journal palette from each logo and HeroUI-style components; after refine.
-        $this->addStyle('pustaka-minang-hero', 'styles/pim-hero.css?v=20261128-4');
+        $this->addStyle('pustaka-minang-hero', 'styles/pim-hero.css?v=20261128-5');
 
         // Editorial (backend) shell fixes for phones and contrast; never loaded on public pages.
         $this->addStyle('pustaka-minang-backend', 'styles/pim-backend.css?v=20261127-1', ['contexts' => 'backend']);
