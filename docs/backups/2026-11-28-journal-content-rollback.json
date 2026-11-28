@@ -1,0 +1,11 @@
+{
+  "purpose": "Rollback values for the 2026-11-28 content fixes (E-ISSN placeholders, home table cell, header logos). Logo files are copied to /home/pusf3964/pim-backup-20261128-content/ on the server.",
+  "applyRollback": "PUT /{path}/api/v1/contexts/{id} with onlineIssn and the original E-ISSN cell text in additionalHomeContent.en; re-upload the backed-up logo.png as pageHeaderLogoImage.",
+  "journals": {
+    "mbj":  { "id": 1, "onlineIssn": "0000-0000", "homeTableEissnCell": "0000-0000", "pageHeaderLogoImage": { "uploadName": "logo.png", "width": 1536, "height": 1024, "altText": "Logo for MBJ" } },
+    "mcj":  { "id": 2, "onlineIssn": "0000-0000", "homeTableEissnCell": "xxxx-xxxx", "pageHeaderLogoImage": { "uploadName": "logo.png", "width": 1536, "height": 1024, "altText": "Logo for MCJ" } },
+    "mcsj": { "id": 3, "onlineIssn": "0000-0000", "homeTableEissnCell": "0000-0000", "pageHeaderLogoImage": { "uploadName": "logo.png", "width": 1536, "height": 1024, "altText": "Logo for MCSJ" } },
+    "mmj":  { "id": 4, "onlineIssn": "0000-0000", "homeTableEissnCell": "0000-0000", "pageHeaderLogoImage": { "uploadName": "logo.png", "width": 1693, "height": 929, "altText": "Logo for MMJ" } },
+    "mpj":  { "id": 5, "onlineIssn": "0000-0000", "homeTableEissnCell": "xxxx-xxxx", "pageHeaderLogoImage": { "uploadName": "logo.png", "width": 1536, "height": 1024, "altText": "Logo for MPJ" } }
+  }
+}

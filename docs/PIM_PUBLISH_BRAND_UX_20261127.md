@@ -303,3 +303,18 @@ Verification:
 - **Live:**
   - Every journal carries its body class and accent, with pill buttons and no page errors.
   - The portal keeps `#a91d22`.
+
+## Content fixes in all 5 journals (2026-11-28, user-approved)
+
+Applied through the OJS API (`PUT /{path}/api/v1/contexts/{id}`) while signed in as admin:
+- **`onlineIssn`:** `0000-0000` was cleared in MBJ, MCJ, MCSJ, MMJ and MPJ. OAI-PMH sent it as `<dc:source>0000-0000</dc:source>` to indexers; it now sends none, verified on all 5 OAI feeds.
+- **Home table E-ISSN cell:** `0000-0000` (MBJ, MCSJ, MMJ) and `xxxx-xxxx` (MCJ, MPJ) now read "In process". Only that cell changed.
+- **Header logos:**
+  - The blank margins were trimmed and the logos scaled to 160 px tall (2× the 64 px slot): MBJ 453×160, MCJ 365×160, MCSJ 288×160, MMJ 319×160, MPJ 347×160.
+  - File sizes fell from 1.2–2.3 MB to 84–110 KB, each uploaded as `pageHeaderLogoImage_en.png` with the journal name as alt text.
+- **Rollback:**
+  - The values are in `docs/backups/2026-11-28-journal-content-rollback.json`.
+  - The original logos are in `/home/pusf3964/pim-backup-20261128-content/journal-{id}/logo.png`; the original `logo.png` files are also still in `public/journals/{id}/`.
+
+Not changed:
+- Real ISSNs and issue covers have to come from the journals. Until then the strip reads "In process" and the home "Current Issue" card shows the journal cover.
