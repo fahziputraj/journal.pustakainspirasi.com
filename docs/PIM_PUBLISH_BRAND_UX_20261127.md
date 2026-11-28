@@ -221,3 +221,36 @@ Bug hunt (28 Nov, read-only):
 - **Risk:**
   - PHP `upload_max_filesize` and `post_max_size` are 10M, so manuscripts or galleys over 10 MB fail. Raising them to 50M in cPanel MultiPHP INI needs the owner's approval.
   - OJS 3.5.0.6 is available; it carries the invitation-payload warnings, 753 in the log.
+
+## Journal ISSN strip, GPI rail widgets and indexer-safe ISSN meta (2026-11-28, user-confirmed)
+
+What changed:
+- **Journal strip** (`header.tpl`, `pim-journal-strip`): sits under the header on journal pages, with the journal title on the left and the ISSN on the right. It shares the 1360 px frame, so its left edge matches the journal menu.
+  - Only valid ISSNs are shown, linked to `portal.issn.org`. A valid ISSN has a correct check digit and is not 0000-0000.
+  - A placeholder reads "In process".
+- **`PustakaMinangThemePlugin::prepareIssn()`**: assigns `pimIssn` and replaces the Google Scholar `citation_issn` and Dublin Core `DC.Source.ISSN` headers with the first valid ISSN, or empties them. All 5 journals still store 0000-0000, which indexers were receiving.
+- **Rail widgets as on GPI:**
+  - Editorial office rows.
+  - A dark "Download Article Template" button. The image stays in the link as its accessible name.
+  - Indexed-by and recommended-tool logos stacked one per row as followable links with alt text.
+- **`robots.txt`**: adds `Sitemap: https://journal.pustakainspirasi.com/index/sitemap`.
+
+Crawl audit (Googlebot UA):
+- 200 on home, article, PDF download, archive, sitemaps and OAI-PMH.
+- No `noindex` or `X-Robots-Tag`.
+- `citation_pdf_url` points to `/article/download/…`.
+- GPI side, reported by the GPI session: no aaPanel WAF, and bots get no 403/444/429.
+
+Release:
+- Commit `f147292e`, 6 files. Backup in `/home/pusf3964/pim-backup-20261128-issn/`.
+- Commit `2cf253e2`, which adds the template button for heading-style blocks (MCJ, MPJ), 2 files. Backup in `/home/pusf3964/pim-backup-20261128-template/`.
+- Assets are now `pim-refine.css?v=20261128-1` and `pim-ui.js?v=20261128-2`.
+
+Verification:
+- `php tools/qa/journal-strip.php` passes and fails without the strip.
+- `php tools/qa/issn-guard.php` passes.
+- `tools/qa/public-refine.cjs` passes, including the template and logo checks on MBJ, MCJ and MPJ.
+- **Live:**
+  - The strip and template button are present on all 5 journals, with no `details` and no page errors.
+  - The ISSN meta is gone from the article page.
+  - `robots.txt` serves the Sitemap line.
