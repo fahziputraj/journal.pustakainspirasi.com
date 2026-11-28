@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="footer-grid">
-      <div class="footer-brand">
+      <div class="footer-brand" id="pim-about">
         <div class="footer-logo-mark">
           <img src="{$baseUrl}/plugins/themes/pustakaMinang/images/pim-logo.png?v=20261127" alt="Pustaka Inspirasi Minang" width="69" height="48" loading="lazy" decoding="async">
         </div>
@@ -50,13 +50,22 @@
         <ul class="footer-links-list">
           <li><a href="{$baseUrl}/">Home</a></li>
           <li><a href="{url router=$smarty.const.ROUTE_PAGE page="index"}">Journals</a></li>
-          <li><a href="{url page="about"}">About Us</a></li>
-          <li><a href="{url page="about" op="submissions"}">Guidelines</a></li>
-          <li><a href="{url page="about" op="contact"}">Contact</a></li>
+          {* pim-portal-links:start  The portal (no journal context) has no About, Submissions or Contact pages:
+             OJS redirects /index/about* to Login. Point to the footer sections and the journal directory instead. *}
+          {if $currentContext}
+            <li><a href="{url page="about"}">About Us</a></li>
+            <li><a href="{url page="about" op="submissions"}">Guidelines</a></li>
+            <li><a href="{url page="about" op="contact"}">Contact</a></li>
+          {else}
+            <li><a href="#pim-about">About Us</a></li>
+            <li><a href="{url router=$smarty.const.ROUTE_PAGE page="index"}#directoryResultsHeader">Guidelines</a></li>
+            <li><a href="#pim-contact">Contact</a></li>
+          {/if}
+          {* pim-portal-links:end *}
         </ul>
       </div>
       <div>
-        <h4>Contact Info</h4>
+        <h4 id="pim-contact">Contact Info</h4>
         <div class="footer-contact-item footer-contact-item--address">
           <i class="fas fa-map-marker-alt"></i>
           <span>Padang, West Sumatra, Indonesia</span>
@@ -88,7 +97,7 @@
 
 </div><!-- pkp_structure_page -->
 
-<script src="{$baseUrl}/pim-ui.js?v=20261128-2"></script>
+<script src="{$baseUrl}/pim-ui.js?v=20261128-3"></script>
 
 {load_script context="frontend"}
 

@@ -1254,3 +1254,26 @@ window.PIM.enhanceArticlePage = function (root) {
 document.addEventListener('DOMContentLoaded', function () {
   if (document.querySelector('.obj_article_details')) window.PIM.enhanceArticlePage(document);
 });
+
+/*
+ * Empty and heading states (critique 28 Nov): an announcements list with no items says so instead of
+ * leaving a blank page, and a static page whose title is an <h2> exposes it as the level-1 heading.
+ */
+window.PIM.enhanceEmptyStates = function (root) {
+  var list = root.querySelector('.page_announcements .cmp_announcements');
+  if (list && !list.querySelector('li, .obj_announcement_summary') && !root.querySelector('.pim-empty-announcements')) {
+    var note = document.createElement('p');
+    note.className = 'cmp_notification pim-empty-announcements';
+    note.textContent = 'No announcements have been published yet.';
+    list.parentNode.insertBefore(note, list);
+  }
+  var page = root.querySelector('.pkp_structure_main > .page');
+  if (page && !page.querySelector('h1')) {
+    var first = page.firstElementChild;
+    if (first && first.tagName === 'H2' && !first.hasAttribute('role')) {
+      first.setAttribute('role', 'heading');
+      first.setAttribute('aria-level', '1');
+    }
+  }
+};
+document.addEventListener('DOMContentLoaded', function () { window.PIM.enhanceEmptyStates(document); });

@@ -62,7 +62,7 @@
       <nav class="pim-nav" id="mainNav">
         <a href="{$baseUrl}/">Home</a>
         <a href="{url page="index"}" class="{if $requestedPage == 'index' || $requestedPage == ''}active{/if}">Our Journals</a>
-        <a href="{url page="about"}">About PIM</a>
+        <a href="#pim-about">About PIM</a>{* the portal has no About page: /index/about redirects to Login *}
       </nav>
     {/if}
 

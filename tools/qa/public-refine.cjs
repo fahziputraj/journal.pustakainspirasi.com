@@ -204,6 +204,16 @@ async function check(name, fn) {
       assert.ok(r.logos.every((l) => /^https?:/.test(l.href) && l.alt && !/nofollow/.test(l.rel)), 'logos are followable links with alt text');
       assert.equal(r.stacked, true, 'logos stacked one per row');
     });
+    await check('announcements: an empty list says so', async () => {
+      await open('mbj-announcement', 1440);
+      const t = await p.evaluate(() => { const n = document.querySelector('.pim-empty-announcements'); return n ? n.textContent.trim() : null; });
+      assert.equal(t, 'No announcements have been published yet.');
+    });
+    await check('custom page: the h2 title is exposed as the level-1 heading', async () => {
+      await open('Reviewer', 1440);
+      const r = await p.evaluate(() => { const h = document.querySelector('.pkp_structure_main > .page > h2'); return { role: h.getAttribute('role'), level: h.getAttribute('aria-level') }; });
+      assert.deepEqual(r, { role: 'heading', level: '1' });
+    });
     await check('journal home: latest-article titles in sentence case', async () => {
       await open('mbj-index', 1440);
       const tt = await p.evaluate(() => getComputedStyle(document.querySelector('.pim-article-card .pim-article-title')).textTransform);
