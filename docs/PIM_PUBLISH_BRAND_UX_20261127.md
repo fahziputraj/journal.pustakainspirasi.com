@@ -318,3 +318,25 @@ Applied through the OJS API (`PUT /{path}/api/v1/contexts/{id}`) while signed in
 
 Not changed:
 - Real ISSNs and issue covers have to come from the journals. Until then the strip reads "In process" and the home "Current Issue" card shows the journal cover.
+
+## Search fix, critique fixes, policies on About, and the portal catalogue (2026-11-28, user-confirmed)
+
+- **Search refine panel:** the first layer forced two equal columns with `!important`, so the date selects were 26 px wide. The dates now sit as two groups, each with Year, Month and Day, at 100–130 px per select; the author field sits below. The keyword field and the button are separate pills.
+- **Portal links:** About PIM and the footer's About Us, Guidelines and Contact pointed at `/index/about*`, which redirects to Login. They now point to the portal's own About and Contact sections and the directory.
+- **Announcements and custom pages:** an empty announcements list shows a notice. A static page whose title is an `<h2>` exposes it as the level-1 heading.
+- **Policies:** the rail's Policies group moved to About (`#pim-policies`, 11 links), and the rail keeps one "Journal policies" row. The rail's Make a Submission is a secondary button.
+- **Portal catalogue:** the user decided against a hero, so the page keeps its single h1 "Journal Directory". The new layout:
+  - A sticky navigation rail beside a two-column card grid; the rail has find, journal rows and subject filters with counts.
+  - Latest issues under the grid; the half-empty third column is gone.
+  - Cards in each journal's palette, with the logo as fallback when a journal has no homepage image.
+  - Real About PIM and Contact sections.
+  - The phone drawer is restyled to match.
+- **Release:** backups are in `/home/pusf3964/pim-backup-20261128-critique/` and `/home/pusf3964/pim-backup-20261128-hub/`. The last package is `pim-catalog-20261128.zip` (commit `80ab716d`), whose live sizes match HEAD.
+- **Tests:**
+  - New: `portal-hub.php`, `portal-links.php` and the catalogue check in `journal-palette.cjs`.
+  - Updated: `journal-search.cjs` now loads every layer, and `portal-cards.php` covers the logo fallback.
+- **Live:**
+  - The portal has one h1 and no hero, with 2×2 tracks on desktop and 1 on phones.
+  - All 5 cards show their palette and none is empty; latest issues are filled.
+  - MBJ About lists 11 policies.
+  - No page errors.
