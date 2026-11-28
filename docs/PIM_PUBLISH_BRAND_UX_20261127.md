@@ -270,3 +270,36 @@ Bg Handri, 28 Nov 14:08: "tampilan current issue yang masih nama get press journ
   - `/issue/current` lands on `/issue/view/13` (MBJ) and `/issue/view/14` (MMJ) with Current Issue active.
   - The archive page has Archives active.
   - No page errors.
+
+## Per-journal logo palette and HeroUI-style components, layer v2.2 (2026-11-28, user-confirmed)
+
+The user chose a palette per journal taken from its own logo, and HeroUI's design language rewritten in our own CSS. HeroUI code is licensed and React-only, so none of it is copied.
+
+Palette (`pim-hero.css`, body class `pim-journal-{path}` from `header.tpl`). Ratios are measured on white; white on the accent gives the same ratio.
+
+| Journal | Accent (ratio) | Second colour (text ink, ratio) |
+|---|---|---|
+| Portal | `#a91d22` (7.28) | gold `#d2a758` (ink `#8a6418`) |
+| MBJ | `#0a3f8f` (9.90) | green `#017429` (5.95) |
+| MCJ | `#c70d16` (6.00) | orange `#e8620a` (ink `#c45308`, 4.58) |
+| MCSJ | `#265688` (7.58) | blue `#2574c9` (4.75) |
+| MMJ | `#c50a0a` (6.14) | gold `#f0b400` (ink `#916e00`, 4.74) |
+| MPJ | `#12357e` (11.44) | orange `#e85d05` (ink `#c44f05`, 4.70) |
+
+The first layer's `--pim-crimson` and `--pim-gold` point at the journal palette, so every older rule follows it.
+
+Components:
+- **Buttons:** pill-shaped, in solid, bordered and flat variants.
+- **Fields:** filled, 12 px radius, with a white background and accent ring on focus.
+- **Surfaces:** soft shadow, 16 px radius, no hard border.
+- **Chips and controls:** pill chips, a segmented control for the portal sort, and a 2 px focus ring.
+- **Portal cards:** "Submit manuscript" is a secondary button.
+
+Release:
+- Commit `2e24902d`, 4 files. Backup in `/home/pusf3964/pim-backup-20261128-palette/`. `pim-hero.css` is new.
+
+Verification:
+- `tools/qa/journal-palette.cjs` passes 8 cases; all earlier harnesses pass.
+- **Live:**
+  - Every journal carries its body class and accent, with pill buttons and no page errors.
+  - The portal keeps `#a91d22`.
