@@ -29,7 +29,7 @@
 <!-- Load Layout & FontAwesome Overrides -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<body class="pkp_page_{$requestedPage|escape|default:"index"} pkp_op_{$requestedOp|escape|default:"index"}{if $gpPublicJournalLayout} pim_public_journal{elseif $gpAccountLayout} pim_account_page{/if}">
+<body class="pkp_page_{$requestedPage|escape|default:"index"} pkp_op_{$requestedOp|escape|default:"index"}{if $gpPublicJournalLayout} pim_public_journal{elseif $gpAccountLayout} pim_account_page{/if}{if $currentContext} pim-journal-{$currentContext->getPath()|escape}{/if}">
 
 <a class="pim-skip-link" href="#pim-main-content">{translate key="navigation.skip.main"}</a>
 

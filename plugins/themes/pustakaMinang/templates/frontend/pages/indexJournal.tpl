@@ -180,8 +180,8 @@
 			{* Articles from Current Issue *}
 			{if !empty($publishedSubmissions)}
 				<div class="pim-homepage-articles" style="margin-top: 32px;">
-					<h3 style="margin-bottom: 16px; font-size: 1.1rem; font-weight: 800; color: #1e293b; padding-bottom: 10px; border-bottom: 2px solid #A91D22; display: inline-block;">
-						<i class="fas fa-file-alt" style="margin-right: 6px; color: #A91D22;"></i>Latest Articles
+					<h3 style="margin-bottom: 16px; font-size: 1.1rem; font-weight: 800; color: #1e293b; padding-bottom: 10px; border-bottom: 2px solid var(--pim2-accent, #A91D22); display: inline-block;">
+						<i class="fas fa-file-alt" style="margin-right: 6px; color: var(--pim2-accent, #A91D22);"></i>Latest Articles
 					</h3>
 					{foreach from=$publishedSubmissions item=section}
 						{if $section.articles}
